@@ -489,7 +489,7 @@ const CSVProcessor = () => {
                       type="button"
                       variant="outline" 
                       size="sm"
-                      onClick={() => setCsvUrl("https://docs.google.com/spreadsheets/d/1BxGF5ckI6-VgXK9RSthTmgM_UoFZP5VH6xT3LqEVpx4/export?format=csv")}
+                      onClick={() => setCsvUrl("https://docs.google.com/spreadsheets/d/1BxGF5ckI6-VgXK9RSthTmgM_UoFZP5VH6xT3LqEVpx4/edit#gid=0")}
                       disabled={isProcessing}
                     >
                       Demo CSV

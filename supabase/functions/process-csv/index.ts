@@ -120,16 +120,43 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
     console.log('Starting background processing for job:', jobId);
     console.log('Fetching CSV from:', csvUrl);
     
-    // Fetch CSV data with better error handling
-    console.log('Attempting to fetch CSV from:', csvUrl);
+    // Validate and correct CSV URL format
+    let correctedUrl = csvUrl;
+    
+    // Check if it's a Google Sheets URL and correct format if needed
+    if (csvUrl.includes('docs.google.com/spreadsheets')) {
+      console.log('Detected Google Sheets URL, checking format...');
+      
+      // Extract spreadsheet ID from various Google Sheets URL formats
+      let spreadsheetId = '';
+      
+      if (csvUrl.includes('/d/')) {
+        const match = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (match) {
+          spreadsheetId = match[1];
+        }
+      }
+      
+      if (spreadsheetId) {
+        // Use the correct published CSV format
+        correctedUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=0`;
+        console.log('Corrected URL to:', correctedUrl);
+      } else {
+        console.log('Could not extract spreadsheet ID from URL');
+      }
+    }
+    
+    console.log('Attempting to fetch CSV from:', correctedUrl);
     
     let csvResponse;
     try {
-      csvResponse = await fetch(csvUrl, {
+      csvResponse = await fetch(correctedUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; CSV-Processor/1.0)',
-          'Accept': 'text/csv,text/plain,*/*'
-        }
+          'Accept': 'text/csv,text/plain,application/csv,*/*',
+          'Cache-Control': 'no-cache'
+        },
+        redirect: 'follow'
       });
     } catch (fetchError) {
       console.error('Network error fetching CSV:', fetchError);
