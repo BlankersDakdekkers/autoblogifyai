@@ -82,13 +82,9 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
-              {/* Dashboard internal routes - handled by Dashboard component */}
+              {/* Dashboard routes */}
               <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/voice" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/validate" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/publish" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/websites" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/deployment" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/academy" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />

@@ -40,25 +40,27 @@ export function AppSidebar() {
 
   const getNavCls = (itemUrl: string) => {
     const isActive = isActiveRoute(currentPath, itemUrl)
-    return `flex items-center gap-2 w-full ${
+    return `flex items-center gap-3 w-full p-2 ${
       isActive 
-        ? "bg-primary text-primary-foreground font-medium" 
-        : "hover:bg-muted/50"
+        ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-semibold shadow-md" 
+        : "hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/30 hover:shadow-sm"
     }`
   }
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-60"}>
+    <Sidebar className={`${collapsed ? "w-14" : "w-60"} transition-all duration-300 ease-in-out`}>
       <SidebarContent>
         {/* Logo/Brand */}
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <div className="p-4 border-b bg-gradient-to-r from-primary/10 to-accent/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-105">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
             {!collapsed && (
-              <div>
-                <h2 className="font-bold text-lg">AutoblogifyAI</h2>
+              <div className="animate-fade-in">
+                <h2 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  AutoblogifyAI
+                </h2>
                 <p className="text-xs text-muted-foreground">Pro Dashboard</p>
               </div>
             )}
@@ -74,36 +76,37 @@ export function AppSidebar() {
             <SidebarGroup key={section.label}>
               {!collapsed && (
                 <SidebarGroupLabel 
-                  className="flex items-center justify-between cursor-pointer hover:bg-muted/50 px-2 py-1 rounded"
+                  className="flex items-center justify-between cursor-pointer hover:bg-muted/50 px-2 py-1 rounded-md transition-all duration-200 hover:shadow-sm"
                   onClick={() => toggleSection(section.label)}
                 >
-                  <span>{section.label}</span>
+                  <span className="font-medium text-sm">{section.label}</span>
                   {isExpanded ? (
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className="h-3 w-3 transition-transform duration-200" />
                   ) : (
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="h-3 w-3 transition-transform duration-200" />
                   )}
                 </SidebarGroupLabel>
               )}
               
               {isExpanded && (
-                <SidebarGroupContent>
+                <SidebarGroupContent className="animate-accordion-down">
                   <SidebarMenu>
-                    {section.items.map((item) => (
+                    {section.items.map((item, index) => (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
                           <NavLink 
                             to={item.url} 
                             end={item.url === "/dashboard"}
-                            className={getNavCls(item.url)}
+                            className={`${getNavCls(item.url)} transition-all duration-200 hover:transform hover:scale-[1.02] rounded-md`}
                             title={collapsed ? item.title : undefined}
+                            style={{ animationDelay: `${index * 50}ms` }}
                           >
-                            <item.icon className="h-4 w-4" />
+                            <item.icon className="h-4 w-4 transition-colors duration-200" />
                             {!collapsed && (
-                              <div className="flex-1">
-                                <span>{item.title}</span>
+                              <div className="flex-1 animate-fade-in">
+                                <span className="font-medium">{item.title}</span>
                                 {item.description && (
-                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 transition-opacity duration-200">
                                     {item.description}
                                   </p>
                                 )}

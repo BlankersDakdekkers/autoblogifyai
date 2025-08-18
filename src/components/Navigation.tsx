@@ -77,12 +77,6 @@ export const useNavigationSections = (): NavigationSection[] => {
         description: "AI keyword generator en analyse"
       },
       { 
-        title: "Voice Input", 
-        url: "/dashboard/voice", 
-        icon: CheckCircle2,
-        description: "Spraak naar tekst content creatie"
-      },
-      { 
         title: "Content Genereren", 
         url: "/dashboard/generate", 
         icon: FileText,
@@ -123,18 +117,6 @@ export const useNavigationSections = (): NavigationSection[] => {
         url: "/dashboard/blogs", 
         icon: FileText,
         description: "Beheer en publiceer je blogs naar WordPress"
-      },
-      { 
-        title: "Valideren", 
-        url: "/dashboard/validate", 
-        icon: CheckCircle2,
-        description: "CSV schema validatie"
-      },
-      { 
-        title: "Publiceren", 
-        url: "/dashboard/publish", 
-        icon: Globe,
-        description: "Posts publicatie workflow"
       },
     ]
   },

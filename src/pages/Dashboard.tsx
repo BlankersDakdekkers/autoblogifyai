@@ -15,82 +15,114 @@ const DashboardOverview = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-2">Welkom terug, {user?.email}!</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Welkom terug, <span className="font-medium text-foreground">{user?.email}!</span>
+              </p>
             </div>
-            <CreditsDisplay />
+            <div className="animate-scale-in">
+              <CreditsDisplay />
+            </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="hover:shadow-lg transition-all duration-300 animate-fade-in border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant" style={{ animationDelay: '100ms' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Posts Gegenereerd</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">127</div>
-              <p className="text-xs text-muted-foreground">+12 sinds gisteren</p>
+              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">127</div>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="text-accent font-medium">+12</span> sinds gisteren
+              </p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Card className="hover:shadow-lg transition-all duration-300 animate-fade-in border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant" style={{ animationDelay: '200ms' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Gepubliceerd</CardTitle>
-              <Globe className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Globe className="h-4 w-4 text-accent" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">89</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">89</div>
               <p className="text-xs text-muted-foreground">70% van totaal</p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Card className="hover:shadow-lg transition-all duration-300 animate-fade-in border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant" style={{ animationDelay: '300ms' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Gemiddelde Woorden</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <BarChart3 className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,247</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">1,247</div>
               <p className="text-xs text-muted-foreground">Per blogpost</p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Card className="hover:shadow-lg transition-all duration-300 animate-fade-in border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant" style={{ animationDelay: '400ms' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">SEO Score</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <CheckCircle2 className="h-4 w-4 text-accent" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">94%</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">94%</div>
               <p className="text-xs text-muted-foreground">Gemiddelde kwaliteit</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Recent Posts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recente Posts</CardTitle>
+        <Card className="animate-fade-in border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant" style={{ animationDelay: '500ms' }}>
+          <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
+            <CardTitle className="flex items-center gap-2">
+              <div className="p-1 rounded bg-primary/10">
+                <Clock className="h-4 w-4 text-primary" />
+              </div>
+              Recente Posts
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-0">
+            <div className="space-y-0">
               {[
                 { title: "Dakbedekking Services Amsterdam", status: "Gepubliceerd", date: "15 minuten geleden" },
                 { title: "Bitumen Dakdekker Rotterdam", status: "Concept", date: "1 uur geleden" },
                 { title: "Dakgoot Reparatie Utrecht", status: "Gepubliceerd", date: "2 uur geleden" },
               ].map((post, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <p className="font-medium">{post.title}</p>
+                <div key={i} className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gradient-to-r hover:from-muted/30 hover:to-transparent transition-all duration-200 group">
+                  <div className="flex-1">
+                    <p className="font-medium group-hover:text-primary transition-colors duration-200">{post.title}</p>
                     <p className="text-sm text-muted-foreground">{post.date}</p>
                   </div>
-                  <Badge variant={post.status === "Gepubliceerd" ? "default" : "secondary"}>
-                    {post.status}
-                  </Badge>
+                  <div className="flex items-center gap-3">
+                    <Badge 
+                      variant={post.status === "Gepubliceerd" ? "default" : "secondary"}
+                      className={post.status === "Gepubliceerd" ? "bg-gradient-to-r from-accent to-accent/80" : ""}
+                    >
+                      {post.status}
+                    </Badge>
+                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -160,11 +192,11 @@ const Dashboard = () => {
   // Show loading state while checking
   if (hasBlogPosts === null) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="text-center animate-fade-in">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-muted-foreground">Dashboard laden...</p>
             </div>
           </div>
@@ -176,18 +208,26 @@ const Dashboard = () => {
   // Show new user dashboard if no content
   if (hasBlogPosts === false) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-8 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-2">Welkom terug, {user?.email}!</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Dashboard
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                  Welkom terug, <span className="font-medium text-foreground">{user?.email}!</span>
+                </p>
               </div>
-              <CreditsDisplay />
+              <div className="animate-scale-in">
+                <CreditsDisplay />
+              </div>
             </div>
           </div>
-          <NewUserDashboard />
+          <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <NewUserDashboard />
+          </div>
         </div>
       </div>
     );
