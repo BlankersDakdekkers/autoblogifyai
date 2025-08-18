@@ -750,23 +750,6 @@ async function generateContent(row: any): Promise<string> {
     return generateMockContent(row);
   }
 }
-        max_completion_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      logStep("OpenAI API error", { status: response.status });
-      return generateMockContent(row);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
-
-  } catch (error) {
-    logStep("Content generation error", { error: error.message });
-    return generateMockContent(row);
-  }
-}
 
 function generateMockContent(row: any): string {
   const title = row.title || 'Algemeen Onderwerp';
