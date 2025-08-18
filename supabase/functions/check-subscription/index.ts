@@ -17,31 +17,45 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
-
   try {
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
+      throw new Error("STRIPE_SECRET_KEY not configured");
+    }
+    logStep("Stripe key found");
     
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
     
+    // Use anon client for auth
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
     if (userError) throw new Error(`Auth error: ${userError.message}`);
     
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Use service role client for database operations
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    logStep("Stripe client initialized");
+    
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    logStep("Stripe customers retrieved", { count: customers.data.length });
     
     if (customers.data.length === 0) {
       logStep("No customer found, setting unsubscribed");
@@ -103,7 +117,7 @@ serve(async (req) => {
     }
 
     // Update database
-    await supabaseClient.from("subscribers").upsert({
+    const { error: upsertError } = await supabaseClient.from("subscribers").upsert({
       email: user.email,
       user_id: user.id,
       stripe_customer_id: customerId,
@@ -114,7 +128,12 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Database updated", { subscribed: hasActiveSub, tier: subscriptionTier });
+    if (upsertError) {
+      logStep("Database upsert error", { error: upsertError });
+      throw new Error(`Database error: ${upsertError.message}`);
+    }
+
+    logStep("Database updated successfully", { subscribed: hasActiveSub, tier: subscriptionTier });
     
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
@@ -126,7 +145,7 @@ serve(async (req) => {
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
+    logStep("ERROR", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

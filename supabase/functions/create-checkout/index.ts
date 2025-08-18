@@ -7,26 +7,45 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    const { tier } = await req.json();
+    logStep("Function started");
     
-    const authHeader = req.headers.get("Authorization")!;
+    const { tier } = await req.json();
+    logStep("Request parsed", { tier });
+    
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No authorization header");
+    
+    // Use anon client for auth
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data } = await supabaseAuth.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
+    logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
+      throw new Error("STRIPE_SECRET_KEY not configured");
+    }
+    logStep("Stripe key found");
+
+    const stripe = new Stripe(stripeKey, { 
       apiVersion: "2023-10-16" 
     });
 
@@ -35,6 +54,9 @@ serve(async (req) => {
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      logStep("Found existing customer", { customerId });
+    } else {
+      logStep("No existing customer found");
     }
 
     // Premium pricing tiers for AI content generation service
@@ -58,8 +80,9 @@ serve(async (req) => {
 
     const selectedPlan = pricingPlans[tier as keyof typeof pricingPlans];
     if (!selectedPlan) throw new Error("Invalid pricing tier");
+    logStep("Plan selected", { plan: selectedPlan.name, amount: selectedPlan.amount });
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -76,22 +99,27 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode: "subscription" as const,
       success_url: `${req.headers.get("origin")}/dashboard?success=true&tier=${tier}`,
       cancel_url: `${req.headers.get("origin")}/dashboard?canceled=true`,
       metadata: {
         user_id: user.id,
         tier: tier
       }
-    });
+    };
+
+    logStep("Creating Stripe session", { params: sessionParams });
+    const session = await stripe.checkout.sessions.create(sessionParams);
+    logStep("Stripe session created", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    console.error("Checkout error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("ERROR", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
