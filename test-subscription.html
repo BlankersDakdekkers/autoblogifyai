@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Subscription</title>
+</head>
+<body>
+    <h1>Test Subscription System</h1>
+    <button onclick="testCheckSubscription()">Test Check Subscription</button>
+    <button onclick="testCreateCheckout()">Test Create Checkout</button>
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://pmhplzqfdmgkkosapkit.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtaHBsenFmZG1na2tvc2Fwa2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NzE5MzgsImV4cCI6MjA3MTA0NzkzOH0.MK5-3lujJB7jjEXrM6A-gQN9SimblbdMbxqV4SmYXLM';
+
+        async function testCheckSubscription() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('sb-pmhplzqfdmgkkosapkit-auth-token')}`,
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `<h3>Check Subscription Result:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<h3>Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        async function testCreateCheckout() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('sb-pmhplzqfdmgkkosapkit-auth-token')}`,
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ tier: 'starter' })
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = `<h3>Create Checkout Result:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<h3>Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>
