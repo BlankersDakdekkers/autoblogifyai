@@ -71,6 +71,8 @@ const KnowledgeBase = () => {
     type: "article" as KnowledgeItem['type'],
     tags: ""
   });
+  const [previewItems, setPreviewItems] = useState<KnowledgeItem[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { toast } = useToast();
 
@@ -159,14 +161,28 @@ const KnowledgeBase = () => {
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Upload succesvol",
-          description: data.message
-        });
+      if (data.success && data.previewItems) {
+        // Show preview instead of directly adding items
+        setPreviewItems(data.previewItems.map((item: any, index: number) => ({
+          id: `preview-${index}`,
+          title: item.title,
+          content: item.content,
+          category: item.category || selectedCategory === 'all' ? 'setup' : selectedCategory,
+          type: 'article' as KnowledgeItem['type'],
+          author: user?.email || 'Onbekend',
+          created_at: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString().split('T')[0],
+          tags: item.tags || [],
+          views: 0,
+          rating: 0,
+          status: 'draft' as const
+        })));
+        setShowPreview(true);
         
-        // Reload knowledge items
-        await loadKnowledgeItems();
+        toast({
+          title: "Preview gereed",
+          description: `${data.previewItems.length} items gevonden. Controleer de preview.`
+        });
         
         // Reset file input
         event.target.value = '';
@@ -321,6 +337,45 @@ const KnowledgeBase = () => {
     return categories.find(cat => cat.id === categoryId) || categories[0];
   };
 
+  const handleConfirmPreview = async () => {
+    if (!user) return;
+    
+    try {
+      const itemsToInsert = previewItems.map(item => ({
+        user_id: user.id,
+        title: item.title,
+        content: item.content,
+        category: item.category,
+        type: item.type,
+        author: item.author,
+        tags: item.tags,
+        status: 'published'
+      }));
+
+      const { error } = await supabase
+        .from('knowledge_items')
+        .insert(itemsToInsert);
+
+      if (error) throw error;
+
+      toast({
+        title: "Items toegevoegd",
+        description: `${previewItems.length} items succesvol toegevoegd aan de kennisbank.`
+      });
+
+      setPreviewItems([]);
+      setShowPreview(false);
+      await loadKnowledgeItems();
+    } catch (error) {
+      console.error('Error confirming preview:', error);
+      toast({
+        title: "Fout",
+        description: "Kon items niet toevoegen",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -365,9 +420,65 @@ const KnowledgeBase = () => {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           <strong>Excel Upload:</strong> Upload een Excel bestand met kolommen 'Title' en 'Content' (of Nederlandse equivalent). 
-          Tags kunnen in een aparte kolom staan. Alle rijen worden automatisch als kennisbank items toegevoegd.
+          Tags kunnen in een aparte kolom staan. Je krijgt eerst een preview voordat items worden toegevoegd.
         </AlertDescription>
       </Alert>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Preview van {previewItems.length} items
+            </CardTitle>
+            <CardDescription>
+              Controleer de geïmporteerde content voordat je deze toevoegt aan de kennisbank
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {previewItems.map((item, index) => (
+                <div key={index} className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{item.category}</Badge>
+                    <Badge variant="secondary">{item.type}</Badge>
+                  </div>
+                  <h4 className="font-medium text-sm">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {item.content.substring(0, 150)}...
+                  </p>
+                  {item.tags.length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      {item.tags.map((tag, tagIndex) => (
+                        <Badge key={tagIndex} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-4 border-t">
+              <Button onClick={handleConfirmPreview} className="flex-1">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Bevestigen & Toevoegen
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowPreview(false);
+                  setPreviewItems([]);
+                }}
+                className="flex-1"
+              >
+                Annuleren
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Add/Edit Form */}
       {isEditMode && (

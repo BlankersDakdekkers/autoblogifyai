@@ -102,9 +102,8 @@ serve(async (req) => {
     
     logStep("File uploaded to storage", { fileName });
     
-    // Process each row and create knowledge items
-    const knowledgeItems = [];
-    let processedCount = 0;
+    // Process each row for preview (don't insert yet)
+    const previewItems = [];
     
     for (const row of rows) {
       const title = row[titleIndex]?.toString()?.trim();
@@ -115,41 +114,26 @@ serve(async (req) => {
       
       const tags = tagsString ? tagsString.split(/[,;]/).map(t => t.trim()).filter(Boolean) : [];
       
-      const knowledgeItem = {
-        user_id: user.id,
+      previewItems.push({
         title,
         content,
         category,
         type: 'article',
         author: user.email || 'Onbekend',
-        tags,
-        source_file: fileName,
-        status: 'published'
-      };
-      
-      const { error: insertError } = await supabaseClient
-        .from('knowledge_items')
-        .insert(knowledgeItem);
-      
-      if (insertError) {
-        logStep("Error inserting item", { title, error: insertError.message });
-        continue;
-      }
-      
-      knowledgeItems.push(knowledgeItem);
-      processedCount++;
+        tags
+      });
     }
     
-    logStep("Processing complete", { 
+    logStep("Preview preparation complete", { 
       totalRows: rows.length, 
-      processedCount,
-      skipped: rows.length - processedCount 
+      previewItems: previewItems.length,
+      skipped: rows.length - previewItems.length 
     });
 
     return new Response(JSON.stringify({
       success: true,
-      message: `${processedCount} kennisbank items succesvol geïmporteerd`,
-      processed: processedCount,
+      message: `${previewItems.length} items gevonden voor preview`,
+      previewItems,
       total: rows.length,
       fileName
     }), {
