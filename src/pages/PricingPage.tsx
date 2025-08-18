@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, Crown, Rocket, Users, TrendingUp, Shield, Clock, ArrowRight } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Check, Star, Zap, Crown, Rocket, Users, TrendingUp, Shield, Clock, ArrowRight, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,12 +20,32 @@ const PricingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription>({ subscribed: false });
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
+  const [checkoutProgress, setCheckoutProgress] = useState(0);
 
   useEffect(() => {
     if (user) {
       checkSubscriptionStatus();
     }
   }, [user]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const checkSubscriptionStatus = async () => {
     try {
@@ -39,8 +60,8 @@ const PricingPage = () => {
   const handleSubscribe = async (tier: string) => {
     if (!user) {
       toast({
-        title: "Inloggen vereist",
-        description: "Log eerst in om een abonnement af te sluiten.",
+        title: "🔐 Inloggen vereist",
+        description: "Log eerst in om je gratis trial te starten.",
         variant: "destructive"
       });
       return;
@@ -48,9 +69,27 @@ const PricingPage = () => {
 
     setIsLoading(true);
     setSelectedPlan(tier);
+    setCheckoutProgress(0);
     
     try {
+      // Progress animation
+      const progressInterval = setInterval(() => {
+        setCheckoutProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
       console.log('Starting checkout for tier:', tier);
+      
+      toast({
+        title: "🚀 Checkout wordt voorbereid...",
+        description: "Moment geduld, we maken je Stripe sessie klaar.",
+      });
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { tier }
       });
@@ -66,20 +105,31 @@ const PricingPage = () => {
         throw new Error('Geen checkout URL ontvangen');
       }
 
+      setCheckoutProgress(100);
+      
+      toast({
+        title: "✅ Checkout klaar!",
+        description: "Je wordt doorgestuurd naar Stripe...",
+      });
+
       console.log('Redirecting to Stripe:', data.url);
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      
+      // Small delay for better UX
+      setTimeout(() => {
+        window.open(data.url, '_blank');
+      }, 500);
       
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
-        title: "Fout bij checkout",
+        title: "❌ Fout bij checkout",
         description: error instanceof Error ? error.message : "Er ging iets mis. Probeer het opnieuw.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
       setSelectedPlan(null);
+      setCheckoutProgress(0);
     }
   };
 
@@ -94,13 +144,15 @@ const PricingPage = () => {
       description: "Perfect voor kleine bedrijven",
       icon: Rocket,
       popular: false,
+      savings: "50% BESPARING",
       features: [
-        "14 dagen gratis trial",
-        "Tot 50 AI blogposts per maand",
-        "5 premium templates",
-        "Basis SEO optimalisatie", 
-        "Email ondersteuning",
-        "Automatische verlenging na trial"
+        "✨ 14 dagen gratis trial",
+        "📝 Tot 50 AI blogposts per maand",
+        "🎨 5 premium templates",
+        "🔍 Basis SEO optimalisatie", 
+        "📧 Email ondersteuning",
+        "🔄 Automatische verlenging na trial",
+        "💳 Geen setup kosten"
       ]
     },
     {
@@ -113,14 +165,16 @@ const PricingPage = () => {
       description: "Voor groeiende bedrijven",
       icon: Zap,
       popular: true,
+      savings: "50% BESPARING",
       features: [
-        "14 dagen gratis trial",
-        "Onbeperkte AI blogposts",
-        "15+ premium templates",
-        "Geavanceerde lokale SEO",
-        "Priority support",
-        "Alle integraties",
-        "Automatische verlenging na trial"
+        "✨ 14 dagen gratis trial",
+        "🚀 Onbeperkte AI blogposts",
+        "🎨 15+ premium templates",
+        "🎯 Geavanceerde lokale SEO",
+        "⚡ Priority support",
+        "🔗 Alle integraties",
+        "🔄 Automatische verlenging na trial",
+        "📊 Geavanceerde analytics"
       ]
     },
     {
@@ -133,14 +187,16 @@ const PricingPage = () => {
       description: "Voor grote organisaties",
       icon: Crown,
       popular: false,
+      savings: "50% BESPARING",
       features: [
-        "14 dagen gratis trial",
-        "Alles van Professional",
-        "White-label oplossing",
-        "Dedicated account manager",
-        "Custom AI training",
-        "API toegang",
-        "Automatische verlenging na trial"
+        "✨ 14 dagen gratis trial",
+        "💎 Alles van Professional",
+        "🏷️ White-label oplossing",
+        "👨‍💼 Dedicated account manager",
+        "🤖 Custom AI training",
+        "🔌 API toegang",
+        "🔄 Automatische verlenging na trial",
+        "🛡️ Enterprise security"
       ]
     }
   ];
@@ -220,9 +276,13 @@ const PricingPage = () => {
                   <CardDescription className="text-base">{plan.description}</CardDescription>
                    
                   {/* Urgency Timer */}
-                  <div className="flex items-center justify-center gap-2 text-orange-600 bg-orange-50 p-2 rounded-lg mt-4">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Actie eindigt over 23u 45m</span>
+                  <div className="flex items-center justify-center gap-2 text-orange-600 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg mt-4 border border-orange-200">
+                    <Clock className="h-4 w-4 animate-pulse" />
+                    <span className="text-sm font-bold">
+                      Actie eindigt over {String(timeLeft.hours).padStart(2, '0')}:
+                      {String(timeLeft.minutes).padStart(2, '0')}:
+                      {String(timeLeft.seconds).padStart(2, '0')}
+                    </span>
                   </div>
                   
                   <div className="mt-6">
@@ -231,9 +291,12 @@ const PricingPage = () => {
                       <span className="text-5xl font-bold text-primary">{plan.price}</span>
                     </div>
                     <span className="text-muted-foreground text-lg">{plan.period}</span>
-                    <div className="mt-2">
+                    <div className="mt-2 space-y-1">
                       <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-sm px-3 py-1">
                         ✨ {plan.trialPeriod}
+                      </Badge>
+                      <Badge className="bg-gradient-to-r from-red-100 to-orange-100 text-red-800 text-xs px-2 py-1">
+                        🔥 {plan.savings}
                       </Badge>
                     </div>
                     <p className="text-sm text-green-600 mt-2 font-medium">Automatische verlenging na trial</p>
@@ -244,18 +307,29 @@ const PricingPage = () => {
                   <ul className="space-y-4">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-sm font-medium leading-relaxed">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    {/* Progress Bar for Loading */}
+                    {isLoading && selectedPlan === plan.id && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Checkout voorbereiden...</span>
+                          <span>{checkoutProgress}%</span>
+                        </div>
+                        <Progress value={checkoutProgress} className="h-2" />
+                      </div>
+                    )}
+                    
                     <Button 
-                      className={`w-full h-12 text-lg font-semibold transition-all duration-300 ${
+                      className={`w-full h-14 text-lg font-bold transition-all duration-300 ${
                         plan.popular 
-                          ? 'bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg hover:shadow-xl' 
-                          : ''
+                          ? 'bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg hover:shadow-xl transform hover:scale-105' 
+                          : 'hover:scale-105'
                       }`}
                       variant={plan.popular ? "default" : "outline"}
                       onClick={() => handleSubscribe(plan.id)}
@@ -263,22 +337,31 @@ const PricingPage = () => {
                     >
                       {isCurrentPlan ? (
                         <span className="flex items-center gap-2">
-                          <Check className="h-5 w-5" />
+                          <CheckCircle2 className="h-5 w-5" />
                           Actief Plan
                         </span>
                       ) : isLoading && selectedPlan === plan.id ? (
-                        "Laden..."
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Bezig met laden...
+                        </span>
                       ) : (
                         <span className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5" />
                           Start GRATIS Trial
                           <ArrowRight className="h-5 w-5" />
                         </span>
                       )}
                     </Button>
                     
-                    <p className="text-xs text-center text-muted-foreground">
-                      💳 Geen creditcard vereist • ✨ Opzeggen wanneer je wilt
-                    </p>
+                    <div className="text-center space-y-1">
+                      <p className="text-xs text-muted-foreground">
+                        💳 Geen creditcard vereist • ✨ Opzeggen wanneer je wilt
+                      </p>
+                      <p className="text-xs text-green-600 font-medium">
+                        🛡️ 30 dagen geld-terug-garantie
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
