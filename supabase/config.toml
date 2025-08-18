@@ -15,11 +15,32 @@ additional_redirect_urls = ["https://lovable.app"]
 jwt_expiry = 3600
 enable_signup = true
 
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.generate-blog-images]
+verify_jwt = false
+
+[functions.generate-content]
+verify_jwt = false
+
+[functions.generate-keywords]
+verify_jwt = false
+
+[functions.google-oauth]
+verify_jwt = false
+
+[functions.parse-excel]
+verify_jwt = true
+
 [functions.process-csv]
 verify_jwt = true
 
 [functions.wordpress-publish]
 verify_jwt = true
-
-[functions.generate-keywords]
-verify_jwt = false

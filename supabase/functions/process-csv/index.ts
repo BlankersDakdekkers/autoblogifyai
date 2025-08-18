@@ -29,13 +29,14 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    // Create client for user authentication check
+    const userSupabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       auth: { persistSession: false },
       global: { headers: { Authorization: authHeader } }
     });
 
     // Verify user authentication
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: userError } = await userSupabase.auth.getUser(token);
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -44,6 +45,9 @@ serve(async (req) => {
     }
 
     console.log('Processing CSV for user:', user.id);
+
+    // Create service role client for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Create processing job
     const { data: job, error: jobError } = await supabase
