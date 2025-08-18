@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
-import Navigation from "@/components/Navigation";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AppSidebar } from "@/components/app-sidebar";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
@@ -52,6 +52,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Simple header component for non-dashboard pages
+const SimpleHeader = () => (
+  <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="container flex h-14 items-center justify-between">
+      <div className="font-bold">AutoblogifyAI</div>
+      <LanguageSwitcher />
+    </div>
+  </header>
+);
+
 const App = () => (
   <LanguageProvider>
     <QueryClientProvider client={queryClient}>
@@ -61,10 +71,10 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Routes>
-              <Route path="/" element={<><Navigation /><Index /></>} />
+              <Route path="/" element={<><SimpleHeader /><Index /></>} />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="/sales" element={<><Navigation /><SalesPage /></>} />
-              <Route path="/pricing" element={<><Navigation /><PricingPage /></>} />
+              <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
+              <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/generate" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
