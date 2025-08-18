@@ -162,6 +162,15 @@ const BlogViewModal = ({ post, children }: BlogViewModalProps) => {
                   src={post.hero_image_url} 
                   alt={post.hero_image_alt || post.title}
                   className="w-full h-48 md:h-64 object-cover rounded-lg shadow-sm"
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    console.warn('Failed to load image:', post.hero_image_url);
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', post.hero_image_url);
+                  }}
                 />
                 {post.hero_image_alt && (
                   <figcaption className="text-xs text-muted-foreground italic text-center">
