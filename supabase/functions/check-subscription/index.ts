@@ -20,17 +20,15 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Debug environment variables
-    const envKeys = Object.keys(Deno.env.toObject());
-    logStep("Available environment variables", envKeys);
-
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
-      logStep("Full environment object", Deno.env.toObject());
-      throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey || stripeKey.trim() === "") {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured or empty");
+      return new Response(JSON.stringify({ error: "Stripe not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
     }
-    logStep("Stripe key found");
+    logStep("Stripe key found and validated");
     
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
