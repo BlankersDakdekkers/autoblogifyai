@@ -144,7 +144,7 @@ serve(async (req) => {
     
     console.log("Selected plan:", selectedPlan.name, "- Amount:", selectedPlan.amount);
 
-    // Create checkout session
+    // Create optimized checkout session for conversie
     let session;
     try {
       session = await stripe.checkout.sessions.create({
@@ -165,11 +165,50 @@ serve(async (req) => {
           },
         ],
         mode: "subscription" as const,
-        success_url: `${req.headers.get("origin")}/dashboard?success=true&tier=${tier}`,
-        cancel_url: `${req.headers.get("origin")}/dashboard?canceled=true`,
+        
+        // Conversie optimalisaties
+        payment_method_types: [
+          'card',           // Creditcard/debitcard
+          'ideal',          // iDEAL (Nederland)
+          'bancontact',     // Bancontact (België)
+          'sepa_debit',     // SEPA Direct Debit (Europa)
+          'sofort',         // SOFORT (Duitsland/Oostenrijk)
+        ],
+        
+        // Nederlandse lokalisatie
+        locale: 'nl',
+        currency: 'eur',
+        
+        // Betere checkout ervaring
+        billing_address_collection: 'required',
+        customer_update: {
+          address: 'auto',
+          name: 'auto'
+        },
+        
+        // Tax berekening (indien geconfigureerd)
+        automatic_tax: { enabled: false }, // Zet op true als je tax rates hebt ingesteld
+        
+        // Kortere checkout flow
+        submit_type: 'subscribe',
+        
+        // Custom success/cancel URLs met meer info
+        success_url: `${req.headers.get("origin")}/dashboard?success=true&tier=${tier}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.get("origin")}/dashboard/pricing?canceled=true&tier=${tier}`,
+        
+        // Metadata voor tracking
         metadata: {
           user_id: user.id,
-          tier: tier
+          tier: tier,
+          source: 'autoblogify_pricing_page'
+        },
+        
+        // Subscription opties
+        subscription_data: {
+          metadata: {
+            user_id: user.id,
+            tier: tier
+          }
         }
       });
       
