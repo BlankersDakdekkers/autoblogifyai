@@ -9,7 +9,8 @@ import {
   Palette,
   Code,
   Database,
-  Zap
+  Zap,
+  Image
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -68,6 +69,12 @@ export const navigationSections: NavigationSection[] = [
         url: "/dashboard/generate", 
         icon: FileText,
         description: "CSV naar blogposts genereren"
+      },
+      { 
+        title: "Media Portaal", 
+        url: "/dashboard/media", 
+        icon: Image,
+        description: "Beheer en categoriseer media bestanden"
       },
       { 
         title: "Valideren", 

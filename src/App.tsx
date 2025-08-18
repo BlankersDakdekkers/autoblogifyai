@@ -13,6 +13,7 @@ import AIWebsiteGenerator from "./pages/AIWebsiteGenerator";
 import AutoBlogProducerWithTabs from "./pages/AutoBlogProducerWithTabs";
 import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
+import MediaPortal from "./pages/MediaPortal";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
             <Route path="/dashboard/keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
             <Route path="/dashboard/voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
+            <Route path="/dashboard/media" element={<MediaPortal />} />
             <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
             <Route path="/dashboard/academy" element={<CoursePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
