@@ -120,6 +120,11 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
     console.log('Starting background processing for job:', jobId);
     console.log('Fetching CSV from:', csvUrl);
     
+    // Security: Validate CSV URL to prevent SSRF attacks
+    if (!isValidCsvUrl(csvUrl)) {
+      throw new Error('Invalid or potentially dangerous CSV URL provided');
+    }
+    
     // Validate and correct CSV URL format for Google Sheets
     let correctedUrl = csvUrl;
     
@@ -215,7 +220,15 @@ Tip: Test je URL eerst in de browser om te controleren of deze werkt.`);
       throw new Error('CSV file is empty or contains no data');
     }
     
-    const rows = parseCSV(csvText);
+    // Security: Validate file size
+    if (!validateFileSize(csvText)) {
+      throw new Error('CSV file is too large (max 10MB)');
+    }
+    
+    // Security: Sanitize CSV content
+    const sanitizedCsvText = sanitizeCsvContent(csvText);
+    
+    const rows = parseCSV(sanitizedCsvText);
     console.log(`Parsed ${rows.length} rows from CSV`);
     
     if (rows.length === 0) {
@@ -489,10 +502,71 @@ function generateSlug(title: string): string {
     .trim('-');
 }
 
+// Security: Validate CSV URLs to prevent SSRF attacks
+function isValidCsvUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    
+    // Only allow HTTPS
+    if (parsedUrl.protocol !== 'https:') {
+      return false;
+    }
+    
+    // Allow specific trusted domains for CSV hosting
+    const allowedDomains = [
+      'docs.google.com',
+      'drive.google.com',
+      'sheets.googleapis.com',
+      // Add other trusted CSV hosting domains as needed
+    ];
+    
+    // Block private IP ranges and localhost
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('172.') ||
+      hostname.includes('::1')
+    ) {
+      return false;
+    }
+    
+    // For Google domains, ensure it's a proper format
+    if (parsedUrl.hostname === 'docs.google.com') {
+      return parsedUrl.pathname.includes('/spreadsheets/') || 
+             parsedUrl.pathname.includes('/export');
+    }
+    
+    return allowedDomains.includes(parsedUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Security: Sanitize CSV content to prevent injection
+function sanitizeCsvContent(content: string): string {
+  // Remove potential script tags and dangerous content
+  return content
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/data:text\/html/gi, '');
+}
+
+// Security: Validate file size to prevent DoS
+function validateFileSize(content: string): boolean {
+  const maxSize = 10 * 1024 * 1024; // 10MB max
+  return content.length <= maxSize;
+}
+
 function parseFAQ(faqString: string): any {
   if (!faqString) return null;
   try {
-    return JSON.parse(faqString);
+    // Security: Sanitize FAQ content before parsing
+    const sanitized = faqString.replace(/<script[\s\S]*?<\/script>/gi, '');
+    return JSON.parse(sanitized);
   } catch {
     return null;
   }

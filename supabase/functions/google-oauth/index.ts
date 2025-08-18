@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Secure token storage using Supabase secrets and encryption
+// Secure token storage with proper encryption
 class SecureTokenManager {
   private supabaseClient: any;
   
@@ -14,19 +14,70 @@ class SecureTokenManager {
     this.supabaseClient = supabaseClient;
   }
   
-  // Generate a secure token reference for the user
-  private generateTokenReference(userId: string): string {
-    return `google_token_${userId}_${Date.now()}`;
+  // Generate encryption key from user ID and secret
+  private async generateEncryptionKey(userId: string): Promise<CryptoKey> {
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(`${userId}_${Deno.env.get('GOOGLE_CLIENT_SECRET')}`),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits', 'deriveKey']
+    );
+    
+    const salt = new TextEncoder().encode('supabase_google_oauth_salt');
+    return await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
   }
   
-  // Store tokens securely (in a real implementation, these would be encrypted)
+  // Encrypt token data before storage
+  private async encryptTokenData(tokenData: any, userId: string): Promise<string> {
+    const key = await this.generateEncryptionKey(userId);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encodedData = new TextEncoder().encode(JSON.stringify(tokenData));
+    
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encodedData
+    );
+    
+    // Combine IV and encrypted data
+    const combined = new Uint8Array(iv.length + encryptedData.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encryptedData), iv.length);
+    
+    return btoa(String.fromCharCode(...combined));
+  }
+  
+  // Decrypt token data from storage
+  private async decryptTokenData(encryptedString: string, userId: string): Promise<any> {
+    const key = await this.generateEncryptionKey(userId);
+    const combined = new Uint8Array(atob(encryptedString).split('').map(c => c.charCodeAt(0)));
+    
+    const iv = combined.slice(0, 12);
+    const encryptedData = combined.slice(12);
+    
+    const decryptedData = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encryptedData
+    );
+    
+    return JSON.parse(new TextDecoder().decode(decryptedData));
+  }
+  
+  // Store tokens securely with proper encryption
   async storeTokens(userId: string, accessToken: string, refreshToken: string, expiresIn: number) {
-    const tokenRef = this.generateTokenReference(userId);
-    
-    // In production, tokens should be encrypted before storage
-    // For now, we'll use a simple approach with Supabase secrets
-    // Note: This is a simplified example - real implementation should use proper encryption
-    
     const tokenData = {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -34,18 +85,40 @@ class SecureTokenManager {
       user_id: userId
     };
     
-    // Store encrypted token data (simplified approach)
-    // In production, use proper encryption libraries
-    const encryptedData = btoa(JSON.stringify(tokenData));
+    // Encrypt the token data
+    const encryptedData = await this.encryptTokenData(tokenData, userId);
     
-    return tokenRef;
+    // Store encrypted data in a secure field (we'll add this to the database)
+    const { error } = await this.supabaseClient
+      .from('google_integrations')
+      .update({ encrypted_tokens: encryptedData })
+      .eq('user_id', userId);
+    
+    if (error) {
+      throw new Error(`Failed to store encrypted tokens: ${error.message}`);
+    }
+    
+    return encryptedData;
   }
   
-  // Retrieve tokens securely (decrypt and return)
+  // Retrieve and decrypt tokens
   async getTokens(userId: string) {
-    // This would decrypt and return tokens in production
-    // For now, return null to indicate tokens should be re-obtained
-    return null;
+    const { data, error } = await this.supabaseClient
+      .from('google_integrations')
+      .select('encrypted_tokens')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error || !data?.encrypted_tokens) {
+      return null;
+    }
+    
+    try {
+      return await this.decryptTokenData(data.encrypted_tokens, userId);
+    } catch (error) {
+      console.error('Failed to decrypt tokens:', error);
+      return null;
+    }
   }
 }
 
@@ -149,16 +222,11 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    // Store tokens securely in Supabase secrets/vault (encrypted)
-    // Note: In a production environment, you'd want to encrypt tokens before storage
-    const encryptedTokenData = {
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token,
-      expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString()
-    }
-
     try {
-      // Store only non-sensitive data in database
+      // Create secure token manager
+      const tokenManager = new SecureTokenManager(serviceClient);
+      
+      // Store only non-sensitive data in database first
       const { error: dbError } = await serviceClient
         .from('google_integrations')
         .upsert({
@@ -179,9 +247,15 @@ serve(async (req) => {
         )
       }
 
-      // In a real implementation, you would store the encrypted tokens 
-      // in a secure backend system or encrypted field
-      console.log(`Tokens securely stored for user ${user.id}`)
+      // Store encrypted tokens securely
+      await tokenManager.storeTokens(
+        user.id,
+        tokenData.access_token,
+        tokenData.refresh_token,
+        tokenData.expires_in
+      );
+      
+      console.log(`Tokens securely encrypted and stored for user ${user.id}`)
 
       return new Response(
         JSON.stringify({ 
