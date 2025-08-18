@@ -15,13 +15,6 @@ serve(async (req) => {
   try {
     console.log("=== CREATE CHECKOUT STARTED ===");
     
-    // Get all environment variables for debugging
-    const allEnv = Deno.env.toObject();
-    console.log("Environment keys:", Object.keys(allEnv));
-    console.log("STRIPE_SECRET_KEY exists:", "STRIPE_SECRET_KEY" in allEnv);
-    console.log("STRIPE_SECRET_KEY value length:", allEnv.STRIPE_SECRET_KEY?.length || 0);
-    console.log("STRIPE_SECRET_KEY starts with sk_:", allEnv.STRIPE_SECRET_KEY?.startsWith("sk_") || false);
-    
     const { tier } = await req.json();
     console.log("Tier requested:", tier);
     
@@ -39,15 +32,27 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     console.log("User authenticated:", user.email);
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    // Try multiple ways to get the Stripe key
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || 
+                     globalThis.Deno?.env?.get?.("STRIPE_SECRET_KEY") ||
+                     process?.env?.STRIPE_SECRET_KEY;
+    
+    console.log("=== STRIPE KEY VALIDATION ===");
+    console.log("Key found:", !!stripeKey);
+    console.log("Key length:", stripeKey?.length || 0);
+    console.log("Key starts with sk_:", stripeKey?.startsWith("sk_") || false);
+    
     if (!stripeKey || stripeKey.trim() === "" || !stripeKey.startsWith("sk_")) {
-      console.error("STRIPE_SECRET_KEY is invalid:", {
-        exists: !!stripeKey,
-        length: stripeKey?.length || 0,
-        startsWithSk: stripeKey?.startsWith("sk_") || false
-      });
+      console.error("STRIPE_SECRET_KEY validation failed");
       return new Response(
-        JSON.stringify({ error: "Stripe configuratie ontbreekt of is ongeldig" }),
+        JSON.stringify({ 
+          error: "Stripe configuratie ontbreekt of is ongeldig",
+          debug: {
+            hasKey: !!stripeKey,
+            keyLength: stripeKey?.length || 0,
+            keyValid: stripeKey?.startsWith("sk_") || false
+          }
+        }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
