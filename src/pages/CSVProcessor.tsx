@@ -177,15 +177,19 @@ const CSVProcessor = () => {
 
       if (error) {
         console.error('Edge function error:', error);
-        throw new Error(error.message || 'Fout bij aanroepen van process-csv functie');
+        throw new Error(`Edge function fout: ${error.message || error.details || 'Onbekende fout'}`);
       }
 
       if (!data) {
         throw new Error('Geen response data ontvangen van edge function');
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Edge function geeft geen success response');
+      console.log('Checking data.success:', data.success, 'Data object:', data);
+
+      if (data.success !== true) {
+        const errorMsg = data.error || 'Edge function geeft geen success response';
+        console.error('Edge function success check failed:', errorMsg);
+        throw new Error(errorMsg);
       }
 
       updateProcessingStep("download", "completed", 100);

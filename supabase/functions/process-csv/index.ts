@@ -21,7 +21,10 @@ serve(async (req) => {
 
     if (!csvUrl) {
       return new Response(
-        JSON.stringify({ error: 'CSV URL is vereist' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'CSV URL is vereist' 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -39,7 +42,10 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await userSupabase.auth.getUser(token);
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'Unauthorized - gebruiker niet gevonden'
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -63,7 +69,10 @@ serve(async (req) => {
     if (jobError) {
       console.error('Error creating job:', jobError);
       return new Response(
-        JSON.stringify({ error: 'Database fout' }),
+        JSON.stringify({ 
+          success: false,
+          error: 'Database fout bij aanmaken job'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -79,6 +88,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
+        success: true,
         message: 'CSV processing gestart',
         jobId: job.id,
         status: 'processing'
@@ -88,7 +98,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in process-csv function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message || 'Onbekende fout'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
