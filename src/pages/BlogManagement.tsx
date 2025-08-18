@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import WordPressPublishModal from "@/components/WordPressPublishModal";
+import BlogViewModal from "@/components/BlogViewModal";
 import { 
   FileText, 
   Search, 
@@ -45,6 +46,15 @@ interface BlogPost {
   canonical_url?: string;
   word_count: number;
   created_at: string;
+  meta_title?: string;
+  meta_description?: string;
+  hero_image_url?: string;
+  hero_image_alt?: string;
+  body_markdown?: string;
+  tags?: string[];
+  faq_json?: any;
+  cta_heading?: string;
+  cta_subtext?: string;
 }
 
 const BlogManagement = () => {
@@ -454,10 +464,12 @@ const BlogManagement = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      Bekijken
-                    </Button>
+                    <BlogViewModal post={post}>
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-1" />
+                        Bekijken
+                      </Button>
+                    </BlogViewModal>
                     <Button variant="outline" size="sm">
                       <Edit className="h-4 w-4 mr-1" />
                       Bewerken
