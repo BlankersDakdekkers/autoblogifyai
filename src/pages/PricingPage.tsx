@@ -7,6 +7,7 @@ import { Check, Star, Zap, Crown, Rocket, Users, TrendingUp, Shield, Clock, Arro
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CustomCheckout } from "@/components/CustomCheckout";
 
 interface Subscription {
   subscribed: boolean;
@@ -22,6 +23,8 @@ const PricingPage = () => {
   const [subscription, setSubscription] = useState<Subscription>({ subscribed: false });
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
   const [checkoutProgress, setCheckoutProgress] = useState(0);
+  const [showCustomCheckout, setShowCustomCheckout] = useState(false);
+  const [checkoutTier, setCheckoutTier] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -67,68 +70,24 @@ const PricingPage = () => {
       return;
     }
 
-    setIsLoading(true);
-    setSelectedPlan(tier);
-    setCheckoutProgress(0);
-    
-    try {
-      // Progress animation
-      const progressInterval = setInterval(() => {
-        setCheckoutProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 15;
-        });
-      }, 150);
+    // Use custom checkout for maximum conversion
+    setCheckoutTier(tier);
+    setShowCustomCheckout(true);
+  };
 
-      console.log('Starting checkout for tier:', tier);
-      
-      toast({
-        title: "🚀 Checkout wordt voorbereid...",
-        description: "Moment geduld, we maken je Stripe sessie klaar.",
-      });
+  const handleCheckoutSuccess = () => {
+    setShowCustomCheckout(false);
+    setCheckoutTier('');
+    checkSubscriptionStatus();
+    toast({
+      title: "🎉 Welkom bij AutoblogifyAI!",
+      description: "Je abonnement is succesvol geactiveerd. Veel plezier!",
+    });
+  };
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier }
-      });
-
-      console.log('Checkout response:', { data, error });
-
-      if (error) {
-        console.error('Checkout error details:', error);
-        throw error;
-      }
-      
-      if (!data?.url) {
-        throw new Error('Geen checkout URL ontvangen');
-      }
-
-      setCheckoutProgress(100);
-      
-      toast({
-        title: "✅ Checkout klaar!",
-        description: "Je wordt doorgestuurd naar Stripe...",
-      });
-
-      console.log('Redirecting to Stripe:', data.url);
-      
-      // Open in same tab for better conversion
-      window.location.href = data.url;
-      
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast({
-        title: "❌ Fout bij checkout",
-        description: error instanceof Error ? error.message : "Er ging iets mis. Probeer het opnieuw.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-      setSelectedPlan(null);
-      setCheckoutProgress(0);
-    }
+  const handleCheckoutCancel = () => {
+    setShowCustomCheckout(false);
+    setCheckoutTier('');
   };
 
   const plans = [
@@ -198,6 +157,16 @@ const PricingPage = () => {
       ]
     }
   ];
+
+  if (showCustomCheckout) {
+    return (
+      <CustomCheckout
+        tier={checkoutTier}
+        onSuccess={handleCheckoutSuccess}
+        onCancel={handleCheckoutCancel}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10 relative overflow-hidden">
