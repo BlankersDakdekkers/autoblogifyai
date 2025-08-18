@@ -67,6 +67,7 @@ const KnowledgeBase = () => {
   const [selectedType, setSelectedType] = useState("all");
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingItem, setEditingItem] = useState<KnowledgeItem | null>(null);
+  const [previewItem, setPreviewItem] = useState<KnowledgeItem | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [newItem, setNewItem] = useState({
     title: "",
@@ -1355,7 +1356,16 @@ Voorbeeld:
                     <Button 
                       size="sm" 
                       variant="ghost"
+                      onClick={() => setPreviewItem(item)}
+                      title="Bekijk preview"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
                       onClick={() => handleEditItem(item)}
+                      title="Bewerken"
                     >
                       <Edit className="h-3 w-3" />
                     </Button>
@@ -1363,6 +1373,7 @@ Voorbeeld:
                       size="sm" 
                       variant="ghost"
                       onClick={() => handleDeleteItem(item.id)}
+                      title="Verwijderen"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -1458,7 +1469,187 @@ Voorbeeld:
               </div>
               <div className="text-sm text-muted-foreground">Gemiddelde rating</div>
             </div>
+      {/* Blog Preview Modal */}
+      {previewItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setPreviewItem(null)}>
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-background border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Blog Preview</h2>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewItem(null)}>
+                <span className="sr-only">Sluiten</span>
+                ×
+              </Button>
+            </div>
+            
+            {/* Blog Content */}
+            <article className="px-6 py-8 max-w-3xl mx-auto">
+              {/* Blog Header */}
+              <header className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  {(() => {
+                    const categoryInfo = categories.find(cat => cat.id === previewItem.category) || categories[0];
+                    return (
+                      <Badge className={categoryInfo.color}>
+                        {categoryInfo.icon} {categoryInfo.name}
+                      </Badge>
+                    );
+                  })()}
+                  <span className="text-sm text-muted-foreground">•</span>
+                  <span className="text-sm text-muted-foreground">{previewItem.updated_at}</span>
+                </div>
+                
+                <h1 className="text-4xl font-bold tracking-tight mb-4 text-foreground">
+                  {previewItem.title}
+                </h1>
+                
+                {previewItem.author && (
+                  <div className="flex items-center text-sm text-muted-foreground mb-6">
+                    <User className="h-4 w-4 mr-2" />
+                    Door {previewItem.author}
+                  </div>
+                )}
+                
+                {previewItem.tags && previewItem.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {previewItem.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        <Tag className="h-3 w-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </header>
+              
+              {/* Blog Content */}
+              <div className="prose prose-lg max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({children}) => (
+                      <h1 className="text-3xl font-bold tracking-tight mb-6 text-foreground border-b pb-3 mt-8">
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({children}) => (
+                      <h2 className="text-2xl font-semibold tracking-tight mb-4 text-foreground mt-8">
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({children}) => (
+                      <h3 className="text-xl font-medium tracking-tight mb-3 text-foreground mt-6">
+                        {children}
+                      </h3>
+                    ),
+                    p: ({children}) => (
+                      <p className="text-foreground leading-7 mb-4 text-lg">
+                        {children}
+                      </p>
+                    ),
+                    code: ({children, className}) => {
+                      const isInline = !className;
+                      if (isInline) {
+                        return (
+                          <code className="bg-muted px-2 py-1 rounded text-sm font-mono text-foreground">
+                            {children}
+                          </code>
+                        );
+                      }
+                      return (
+                        <pre className="bg-muted p-6 rounded-lg overflow-x-auto my-6 border">
+                          <code className="text-sm font-mono text-foreground">
+                            {children}
+                          </code>
+                        </pre>
+                      );
+                    },
+                    blockquote: ({children}) => (
+                      <blockquote className="border-l-4 border-primary bg-muted/30 p-6 my-6 italic rounded-r-lg">
+                        <div className="text-foreground text-lg">
+                          {children}
+                        </div>
+                      </blockquote>
+                    ),
+                    ul: ({children}) => (
+                      <ul className="list-disc list-inside space-y-2 my-6 text-foreground text-lg">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({children}) => (
+                      <ol className="list-decimal list-inside space-y-2 my-6 text-foreground text-lg">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({children}) => (
+                      <li className="text-foreground leading-relaxed">
+                        {children}
+                      </li>
+                    ),
+                    a: ({href, children}) => (
+                      <a 
+                        href={href} 
+                        className="text-primary hover:underline font-medium"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {children}
+                      </a>
+                    ),
+                    strong: ({children}) => (
+                      <strong className="font-bold text-foreground">
+                        {children}
+                      </strong>
+                    ),
+                    em: ({children}) => (
+                      <em className="italic text-foreground">
+                        {children}
+                      </em>
+                    ),
+                    table: ({children}) => (
+                      <div className="overflow-x-auto my-6">
+                        <table className="w-full border-collapse border border-border">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    th: ({children}) => (
+                      <th className="border border-border p-3 bg-muted font-semibold text-left">
+                        {children}
+                      </th>
+                    ),
+                    td: ({children}) => (
+                      <td className="border border-border p-3 text-foreground">
+                        {children}
+                      </td>
+                    )
+                  }}
+                >
+                  {previewItem.content}
+                </ReactMarkdown>
+              </div>
+              
+              {/* Blog Footer */}
+              <footer className="mt-12 pt-8 border-t">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-4">
+                    <span className="flex items-center">
+                      <Eye className="h-4 w-4 mr-1" />
+                      {previewItem.views} weergaven
+                    </span>
+                    <span className="flex items-center">
+                      <Star className="h-4 w-4 mr-1" />
+                      {previewItem.rating} rating
+                    </span>
+                  </div>
+                  <span>Laatst bijgewerkt: {previewItem.updated_at}</span>
+                </div>
+              </footer>
+            </article>
           </div>
+        </div>
+      )}
+    </div>
         </CardContent>
       </Card>
 
