@@ -278,6 +278,54 @@ export type Database = {
         }
         Relationships: []
       }
+      queue_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          data: Json
+          error_message: string | null
+          id: string
+          max_retries: number
+          priority: number
+          retry_count: number
+          started_at: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          data: Json
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          priority?: number
+          retry_count?: number
+          started_at?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          data?: Json
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          priority?: number
+          retry_count?: number
+          started_at?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       role_audit: {
         Row: {
           changed_by: string
@@ -344,6 +392,30 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_logs: {
+        Row: {
+          checks: Json
+          created_at: string
+          id: string
+          overall_status: string
+          timestamp: string
+        }
+        Insert: {
+          checks: Json
+          created_at?: string
+          id?: string
+          overall_status: string
+          timestamp?: string
+        }
+        Update: {
+          checks?: Json
+          created_at?: string
+          id?: string
+          overall_status?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -370,6 +442,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_queue_stats: {
+        Args: { time_range_hours?: number }
+        Returns: {
+          avg_processing_time_minutes: number
+          count: number
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
