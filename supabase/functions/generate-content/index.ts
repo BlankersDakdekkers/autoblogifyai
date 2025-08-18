@@ -158,13 +158,13 @@ KWALITEITSVEREISTEN:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4.1-2025-04-14', // Switch to more reliable model
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: Math.min(16000, Math.max(4000, wordCount * 8)), // Scale with word count
-        // Note: temperature parameter is not supported for GPT-5 models
+        max_tokens: Math.min(16000, Math.max(4000, wordCount * 10)), // Use max_tokens for GPT-4.1
+        temperature: 0.7, // Add temperature for GPT-4.1
         // Using seed for more consistent results
         seed: Math.abs(title.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0))
       }),
@@ -181,7 +181,19 @@ KWALITEITSVEREISTEN:
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    console.log('OpenAI response data:', JSON.stringify(data, null, 2));
+    
+    let generatedContent = '';
+    if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+      generatedContent = data.choices[0].message.content;
+    } else {
+      console.error('Unexpected OpenAI response structure:', data);
+      return new Response(
+        JSON.stringify({ error: 'Onverwachte API response structuur' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     console.log('Generated content length:', generatedContent?.length || 0);
 
     // Generate hero image using the correct OpenAI model
