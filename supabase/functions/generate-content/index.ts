@@ -56,47 +56,80 @@ serve(async (req) => {
       );
     }
 
-    // Determine content prompt based on type and language
-    const getContentPrompt = () => {
-      const basePrompts = {
-        nl: {
-          blog: `Schrijf een professionele, SEO-geoptimaliseerde blogpost van ongeveer ${wordCount} woorden over "${title}". 
-Focus op het keyword "${targetKeyword}"${city ? ` voor de locatie ${city}` : ''}. 
-Structuur: inleiding, 3-4 hoofdsecties met H2 headings, conclusie.
-Gebruik een conversational tone, voeg praktische tips toe en zorg voor goede leesbaarheid.
-${includeLocalSEO ? 'Voeg lokale SEO elementen toe zoals lokale keywords en referenties.' : ''}`,
-          
-          landing: `Creëer een conversie-geoptimaliseerde landing page voor "${title}" gericht op "${targetKeyword}".
-Structuur: krachtige headline, probleem identificatie, oplossing presentatie, voordelen, social proof, urgentie, duidelijke CTA.
-Focus op conversie en overtuigingskracht.`,
-          
-          review: `Schrijf een uitgebreide product/service review voor "${title}" met focus op "${targetKeyword}".
-Inclusief: specificaties, voor- en nadelen, prijsvergelijking, persoonlijke ervaring, aanbeveling.
-Balanceer eerlijkheid met positieve tone.`
-        },
-        en: {
-          blog: `Write a professional, SEO-optimized blog post of approximately ${wordCount} words about "${title}".
-Focus on the keyword "${targetKeyword}"${city ? ` for the location ${city}` : ''}. 
-Structure: introduction, 3-4 main sections with H2 headings, conclusion.
-Use a conversational tone, add practical tips and ensure good readability.
-${includeLocalSEO ? 'Add local SEO elements like local keywords and references.' : ''}`,
-          
-          landing: `Create a conversion-optimized landing page for "${title}" targeting "${targetKeyword}".
-Structure: powerful headline, problem identification, solution presentation, benefits, social proof, urgency, clear CTA.
-Focus on conversion and persuasion.`,
-          
-          review: `Write a comprehensive product/service review for "${title}" focusing on "${targetKeyword}".
-Include: specifications, pros and cons, price comparison, personal experience, recommendation.
-Balance honesty with positive tone.`
-        }
-      };
+    // Enhanced system prompt for comprehensive, SEO-optimized long-form content
+    const systemPrompt = `Je bent een SEO-expert content writer die uitgebreide, professionele artikelen schrijft van 3000-5000 woorden.
 
-      return basePrompts[language]?.[contentType] || basePrompts.nl.blog;
-    };
+BELANGRIJKE EISEN:
+- Schrijf ALTIJD artikelen van minimaal 3000-5000 woorden
+- Gebruik moderne SEO-technieken (2024/2025)
+- Gebruik perfecte Nederlandse markdown opmaak
+- Maak de tekst zeer uitgebreid en informatief
+- Gebruik headers (H2, H3), lijsten, tabellen waar relevant
+- Voeg praktische tips en voorbeelden toe
+- Optimaliseer voor zoekintentie en gebruikerservaring
 
-    // Generate main content
-    const contentPrompt = getContentPrompt();
-    
+MARKDOWN OPMAAK VEREISTEN:
+- Gebruik ## voor hoofdstukken (H2)
+- Gebruik ### voor subsecties (H3) 
+- Gebruik **vetgedrukte tekst** voor belangrijke punten
+- Gebruik bullet points (- ) en genummerde lijsten (1. )
+- Voeg tabellen toe met | syntax waar relevant
+- Gebruik > voor belangrijke quotes/tips
+- Voeg code blocks toe met \`\`\` waar relevant
+
+MODERNE SEO TECHNIEKEN:
+- Focus op zoekintentie en gebruikerservaring
+- Gebruik LSI keywords en semantische varianten
+- Optimaliseer voor featured snippets
+- Voeg FAQ secties toe
+- Gebruik interne linking concepten
+- Optimaliseer voor Core Web Vitals
+- Focus op E-A-T (Expertise, Authority, Trust)
+
+STRUCTUUR TEMPLATE:
+1. Inleiding (300-500 woorden)
+2. 6-8 hoofdstukken (400-600 woorden elk)
+3. Praktische tips sectie
+4. FAQ sectie
+5. Conclusie (200-300 woorden)
+
+Taal: ${language}`;
+
+    // Enhanced user prompt for comprehensive content
+    const userPrompt = `Schrijf een uitgebreid, professioneel artikel van 3000-5000 woorden over: "${title}"
+
+ONDERWERP FOCUS: ${title}
+DOELGROEP: ${city} - lokaal bedrijf/organisatie
+TREFWOORDEN: Gebruik "${targetKeyword}" en varianten natuurlijk door de tekst
+
+ARTIKEL INHOUD VEREISTEN:
+- Minimaal 3000-5000 woorden
+- Uitgebreide inleiding die de waarde duidelijk maakt
+- 6-8 hoofdstukken met diepgaande informatie
+- Praktische tips en stap-voor-stap instructies
+- Echte voorbeelden en case studies
+- Actuele trends en ontwikkelingen (2024/2025)
+- Lokale relevantie voor ${city} waar mogelijk
+- Actionable insights die direct bruikbaar zijn
+
+STRUCTUUR:
+## Inleiding
+Leg uit waarom dit onderwerp belangrijk is, wat de lezer kan verwachten
+
+## [6-8 Hoofdstukken]
+Elk hoofdstuk 400-600 woorden met diepgaande informatie
+
+## Praktische Tips
+Concrete, uitvoerbare adviezen
+
+## Veelgestelde Vragen (FAQ)
+5-8 relevante vragen met uitgebreide antwoorden
+
+## Conclusie
+Samenvatting en volgende stappen
+
+Gebruik perfecte markdown opmaak met headers, lijsten, **vetgedrukte tekst**, tabellen en quotes.`;
+    // Generate main content with enhanced parameters
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -106,13 +139,11 @@ Balance honesty with positive tone.`
       body: JSON.stringify({
         model: 'gpt-5-2025-08-07',
         messages: [
-          { 
-            role: 'system', 
-            content: `Je bent een expert SEO content schrijver. Schrijf altijd in perfect ${language === 'nl' ? 'Nederlands' : 'Engels'} met correcte grammatica en spelling. Gebruik markdown formatting voor headings en structuur.` 
-          },
-          { role: 'user', content: contentPrompt }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: Math.min(4000, Math.floor(wordCount * 6)),
+        max_completion_tokens: 16000, // Increased for longer content
+        temperature: 0.7,
       }),
     });
 
@@ -126,12 +157,44 @@ Balance honesty with positive tone.`
 
     const data = await response.json();
     const generatedContent = data.choices[0].message.content;
+    console.log('Generated content length:', generatedContent?.length || 0);
 
-    // Generate meta description
-    const metaPrompt = language === 'nl' 
-      ? `Schrijf een SEO-geoptimaliseerde meta description van maximaal 155 karakters voor: "${title}". Focus op keyword "${targetKeyword}" en maak het aantrekkelijk voor klikken.`
-      : `Write an SEO-optimized meta description of maximum 155 characters for: "${title}". Focus on keyword "${targetKeyword}" and make it compelling for clicks.`;
+    // Generate hero image
+    let heroImageUrl = null;
+    let heroImageAlt = null;
+    
+    try {
+      const imagePrompt = `Professional, high-quality image for article about "${title}". Modern, clean design suitable for business website. ${language === 'nl' ? 'Dutch business context' : ''}.`;
+      
+      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1',
+          prompt: imagePrompt,
+          size: '1536x1024',
+          quality: 'high',
+          output_format: 'webp',
+          output_compression: 80
+        }),
+      });
 
+      if (imageResponse.ok) {
+        const imageData = await imageResponse.json();
+        heroImageUrl = imageData.data[0].url;
+        heroImageAlt = `Afbeelding voor artikel: ${title}`;
+        console.log('Hero image generated successfully');
+      } else {
+        console.log('Image generation failed, continuing without image');
+      }
+    } catch (imageError) {
+      console.log('Image generation error:', imageError);
+    }
+
+    // Generate enhanced meta description (SEO optimized)
     const metaResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -141,43 +204,68 @@ Balance honesty with positive tone.`
       body: JSON.stringify({
         model: 'gpt-5-mini-2025-08-07',
         messages: [
-          { role: 'user', content: metaPrompt }
+          { 
+            role: 'system', 
+            content: `Je bent een SEO-expert. Schrijf perfecte meta descriptions die:
+- Maximaal 155 karakters zijn
+- De hoofdkeyword bevatten
+- Een duidelijke waardepropositie hebben
+- Een call-to-action bevatten
+- Zoekintentie matchen
+Taal: ${language}` 
+          },
+          { 
+            role: 'user', 
+            content: `Schrijf een SEO-geoptimaliseerde meta description voor artikel: "${title}" gericht op ${city}. Focus op de belangrijkste voordelen en gebruik een actieve toon.` 
+          }
         ],
-        max_completion_tokens: 100,
+        max_completion_tokens: 200,
       }),
     });
 
     const metaData = await metaResponse.json();
     const metaDescription = metaData.choices[0].message.content.replace(/"/g, '');
 
-    // Generate FAQ if requested
+    // Generate comprehensive FAQ section
     let faqJson = null;
-    if (includeSchema) {
-      const faqPrompt = language === 'nl'
-        ? `Genereer 5 veelgestelde vragen en antwoorden over "${title}" en "${targetKeyword}". Geef terug als JSON array met "q" en "a" velden.`
-        : `Generate 5 frequently asked questions and answers about "${title}" and "${targetKeyword}". Return as JSON array with "q" and "a" fields.`;
+    const faqResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-mini-2025-08-07',
+        messages: [
+          { 
+            role: 'system', 
+            content: `Je bent een SEO content specialist. Maak uitgebreide FAQ secties die:
+- 6-8 relevante vragen bevatten
+- Lange, gedetailleerde antwoorden hebben (100-200 woorden per antwoord)
+- Zoekintentie optimaliseren
+- Featured snippets targeten
+- LSI keywords gebruiken
+Output formaat: JSON array met objecten die "q" en "a" properties hebben.
+Taal: ${language}` 
+          },
+          { 
+            role: 'user', 
+            content: `Maak een uitgebreide FAQ sectie voor artikel over "${title}" in ${city}. Focus op praktische vragen die mensen écht stellen.` 
+          }
+        ],
+        max_completion_tokens: 2000,
+      }),
+    });
 
-      const faqResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-5-mini-2025-08-07',
-          messages: [
-            { role: 'user', content: faqPrompt }
-          ],
-          max_completion_tokens: 800,
-        }),
-      });
-
-      const faqData = await faqResponse.json();
-      try {
-        faqJson = JSON.parse(faqData.choices[0].message.content);
-      } catch (e) {
-        console.error('FAQ JSON parse error:', e);
+    const faqData = await faqResponse.json();
+    try {
+      const faqContent = faqData.choices[0].message.content;
+      const jsonMatch = faqContent.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        faqJson = JSON.parse(jsonMatch[0]);
       }
+    } catch (e) {
+      console.log('FAQ generation failed:', e);
     }
 
     // Generate CTA
@@ -219,17 +307,19 @@ Balance honesty with positive tone.`
           .trim('-'),
         status: 'draft',
         publish_date: new Date().toISOString().split('T')[0],
-        summary: metaDescription,
+        summary: generatedContent ? generatedContent.substring(0, 300) + '...' : '',
         tags: [targetKeyword, city].filter(Boolean),
         author: 'AutoblogifyAI',
         meta_title: title,
         meta_description: metaDescription,
+        hero_image_url: heroImageUrl,
+        hero_image_alt: heroImageAlt,
         body_markdown: generatedContent,
         faq_json: faqJson,
         cta_heading: ctaHeading,
         cta_subtext: ctaSubtext,
         city: city,
-        word_count: generatedContent.split(' ').length
+        word_count: generatedContent ? generatedContent.split(/\s+/).filter(word => word.length > 0).length : 0
       })
       .select()
       .single();
