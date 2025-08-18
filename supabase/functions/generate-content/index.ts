@@ -157,9 +157,10 @@ KWALITEITSVEREISTEN:
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', await response.text());
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
       return new Response(
-        JSON.stringify({ error: 'Fout bij content generatie' }),
+        JSON.stringify({ error: 'Fout bij content generatie: ' + errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -168,12 +169,13 @@ KWALITEITSVEREISTEN:
     const generatedContent = data.choices[0].message.content;
     console.log('Generated content length:', generatedContent?.length || 0);
 
-    // Generate hero image
+    // Generate hero image using the correct OpenAI model
     let heroImageUrl = null;
     let heroImageAlt = null;
     
     try {
-      const imagePrompt = `Professional, high-quality image for article about "${title}". Modern, clean design suitable for business website. ${language === 'nl' ? 'Dutch business context' : ''}.`;
+      console.log('Attempting to generate hero image...');
+      const imagePrompt = `Create a professional, modern blog header image for an article titled "${title}". Style: Clean, minimalist, professional business design with subtle tech elements. Colors: Modern blue and white palette with subtle gradients. Include relevant icons or symbols related to the topic. No text overlay needed. High quality, 16:9 aspect ratio, suitable for blog headers.`;
       
       const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -182,12 +184,11 @@ KWALITEITSVEREISTEN:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-image-1',
+          model: 'dall-e-3',
           prompt: imagePrompt,
-          size: '1536x1024',
-          quality: 'high',
-          output_format: 'webp',
-          output_compression: 80
+          size: '1792x1024',
+          quality: 'standard',
+          n: 1
         }),
       });
 
@@ -197,10 +198,11 @@ KWALITEITSVEREISTEN:
         heroImageAlt = `Afbeelding voor artikel: ${title}`;
         console.log('Hero image generated successfully');
       } else {
-        console.log('Image generation failed, continuing without image');
+        const errorData = await imageResponse.text();
+        console.log('Image generation failed:', errorData);
       }
     } catch (imageError) {
-      console.log('Image generation error:', imageError);
+      console.log('Image generation error:', imageError.message);
     }
 
     // Generate enhanced meta description (SEO optimized)
