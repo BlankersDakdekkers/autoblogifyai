@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import WebsiteBuilder from "./pages/WebsiteBuilder";
 import AffiliatePage from "./pages/AffiliatePage";
 import AIWebsiteGenerator from "./pages/AIWebsiteGenerator";
+import AutoBlogProducerWithTabs from "./pages/AutoBlogProducerWithTabs";
 import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,8 @@ const App = () => (
             <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
             <Route path="/dashboard/ai-generator" element={<AIWebsiteGenerator />} />
             <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
+            <Route path="/dashboard/voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
             <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
             <Route path="/dashboard/academy" element={<CoursePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

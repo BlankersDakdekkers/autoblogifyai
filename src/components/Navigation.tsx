@@ -52,7 +52,19 @@ export const navigationSections: NavigationSection[] = [
     label: "AutoblogifyAI",
     items: [
       { 
-        title: "Genereren", 
+        title: "Keyword Research", 
+        url: "/dashboard/keywords", 
+        icon: FileText,
+        description: "AI keyword generator en analyse"
+      },
+      { 
+        title: "Voice Input", 
+        url: "/dashboard/voice", 
+        icon: CheckCircle2,
+        description: "Spraak naar tekst content creatie"
+      },
+      { 
+        title: "Content Genereren", 
         url: "/dashboard/generate", 
         icon: FileText,
         description: "CSV naar blogposts genereren"
