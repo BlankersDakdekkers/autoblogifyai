@@ -88,8 +88,8 @@ const BlogViewModal = ({ post, children }: BlogViewModalProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-6">
+        <ScrollArea className="flex-1 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-6 p-1">{/* padding to prevent content cutoff */}
             {/* Header Info */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
