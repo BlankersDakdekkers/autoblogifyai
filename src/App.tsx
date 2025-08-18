@@ -4,7 +4,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
 import SimpleHeader from "@/components/SimpleHeader";
@@ -51,9 +51,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-hidden">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col">
+          <header className="h-12 flex items-center border-b bg-background px-4">
+            <SidebarTrigger />
+            <h1 className="ml-4 font-semibold">AutoblogifyAI Dashboard</h1>
+          </header>
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
