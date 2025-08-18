@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 interface Language {
   code: string;
@@ -177,12 +178,18 @@ export const useLanguage = () => {
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
-    const saved = localStorage.getItem('autoblogify_language');
-    return saved || navigator.language.split('-')[0] || 'nl';
+    // Safe localStorage access for SSR compatibility
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('autoblogify_language');
+      return saved || navigator.language.split('-')[0] || 'nl';
+    }
+    return 'nl';
   });
 
   useEffect(() => {
-    localStorage.setItem('autoblogify_language', currentLanguage);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('autoblogify_language', currentLanguage);
+    }
   }, [currentLanguage]);
 
   const setLanguage = (lang: string) => {
