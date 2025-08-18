@@ -476,6 +476,10 @@ export type Database = {
         Args: { credit_amount: number; user_uuid: string }
         Returns: undefined
       }
+      admin_exists: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       deduct_credit: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -494,6 +498,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      make_self_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
