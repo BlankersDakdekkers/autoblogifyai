@@ -40,7 +40,7 @@ const SimpleHeader = () => {
                 Inloggen
               </Button>
             </Link>
-            <Link to="/auth">
+            <Link to="/auth?tab=signup">
               <Button size="sm" className="bg-gradient-to-r from-primary to-primary-glow">
                 <Rocket className="h-4 w-4 mr-2" />
                 Gratis Starten
@@ -86,7 +86,7 @@ const SimpleHeader = () => {
                   Inloggen
                 </Button>
               </Link>
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/auth?tab=signup" onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full bg-gradient-to-r from-primary to-primary-glow">
                   <Rocket className="h-4 w-4 mr-2" />
                   Gratis Starten
