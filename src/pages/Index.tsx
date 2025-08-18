@@ -173,11 +173,8 @@ const Index = () => {
 
   const handleSubscribe = async (tier: string) => {
     if (!user) {
-      toast({
-        title: "🔐 Inloggen vereist",
-        description: "Log eerst in om je gratis trial te starten.",
-        variant: "destructive"
-      });
+      // Redirect to signup page instead of showing error
+      window.location.href = "/auth?tab=signup";
       return;
     }
 
