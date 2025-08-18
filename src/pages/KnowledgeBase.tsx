@@ -78,12 +78,16 @@ const KnowledgeBase = () => {
 
   // Sample data - in real app this would come from database
   const [categories] = useState<Category[]>([
-    { id: "setup", name: "Setup & Installatie", description: "Aan de slag met AutoblogifyAI", color: "bg-blue-100 text-blue-800", icon: "⚙️" },
-    { id: "csv", name: "CSV & Data", description: "Data management en CSV verwerking", color: "bg-green-100 text-green-800", icon: "📊" },
-    { id: "templates", name: "Templates", description: "Template beheer en customization", color: "bg-purple-100 text-purple-800", icon: "🎨" },
-    { id: "api", name: "API & Integraties", description: "Technische documentatie", color: "bg-orange-100 text-orange-800", icon: "🔗" },
-    { id: "troubleshooting", name: "Probleemoplossing", description: "Veelvoorkomende problemen", color: "bg-red-100 text-red-800", icon: "🔧" },
-    { id: "advanced", name: "Geavanceerd", description: "Power user features", color: "bg-indigo-100 text-indigo-800", icon: "🚀" }
+    { id: "seo", name: "SEO", description: "Search Engine Optimization strategieën", color: "bg-blue-100 text-blue-800", icon: "🎯" },
+    { id: "marketing", name: "Marketing", description: "Content marketing en strategieën", color: "bg-green-100 text-green-800", icon: "📈" },
+    { id: "techniek", name: "Techniek", description: "Technische implementatie en tools", color: "bg-purple-100 text-purple-800", icon: "⚙️" },
+    { id: "workflow", name: "Workflow", description: "Workflow optimalisatie en automatisering", color: "bg-orange-100 text-orange-800", icon: "🔄" },
+    { id: "planning", name: "Planning", description: "Content planning en strategie", color: "bg-cyan-100 text-cyan-800", icon: "📅" },
+    { id: "tools", name: "Tools", description: "Software tools en utilities", color: "bg-yellow-100 text-yellow-800", icon: "🛠️" },
+    { id: "analytics", name: "Analytics", description: "Data analyse en rapportage", color: "bg-red-100 text-red-800", icon: "📊" },
+    { id: "content", name: "Content", description: "Content creatie en beheer", color: "bg-indigo-100 text-indigo-800", icon: "📝" },
+    { id: "wordpress", name: "WordPress", description: "WordPress specifieke documentatie", color: "bg-emerald-100 text-emerald-800", icon: "📱" },
+    { id: "automation", name: "Automation", description: "Automatisering en AI tools", color: "bg-violet-100 text-violet-800", icon: "🚀" }
   ]);
 
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
