@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,14 +50,92 @@ const IntegrationsPage = () => {
 
   const { toast } = useToast();
 
-  const handleConnect = (integration: string) => {
-    // Simuleer echte integratie setup
+  // Check for OAuth callback
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      
+      if (code) {
+        try {
+          const redirectUri = `${window.location.origin}/integrations`;
+          
+          const { data, error } = await supabase.functions.invoke('google-oauth', {
+            body: { action: 'exchangeCode', code, redirectUri }
+          });
+
+          if (error) throw error;
+
+          setIntegrations(prev => ({
+            ...prev,
+            google: { connected: true, status: "active" }
+          }));
+
+          toast({
+            title: "Google Workspace verbonden!",
+            description: `Succesvol verbonden als ${data.userInfo.email}`,
+          });
+
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/integrations');
+        } catch (error) {
+          console.error('OAuth callback error:', error);
+          toast({
+            title: "Verbinding mislukt",
+            description: "Er ging iets mis bij het verbinden met Google Workspace.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    handleOAuthCallback();
+  }, [toast]);
+
+  // Load existing Google integration
+  useEffect(() => {
+    const loadGoogleIntegration = async () => {
+      const { data, error } = await supabase
+        .from('google_integrations')
+        .select('*')
+        .maybeSingle();
+
+      if (data && !error) {
+        setIntegrations(prev => ({
+          ...prev,
+          google: { connected: true, status: "active" }
+        }));
+      }
+    };
+
+    loadGoogleIntegration();
+  }, []);
+
+  const handleConnect = async (integration: string) => {
     if (integration === 'google') {
-      toast({
-        title: "Google Workspace Setup",
-        description: "OAuth flow zou hier starten...",
-        variant: "destructive"
-      });
+      try {
+        toast({
+          title: "Google Workspace OAuth",
+          description: "Omleiden naar Google voor autorisatie...",
+        });
+
+        const redirectUri = `${window.location.origin}/integrations`;
+        
+        const { data, error } = await supabase.functions.invoke('google-oauth', {
+          body: { action: 'getAuthUrl', redirectUri }
+        });
+
+        if (error) throw error;
+
+        window.location.href = data.authUrl;
+      } catch (error) {
+        console.error('OAuth error:', error);
+        toast({
+          title: "Fout",
+          description: "Kon niet verbinden met Google Workspace. Controleer of de secrets zijn geconfigureerd.",
+          variant: "destructive",
+        });
+      }
       return;
     }
     
