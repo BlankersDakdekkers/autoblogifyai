@@ -887,28 +887,40 @@ function isValidCsvUrl(url: string): boolean {
   try {
     const parsedUrl = new URL(url);
     
-    // Only allow HTTPS
-    if (parsedUrl.protocol !== 'https:') {
+    // Allow both HTTP and HTTPS for broader compatibility
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
       return false;
     }
     
-    // Allow specific trusted domains for CSV hosting
+    // Allow common CSV hosting domains
     const allowedDomains = [
       'docs.google.com',
       'drive.google.com',
       'sheets.googleapis.com',
-      // Add other trusted CSV hosting domains as needed
+      'raw.githubusercontent.com',
+      'github.com',
+      'pastebin.com',
+      'dropbox.com',
+      'onedrive.live.com',
+      'sharepoint.com',
+      // Allow any domain that doesn't look like private network
     ];
     
-    // Block private IP ranges and localhost
+    // Block private IP ranges and localhost for security
     const hostname = parsedUrl.hostname.toLowerCase();
     if (
       hostname === 'localhost' ||
       hostname === '127.0.0.1' ||
       hostname.startsWith('10.') ||
       hostname.startsWith('192.168.') ||
-      hostname.startsWith('172.') ||
-      hostname.includes('::1')
+      hostname.startsWith('172.16.') ||
+      hostname.startsWith('172.17.') ||
+      hostname.startsWith('172.18.') ||
+      hostname.startsWith('172.19.') ||
+      hostname.startsWith('172.2') ||
+      hostname.startsWith('172.3') ||
+      hostname.includes('::1') ||
+      hostname === '0.0.0.0'
     ) {
       return false;
     }
@@ -919,8 +931,26 @@ function isValidCsvUrl(url: string): boolean {
              parsedUrl.pathname.includes('/export');
     }
     
-    return allowedDomains.includes(parsedUrl.hostname);
-  } catch {
+    // Check if it's a known allowed domain
+    const isKnownDomain = allowedDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain));
+    
+    // If it's not a known domain, allow it but check if it looks like a reasonable CSV URL
+    if (!isKnownDomain) {
+      // Allow URLs that end with .csv or contain 'csv' in the path/query
+      const fullUrl = url.toLowerCase();
+      if (fullUrl.includes('.csv') || fullUrl.includes('csv') || fullUrl.includes('export')) {
+        return true;
+      }
+      
+      // Allow if it's clearly a public service (not IP address)
+      if (!hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+        return true;
+      }
+    }
+    
+    return isKnownDomain;
+  } catch (error) {
+    console.log('URL validation error:', error);
     return false;
   }
 }
