@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,13 +42,14 @@ interface BlogPost {
   id: string;
   title: string;
   slug: string;
-  status: 'draft' | 'published' | 'scheduled';
-  publishDate: string;
-  wordCount: number;
-  tags: string[];
-  category: string;
-  metaDescription: string;
-  generatedAt: string;
+  status: 'draft' | 'publish' | 'scheduled';
+  publish_date: string;
+  word_count: number;
+  tags: string[] | null;
+  city: string | null;
+  meta_description: string | null;
+  body_markdown: string | null;
+  created_at: string;
 }
 
 interface CSVData {
@@ -96,6 +97,51 @@ const AutoBlogProducer = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  
+  // Load blog posts from database
+  useEffect(() => {
+    loadBlogPosts();
+  }, []);
+
+  const loadBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setBlogPosts((data as any) || []);
+    } catch (error) {
+      console.error('Error loading blog posts:', error);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postId);
+      
+      if (error) throw error;
+      
+      // Update local state immediately
+      setBlogPosts(prev => prev.filter(post => post.id !== postId));
+      
+      toast({
+        title: "Post Verwijderd",
+        description: "Blogpost is permanent verwijderd"
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Fout bij verwijderen",
+        description: "Er is een fout opgetreden bij het verwijderen van de post",
+        variant: "destructive"
+      });
+    }
+  };
   const [csvData, setCsvData] = useState<CSVData[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
@@ -131,68 +177,6 @@ const AutoBlogProducer = () => {
     "Tools", "Analytics", "Content", "WordPress", "Automation"
   ];
 
-  const mockBlogPosts: BlogPost[] = [
-    {
-      id: "1",
-      title: "10 SEO Tips voor Betere Rankings in 2024",
-      slug: "seo-tips-betere-rankings-2024",
-      status: "published",
-      publishDate: "2025-01-15",
-      wordCount: 1250,
-      tags: ["seo", "rankings", "tips"],
-      category: "SEO",
-      metaDescription: "Praktische SEO tips voor betere Google rankings. Keyword research, meta descriptions en technische SEO uitgelegd.",
-      generatedAt: "2025-01-14T10:30:00Z"
-    },
-    {
-      id: "2", 
-      title: "Hoe AI je Content Strategie Revolutioneert",
-      slug: "ai-content-strategie-revolutie",
-      status: "scheduled",
-      publishDate: "2025-01-20",
-      wordCount: 980,
-      tags: ["ai", "content", "strategie"],
-      category: "Marketing",
-      metaDescription: "AI-tools voor contentcreatie, automatisering van blogposts en schaalbare content productie.",
-      generatedAt: "2025-01-14T11:15:00Z"
-    },
-    {
-      id: "3",
-      title: "WordPress SEO Plugin Vergelijking: Yoast vs RankMath",
-      slug: "wordpress-seo-plugin-vergelijking-yoast-rankmath",
-      status: "draft", 
-      publishDate: "2025-01-25",
-      wordCount: 750,
-      tags: ["wordpress", "seo", "plugins"],
-      category: "Techniek",
-      metaDescription: "Gedetailleerde vergelijking van Yoast SEO en RankMath plugins voor WordPress websites.",
-      generatedAt: "2025-01-14T12:00:00Z"
-    },
-    {
-      id: "4",
-      title: "CSV naar Blog Automation: Workflow Optimalisatie",
-      slug: "csv-blog-automation-workflow-optimalisatie",
-      status: "draft",
-      publishDate: "2025-01-30",
-      wordCount: 920,
-      tags: ["csv", "automation", "workflow"],
-      category: "Workflow",
-      metaDescription: "Stap-voor-stap uitleg van geautomatiseerde blog publicatie vanuit spreadsheets.",
-      generatedAt: "2025-01-14T13:30:00Z"
-    },
-    {
-      id: "5",
-      title: "Content Kalender Maken: Van Idee tot Publicatie",
-      slug: "content-kalender-maken-idee-publicatie",
-      status: "published",
-      publishDate: "2025-01-18",
-      wordCount: 1100,
-      tags: ["content", "planning", "kalender"],
-      category: "Planning",
-      metaDescription: "Best practices voor contentplanning, redactionele kalenders en publicatie schema's.",
-      generatedAt: "2025-01-14T14:00:00Z"
-    }
-  ];
 
   const handleCsvUrlSubmit = async () => {
     if (!csvUrl.trim()) {
@@ -214,13 +198,13 @@ const AutoBlogProducer = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
-    // Simuleer resultaat
-    setBlogPosts(mockBlogPosts);
+    // Refresh posts after processing  
+    loadBlogPosts();
     setIsProcessing(false);
     
     toast({
       title: "CSV Verwerkt! 🎉",
-      description: `${mockBlogPosts.length} blogposts gegenereerd en klaar voor publicatie`
+      description: "Blogposts gegenereerd en klaar voor publicatie"
     });
   };
 
@@ -414,23 +398,42 @@ const AutoBlogProducer = () => {
     });
   };
 
-  const handlePublishPost = (postId: string) => {
-    setBlogPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, status: 'published' as const, publishDate: new Date().toISOString().split('T')[0] }
-        : post
-    ));
-    
-    toast({
-      title: "Post Gepubliceerd",
-      description: "Blogpost is live gegaan op je website"
-    });
+  const handlePublishPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .update({ 
+          status: 'publish', 
+          publish_date: new Date().toISOString().split('T')[0] 
+        })
+        .eq('id', postId);
+      
+      if (error) throw error;
+      
+      setBlogPosts(prev => prev.map(post => 
+        post.id === postId 
+          ? { ...post, status: 'publish' as const, publish_date: new Date().toISOString().split('T')[0] }
+          : post
+      ));
+      
+      toast({
+        title: "Post Gepubliceerd",
+        description: "Blogpost is live gegaan op je website"
+      });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Fout bij publiceren",
+        description: "Er is een fout opgetreden",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSchedulePost = (postId: string, date: string) => {
     setBlogPosts(prev => prev.map(post => 
       post.id === postId 
-        ? { ...post, status: 'scheduled' as const, publishDate: date }
+        ? { ...post, status: 'scheduled' as const, publish_date: date }
         : post
     ));
     
@@ -442,7 +445,7 @@ const AutoBlogProducer = () => {
 
   const getStatusBadgeVariant = (status: BlogPost['status']) => {
     switch (status) {
-      case 'published': return 'default';
+      case 'publish': return 'default';
       case 'scheduled': return 'secondary';
       case 'draft': return 'outline';
       default: return 'outline';
@@ -451,7 +454,7 @@ const AutoBlogProducer = () => {
 
   const getStatusIcon = (status: BlogPost['status']) => {
     switch (status) {
-      case 'published': return <Globe className="h-3 w-3" />;
+      case 'publish': return <Globe className="h-3 w-3" />;
       case 'scheduled': return <Calendar className="h-3 w-3" />;
       case 'draft': return <FileText className="h-3 w-3" />;
       default: return <FileText className="h-3 w-3" />;
@@ -829,17 +832,17 @@ const AutoBlogProducer = () => {
                           <span className="ml-1 capitalize">{post.status}</span>
                         </Badge>
                       </CardTitle>
-                      <CardDescription className="mt-1">
-                        {post.metaDescription}
-                      </CardDescription>
+                       <CardDescription className="mt-1">
+                         {post.meta_description || 'Geen beschrijving beschikbaar'}
+                       </CardDescription>
                     </div>
                   </div>
-                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                     <span>📝 {post.wordCount} woorden</span>
-                     <span>📅 {post.publishDate}</span>
-                     <span>📂 {post.category}</span>
-                     <span>🏷️ {post.tags.join(", ")}</span>
-                   </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>📝 {post.word_count || 0} woorden</span>
+                      <span>📅 {post.publish_date}</span>
+                      <span>📂 {post.city || 'Algemeen'}</span>
+                      <span>🏷️ {post.tags?.join(", ") || 'Geen tags'}</span>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-sm">
@@ -895,6 +898,16 @@ const AutoBlogProducer = () => {
                       <Download className="h-3 w-3" />
                       Download MD
                     </Button>
+                    
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => handleDeletePost(post.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <AlertCircle className="h-3 w-3" />
+                      Verwijderen
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -934,7 +947,7 @@ const AutoBlogProducer = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {blogPosts.filter(p => p.status === 'published').length}
+                  {blogPosts.filter(p => p.status === 'publish').length}
                 </div>
                 <p className="text-xs text-muted-foreground">Live op website</p>
               </CardContent>
@@ -960,7 +973,7 @@ const AutoBlogProducer = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {blogPosts.reduce((acc, post) => acc + post.wordCount, 0).toLocaleString()}
+                  {blogPosts.reduce((acc, post) => acc + (post.word_count || 0), 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">Content gegenereerd</p>
               </CardContent>

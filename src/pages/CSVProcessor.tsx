@@ -123,47 +123,86 @@ const CSVProcessor = () => {
         progress: 0
       })));
 
-      // Simulate processing steps
-      for (let i = 0; i < processingSteps.length; i++) {
-        setProcessingSteps(steps => steps.map((step, index) => 
-          index === i 
-            ? { ...step, status: "running" }
-            : index < i 
-              ? { ...step, status: "completed", progress: 100 }
-              : step
-        ));
+      // Step 1: Download CSV
+      setProcessingSteps(steps => steps.map((step, index) => 
+        step.id === "download" ? { ...step, status: "running", progress: 50 } : step
+      ));
 
-        // Simulate progress for current step
-        for (let progress = 0; progress <= 100; progress += 10) {
-          setProcessingSteps(steps => steps.map((step, index) => 
-            index === i ? { ...step, progress } : step
-          ));
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        setProcessingSteps(steps => steps.map((step, index) => 
-          index === i ? { ...step, status: "completed", progress: 100 } : step
-        ));
+      // Call the actual edge function
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) {
+        throw new Error("Niet ingelogd");
       }
 
-      // Create mock job
-      const newJob: CSVJob = {
-        id: Date.now().toString(),
-        status: "completed",
-        csv_url: csvUrl,
-        total_rows: 47,
-        processed_rows: 47,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+      const { data, error } = await supabase.functions.invoke('process-csv', {
+        body: { csvUrl }
+      });
+
+      if (error) throw error;
+
+      // Complete download step
+      setProcessingSteps(steps => steps.map((step, index) => 
+        step.id === "download" ? { ...step, status: "completed", progress: 100 } : step
+      ));
+
+      // Monitor job progress
+      const jobId = data.jobId;
+      let job: CSVJob | null = null;
+      
+      const monitorJob = async () => {
+        const { data: jobData } = await supabase
+          .from('csv_processing_jobs')
+          .select('*')
+          .eq('id', jobId)
+          .single();
+          
+         if (jobData) {
+           job = jobData as CSVJob;
+           setCurrentJob(job);
+          
+          const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
+          
+          // Update step progress based on job status
+          setProcessingSteps(steps => steps.map(step => {
+            switch(step.id) {
+              case "download": return { ...step, status: "completed", progress: 100 };
+              case "validate": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
+              case "parse": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
+              case "generate": return { ...step, status: job.status === 'processing' ? "running" : job.status === 'completed' ? "completed" : "pending", progress: Math.round(progress) };
+              case "store": return { ...step, status: job.status === 'completed' ? "completed" : "pending", progress: job.status === 'completed' ? 100 : 0 };
+              default: return step;
+            }
+          }));
+        }
+        
+        return job;
       };
 
-      setCurrentJob(newJob);
-      setJobs(prev => [newJob, ...prev]);
+      // Poll for job completion
+      const pollInterval = setInterval(async () => {
+        const currentJob = await monitorJob();
+        if (currentJob && (currentJob.status === 'completed' || currentJob.status === 'failed')) {
+          clearInterval(pollInterval);
+          
+          if (currentJob.status === 'completed') {
+            setJobs(prev => [currentJob, ...prev]);
+            toast({
+              title: "CSV Verwerkt! 🎉",
+              description: `${currentJob.processed_rows} rijen succesvol verwerkt`
+            });
+          } else {
+            toast({
+              title: "Verwerkingsfout",
+              description: currentJob.error_message || "Er is een fout opgetreden",
+              variant: "destructive"
+            });
+          }
+          setIsProcessing(false);
+        }
+      }, 2000);
 
-      toast({
-        title: "CSV Verwerkt! 🎉",
-        description: `${newJob.total_rows} rijen succesvol verwerkt`
-      });
+      // Initial poll
+      await monitorJob();
 
     } catch (error) {
       console.error("Processing error:", error);
@@ -172,7 +211,6 @@ const CSVProcessor = () => {
         description: "Er is een fout opgetreden tijdens het verwerken van de CSV",
         variant: "destructive"
       });
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -345,7 +383,11 @@ const CSVProcessor = () => {
                     <Download className="h-4 w-4 mr-2" />
                     Download Resultaten
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open('/dashboard/autoblog-producer', '_blank')}
+                  >
                     <FileText className="h-4 w-4 mr-2" />
                     Bekijk Gegenereerde Posts
                   </Button>
