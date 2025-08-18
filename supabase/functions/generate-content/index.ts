@@ -105,6 +105,64 @@ serve(async (req) => {
 
     logStep('User authenticated successfully', { email: user.email });
 
+    // Check user credits before processing
+    logStep('Checking user credits');
+    const { data: credits, error: creditsError } = await supabaseServiceClient
+      .from('user_credits')
+      .select('credits_remaining')
+      .eq('user_id', user.id)
+      .single();
+
+    if (creditsError) {
+      logStep('Error fetching credits', { error: creditsError.message });
+      return new Response(
+        JSON.stringify({ error: 'Failed to check credits' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const remainingCredits = credits?.credits_remaining || 0;
+    logStep('Credits check completed', { remainingCredits });
+
+    if (remainingCredits <= 0) {
+      logStep('Insufficient credits');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Insufficient credits', 
+          credits_remaining: remainingCredits,
+          upgrade_required: true
+        }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Deduct credit before processing
+    logStep('Deducting credit');
+    const { data: creditResult, error: creditDeductError } = await supabaseServiceClient
+      .rpc('deduct_credit', { user_uuid: user.id });
+
+    if (creditDeductError) {
+      logStep('Credit deduction failed', { error: creditDeductError.message });
+      return new Response(
+        JSON.stringify({ error: 'Credit deduction failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!creditResult) {
+      logStep('Credit deduction returned false - insufficient credits');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Insufficient credits', 
+          credits_remaining: 0,
+          upgrade_required: true
+        }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    logStep('Credit deducted successfully');
+
     // Check rate limits
     const rateLimitResult = await checkRateLimit(req, user);
     if (!rateLimitResult.allowed) {

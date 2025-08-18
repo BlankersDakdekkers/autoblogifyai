@@ -22,6 +22,8 @@ interface AuthContextType {
   profile: Profile | null;
   userRole: 'admin' | 'user' | null;
   loading: boolean;
+  credits: number;
+  refreshCredits: () => Promise<void>;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -35,6 +37,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   userRole: null,
   loading: true,
+  credits: 0,
+  refreshCredits: async () => {},
   signUp: async () => ({ error: null }),
   signIn: async () => ({ error: null }),
   signOut: async () => {},
@@ -56,6 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<'admin' | 'user' | null>(null);
   const [loading, setLoading] = useState(true);
+  const [credits, setCredits] = useState(0);
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
@@ -83,6 +88,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshCredits = async () => {
+    if (!session) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('check-credits');
+      if (!error && data) {
+        setCredits(data.credits_remaining || 0);
+      }
+    } catch (error) {
+      console.error('Error refreshing credits:', error);
+    }
+  };
+
   const refreshProfile = async () => {
     if (user) {
       await fetchProfile(user.id);
@@ -100,10 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Defer profile fetching to avoid potential callback conflicts
           setTimeout(() => {
             fetchProfile(session.user.id);
+            refreshCredits();
           }, 0);
         } else {
           setProfile(null);
           setUserRole(null);
+          setCredits(0);
         }
         
         setLoading(false);
@@ -118,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         setTimeout(() => {
           fetchProfile(session.user.id);
+          refreshCredits();
         }, 0);
       }
       
@@ -187,6 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
       });
     } else {
+      setCredits(0);
       toast({
         title: "Tot ziens!",
         description: "Je bent succesvol uitgelogd.",
@@ -225,6 +247,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     userRole,
     loading,
+    credits,
+    refreshCredits,
     signUp,
     signIn,
     signOut,

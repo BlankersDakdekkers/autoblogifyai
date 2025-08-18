@@ -80,7 +80,7 @@ const CSVProcessor = () => {
   const [showPostViewer, setShowPostViewer] = useState(false);
   const [activeTab, setActiveTab] = useState("processor");
   const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const { refreshCredits } = useAuth();
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
@@ -177,7 +177,7 @@ const CSVProcessor = () => {
 
   // Load jobs on mount
   useEffect(() => {
-    loadJobs();
+    refreshCredits(); // Refresh credits after processing
   }, []);
 
   const loadJobs = async () => {

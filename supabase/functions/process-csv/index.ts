@@ -400,6 +400,23 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
   }
   
+  // Deduct credit before processing
+  logStep("Attempting to deduct credit", { userId, rowIndex });
+  const { data: creditResult, error: creditError } = await supabase
+    .rpc('deduct_credit', { user_uuid: userId });
+
+  if (creditError) {
+    logStep("Credit deduction failed", { error: creditError.message, rowIndex });
+    throw new Error(`Credit deduction failed: ${creditError.message}`);
+  }
+
+  if (!creditResult) {
+    logStep("Insufficient credits", { userId, rowIndex });
+    throw new Error('Insufficient credits to process this row');
+  }
+
+  logStep("Credit deducted successfully", { userId, rowIndex });
+
   // Generate enhanced AI content with all features from generate-content function
   let aiContent;
   try {

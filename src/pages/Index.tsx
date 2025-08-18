@@ -7,10 +7,11 @@ import {
   ArrowRight, Star, Zap, TrendingUp, Users, CheckCircle, Globe, Rocket, Brain, Target, Clock, Award, 
   ChevronRight, Play, Sparkles, FileText, Crown, Shield, CheckCircle2, CreditCard, Loader2
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Subscription {
   subscribed: boolean;
@@ -20,6 +21,7 @@ interface Subscription {
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
