@@ -51,11 +51,11 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard/*" element={<Dashboard />} />
-            <Route path="/dashboard/websites/*" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/templates/*" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/components/*" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/deployment/*" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/integrations/*" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/websites" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/templates" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/components" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
             <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

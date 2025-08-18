@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -362,16 +362,17 @@ const Integrations = () => {
 
 // Main Website Builder Component
 const WebsiteBuilder = () => {
-  return (
-    <Routes>
-      <Route path="/websites" element={<WebsitesOverview />} />
-      <Route path="/templates" element={<Templates />} />
-      <Route path="/components" element={<ComponentsLibrary />} />
-      <Route path="/deployment" element={<Deployment />} />
-      <Route path="/integrations" element={<Integrations />} />
-      <Route path="*" element={<Navigate to="/dashboard/websites" replace />} />
-    </Routes>
-  );
+  const location = useLocation();
+  const path = location.pathname;
+
+  // Determine which component to render based on current path
+  if (path.includes('/templates')) return <Templates />;
+  if (path.includes('/components')) return <ComponentsLibrary />;
+  if (path.includes('/deployment')) return <Deployment />;
+  if (path.includes('/integrations')) return <Integrations />;
+  
+  // Default to websites overview
+  return <WebsitesOverview />;
 };
 
 export default WebsiteBuilder;
