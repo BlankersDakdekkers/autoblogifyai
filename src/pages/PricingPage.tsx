@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Check, Star, Zap, Crown, Rocket, Users, TrendingUp, Shield, Clock, ArrowRight, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { CustomCheckout } from "@/components/CustomCheckout";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { CustomCheckout } from '@/components/CustomCheckout';
+import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, Clock, Loader2, Shield, Users, Zap, Star, Crown, Rocket, ArrowRight, CreditCard } from 'lucide-react';
 
+// Subscription interface
 interface Subscription {
   subscribed: boolean;
   subscription_tier?: string;
@@ -19,12 +19,10 @@ const PricingPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription>({ subscribed: false });
-  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
-  const [checkoutProgress, setCheckoutProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour countdown
   const [showCustomCheckout, setShowCustomCheckout] = useState(false);
-  const [checkoutTier, setCheckoutTier] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -35,16 +33,7 @@ const PricingPage = () => {
   // Countdown timer effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
+      setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -63,328 +52,343 @@ const PricingPage = () => {
   const handleSubscribe = async (tier: string) => {
     if (!user) {
       toast({
-        title: "🔐 Inloggen vereist",
-        description: "Log eerst in om je gratis trial te starten.",
+        title: "Inloggen vereist",
+        description: "Log eerst in om een abonnement te kiezen.",
         variant: "destructive"
       });
       return;
     }
 
-    // Use custom checkout for maximum conversion
-    setCheckoutTier(tier);
+    setSelectedPlan(tier);
     setShowCustomCheckout(true);
   };
 
   const handleCheckoutSuccess = () => {
     setShowCustomCheckout(false);
-    setCheckoutTier('');
+    setSelectedPlan(null);
     checkSubscriptionStatus();
     toast({
       title: "🎉 Welkom bij AutoblogifyAI!",
-      description: "Je abonnement is succesvol geactiveerd. Veel plezier!",
+      description: "Je abonnement is succesvol geactiveerd.",
     });
   };
 
   const handleCheckoutCancel = () => {
     setShowCustomCheckout(false);
-    setCheckoutTier('');
+    setSelectedPlan(null);
   };
 
+  // Pricing plans data with all tiers available
   const plans = [
     {
-      id: "starter",
       name: "Starter",
-      price: "€49",
-      period: "/maand",
-      originalPrice: "€99",
-      trialPeriod: "14 dagen GRATIS",
-      description: "Perfect voor kleine bedrijven",
-      icon: Rocket,
-      popular: false,
-      savings: "50% BESPARING",
+      price: "7.99",
+      description: "Perfect voor kleine bedrijven en starters",
       features: [
-        "✨ 14 dagen gratis trial",
-        "📝 Tot 50 AI blogposts per maand",
-        "🎨 5 premium templates",
-        "🔍 Basis SEO optimalisatie", 
-        "📧 Email ondersteuning",
-        "🔄 Automatische verlenging na trial",
-        "💳 Geen setup kosten"
-      ]
+        "Tot 10 blogposts per maand",
+        "Basis AI content generatie",
+        "Standard SEO optimalisatie",
+        "Email ondersteuning",
+        "1 website integratie"
+      ],
+      badge: null,
+      popular: false,
+      gradient: "from-blue-500/10 to-blue-600/10",
+      borderColor: "border-blue-200",
+      buttonVariant: "outline" as const,
+      icon: Rocket
     },
     {
-      id: "professional", 
-      name: "Professional",
-      price: "€99",
-      period: "/maand",
-      originalPrice: "€199",
-      trialPeriod: "14 dagen GRATIS",
-      description: "Voor groeiende bedrijven",
-      icon: Zap,
+      name: "Professional", 
+      price: "19.99",
+      description: "Ideaal voor groeiende bedrijven en agencies",
+      features: [
+        "Onbeperkte blogposts",
+        "Premium AI content generatie", 
+        "Geavanceerde SEO optimalisatie",
+        "Automatische publicatie",
+        "5 website integraties",
+        "Priority ondersteuning",
+        "Content planning tools",
+        "Analytics & rapportages"
+      ],
+      badge: "Populair",
       popular: true,
-      savings: "50% BESPARING",
-      features: [
-        "✨ 14 dagen gratis trial",
-        "🚀 Onbeperkte AI blogposts",
-        "🎨 15+ premium templates",
-        "🎯 Geavanceerde lokale SEO",
-        "⚡ Priority support",
-        "🔗 Alle integraties",
-        "🔄 Automatische verlenging na trial",
-        "📊 Geavanceerde analytics"
-      ]
+      gradient: "from-primary/10 to-primary/20",
+      borderColor: "border-primary/30",
+      buttonVariant: "default" as const,
+      icon: Zap
     },
     {
-      id: "enterprise",
-      name: "Enterprise", 
-      price: "€199",
-      period: "/maand",
-      originalPrice: "€399",
-      trialPeriod: "14 dagen GRATIS",
-      description: "Voor grote organisaties",
-      icon: Crown,
-      popular: false,
-      savings: "50% BESPARING",
+      name: "Enterprise",
+      price: "49.99", 
+      description: "Voor grote organisaties met specifieke behoeften",
       features: [
-        "✨ 14 dagen gratis trial",
-        "💎 Alles van Professional",
-        "🏷️ White-label oplossing",
-        "👨‍💼 Dedicated account manager",
-        "🤖 Custom AI training",
-        "🔌 API toegang",
-        "🔄 Automatische verlenging na trial",
-        "🛡️ Enterprise security"
-      ]
+        "Onbeperkte blogposts",
+        "Enterprise AI content generatie",
+        "Custom SEO strategieën", 
+        "Multi-website beheer",
+        "Onbeperkte integraties",
+        "24/7 dedicated ondersteuning",
+        "Custom templates & workflows",
+        "White-label oplossing",
+        "API toegang",
+        "Custom trainingen"
+      ],
+      badge: "Enterprise",
+      popular: false,
+      gradient: "from-purple-500/10 to-purple-600/10", 
+      borderColor: "border-purple-200",
+      buttonVariant: "outline" as const,
+      icon: Crown
     }
   ];
 
-  if (showCustomCheckout) {
-    return (
-      <CustomCheckout
-        tier={checkoutTier}
-        onSuccess={handleCheckoutSuccess}
-        onCancel={handleCheckoutCancel}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
-      
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-12 animate-fade-in">
-          <Badge className="mb-6 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-6 py-3 text-base font-bold animate-pulse shadow-lg">
-            <Star className="h-5 w-5 mr-2 fill-current" />
-            🔥 BEPERKTE TIJD: 14 Dagen Gratis + 50% Korting
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-            Schaal je content met 
-            <span className="bg-gradient-to-r from-primary via-purple-600 to-primary/80 bg-clip-text text-transparent block mt-2 animate-scale-in">
-              AutoblogifyAI
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-8 leading-relaxed">
-            Van handmatige blog posts naar geautomatiseerde content productie. <strong className="text-foreground bg-gradient-to-r from-primary/10 to-purple-600/10 px-2 py-1 rounded">Start vandaag gratis</strong> en ervaar de kracht van AI.
-          </p>
-          
-          {/* Social Proof */}
-          <div className="flex flex-wrap items-center justify-center gap-8 mb-12 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <Users className="h-5 w-5 text-primary" />
-              <span className="font-semibold">2,500+ tevreden klanten</span>
-            </div>
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="font-semibold">500% meer content output</span>
-            </div>
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="font-semibold">30-dagen geld terug</span>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {showCustomCheckout && (
+        <CustomCheckout
+          tier={selectedPlan!}
+          onSuccess={handleCheckoutSuccess}
+          onCancel={handleCheckoutCancel}
+        />
+      )}
+
+      {!showCustomCheckout && (
+        <>
+          {/* Hero Section */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5"></div>
+            <div className="container mx-auto px-4 pt-20 pb-16 text-center relative">
+              {/* Countdown Timer */}
+              {timeLeft > 0 && (
+                <div className="mb-8 animate-fade-in">
+                  <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive px-4 py-2 rounded-full text-sm font-semibold">
+                    <Clock className="w-4 h-4" />
+                    Beperkte tijd: {Math.floor(timeLeft / 3600)}u {Math.floor((timeLeft % 3600) / 60)}m {timeLeft % 60}s
+                  </div>
+                </div>
+              )}
+
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Kies je perfecte plan
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto animate-fade-in">
+                Automatiseer je content creatie en laat AI je blogposts schrijven. 
+                Van starter tot enterprise - er is altijd een plan dat bij jou past.
+              </p>
+              
+              {/* Plan Toggle */}
+              <div className="flex items-center justify-center gap-4 mb-12 animate-fade-in">
+                <span className="text-sm text-muted-foreground">Maandelijks</span>
+                <div className="relative">
+                  <div className="w-12 h-6 bg-primary rounded-full"></div>
+                  <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"></div>
+                </div>
+                <span className="text-sm font-semibold">Jaarlijks</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                  2 maanden gratis
+                </Badge>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
-          {plans.map((plan, index) => {
-            const IconComponent = plan.icon;
-            const isCurrentPlan = subscription.subscription_tier?.toLowerCase() === plan.id;
-            
-            return (
-              <Card 
-                key={plan.id} 
-                className={`relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-3 animate-fade-in group ${
-                  plan.popular 
-                    ? 'border-primary shadow-xl shadow-primary/20 scale-105 bg-gradient-to-b from-background to-primary/5 ring-2 ring-primary/20' 
-                    : 'border hover:border-primary/50 hover:shadow-lg'
-                } ${isCurrentPlan ? 'border-green-500 bg-green-50/50 shadow-green-100' : ''}`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-primary to-purple-600 text-white px-6 py-2 text-sm font-bold shadow-xl animate-pulse">
-                      <Star className="h-4 w-4 mr-2 fill-current" />
-                      🔥 MEEST POPULAIR
-                    </Badge>
-                  </div>
-                )}
+          {/* Pricing Cards */}
+          <div className="container mx-auto px-4 pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {plans.map((plan, index) => {
+                const IconComponent = plan.icon;
+                const isCurrentPlan = subscription?.subscribed && subscription?.subscription_tier?.toLowerCase() === plan.name.toLowerCase();
                 
-                {isCurrentPlan && (
-                  <div className="absolute -top-4 right-4 z-10">
-                    <Badge className="bg-green-500 text-white px-3 py-1 text-xs shadow-lg animate-bounce">
-                      ✅ JE HUIDIGE PLAN
-                    </Badge>
-                  </div>
-                )}
-                
-                <CardHeader className="text-center pb-6 relative">
-                  <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                    <IconComponent className={`h-20 w-20 mx-auto ${plan.popular ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
-                  </div>
-                  <CardTitle className="text-3xl mb-2">{plan.name}</CardTitle>
-                  <CardDescription className="text-lg font-medium">{plan.description}</CardDescription>
-                   
-                  {/* Urgency Timer */}
-                  <div className="flex items-center justify-center gap-2 text-orange-600 bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl mt-6 border border-orange-200 shadow-sm animate-pulse">
-                    <Clock className="h-5 w-5 animate-spin" />
-                    <span className="text-sm font-bold">
-                      ⏰ Actie eindigt over {String(timeLeft.hours).padStart(2, '0')}:
-                      {String(timeLeft.minutes).padStart(2, '0')}:
-                      {String(timeLeft.seconds).padStart(2, '0')}
-                    </span>
-                  </div>
-                  
-                  <div className="mt-8">
-                    <div className="flex items-center justify-center gap-4 mb-3">
-                      <span className="text-2xl text-muted-foreground line-through">{plan.originalPrice}</span>
-                      <span className="text-6xl font-bold text-primary animate-scale-in">{plan.price}</span>
-                    </div>
-                    <span className="text-muted-foreground text-xl">{plan.period}</span>
-                    <div className="mt-4 space-y-2">
-                      <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-base px-4 py-2 shadow-sm">
-                        ✨ {plan.trialPeriod}
-                      </Badge>
-                      <Badge className="bg-gradient-to-r from-red-100 to-orange-100 text-red-800 text-sm px-3 py-1 animate-bounce">
-                        🔥 {plan.savings}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-green-600 mt-3 font-semibold">🎯 Automatische verlenging na trial</p>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-8 p-8">
-                  <ul className="space-y-5">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-4 group">
-                        <CheckCircle2 className="h-6 w-6 text-green-500 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                        <span className="text-base font-medium leading-relaxed group-hover:text-primary transition-colors">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="space-y-6">
-                    {/* Progress Bar for Loading */}
-                    {isLoading && selectedPlan === plan.id && (
-                      <div className="space-y-3 bg-gradient-to-r from-primary/5 to-purple-600/5 p-4 rounded-lg border border-primary/20">
-                        <div className="flex items-center justify-between text-sm font-medium">
-                          <span className="text-primary">🚀 Checkout voorbereiden...</span>
-                          <span className="text-primary font-bold">{checkoutProgress}%</span>
-                        </div>
-                        <Progress value={checkoutProgress} className="h-3 bg-white" />
-                        <p className="text-xs text-center text-muted-foreground animate-pulse">
-                          Secure betaling via Stripe wordt geladen...
-                        </p>
-                      </div>
+                return (
+                  <div
+                    key={plan.name}
+                    className={`
+                      relative group animate-fade-in hover-scale
+                      ${plan.popular ? 'lg:scale-105 lg:-mt-4' : ''}
+                    `}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Glow Effect for Popular Plan */}
+                    {plan.popular && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-60"></div>
                     )}
                     
-                    <Button 
-                      className={`w-full h-16 text-xl font-bold transition-all duration-500 transform hover:scale-105 ${
-                        plan.popular 
-                          ? 'bg-gradient-to-r from-primary via-purple-600 to-primary hover:from-primary/90 hover:via-purple-600/90 hover:to-primary/90 shadow-xl hover:shadow-2xl animate-pulse' 
-                          : 'hover:scale-105 shadow-lg hover:shadow-xl'
-                      } ${isCurrentPlan ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      onClick={() => handleSubscribe(plan.id)}
-                      disabled={isLoading || isCurrentPlan}
-                    >
-                      {isCurrentPlan ? (
-                        <span className="flex items-center gap-3">
-                          <CheckCircle2 className="h-6 w-6" />
-                          Actief Plan
-                        </span>
-                      ) : isLoading && selectedPlan === plan.id ? (
-                        <span className="flex items-center gap-3">
-                          <Loader2 className="h-6 w-6 animate-spin" />
-                          Bezig met laden...
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-3">
-                          <CreditCard className="h-6 w-6" />
-                          Start GRATIS Trial Nu
-                          <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
-                        </span>
+                    <Card className={`
+                      relative h-full bg-gradient-to-br ${plan.gradient} backdrop-blur-sm
+                      ${plan.borderColor} border-2 transition-all duration-300
+                      ${plan.popular ? 'shadow-2xl shadow-primary/20' : 'hover:shadow-xl'}
+                      ${isCurrentPlan ? 'ring-2 ring-green-500 border-green-300' : ''}
+                      group-hover:border-primary/50
+                    `}>
+                      {/* Popular Badge */}
+                      {plan.badge && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                          <Badge className={`
+                            px-4 py-1 text-sm font-semibold shadow-lg
+                            ${plan.popular 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-purple-500 text-white'
+                            }
+                          `}>
+                            {plan.badge}
+                          </Badge>
+                        </div>
                       )}
-                    </Button>
-                    
-                    <div className="text-center space-y-2">
-                      <p className="text-sm text-muted-foreground bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg border border-green-200/50">
-                        💳 <strong>Geen creditcard vereist</strong> • ✨ <strong>Opzeggen wanneer je wilt</strong>
-                      </p>
-                      <p className="text-sm text-green-600 font-bold bg-green-50 p-2 rounded-lg border border-green-200">
-                        🛡️ 30 dagen geld-terug-garantie • 🔒 SSL beveiligd
-                      </p>
-                    </div>
+
+                      {/* Current Plan Badge */}
+                      {isCurrentPlan && (
+                        <div className="absolute -top-4 right-4">
+                          <Badge className="bg-green-500 text-white px-3 py-1 text-xs">
+                            Actief
+                          </Badge>
+                        </div>
+                      )}
+
+                      <CardHeader className="text-center pb-4 pt-8">
+                        <div className="mb-4">
+                          <IconComponent className={`w-12 h-12 mx-auto ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </div>
+                        <CardTitle className="text-2xl font-bold mb-2">{plan.name}</CardTitle>
+                        <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
+                        
+                        <div className="mb-4">
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-5xl font-bold">€{plan.price}</span>
+                            <span className="text-muted-foreground">/maand</span>
+                          </div>
+                          {plan.popular && (
+                            <p className="text-sm text-green-600 font-medium mt-2">
+                              Meest gekozen door bedrijven
+                            </p>
+                          )}
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pt-0">
+                        <ul className="space-y-3 mb-8">
+                          {plan.features.map((feature, featureIndex) => (
+                            <li 
+                              key={featureIndex} 
+                              className="flex items-start gap-3 animate-fade-in"
+                              style={{ animationDelay: `${(index * 100) + (featureIndex * 50)}ms` }}
+                            >
+                              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <Button
+                          onClick={() => handleSubscribe(plan.name.toLowerCase())}
+                          disabled={loading || isCurrentPlan}
+                          variant={plan.buttonVariant}
+                          className={`
+                            w-full h-14 text-lg font-semibold transition-all duration-300
+                            ${plan.popular 
+                              ? 'shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40' 
+                              : 'hover:bg-primary hover:text-primary-foreground'
+                            }
+                            ${isCurrentPlan ? 'bg-green-500 hover:bg-green-600 text-white' : ''}
+                            ${loading ? 'opacity-50' : 'hover-scale'}
+                          `}
+                        >
+                          {loading && selectedPlan === plan.name.toLowerCase() ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Laden...
+                            </>
+                          ) : isCurrentPlan ? (
+                            <>
+                              <CheckCircle className="w-5 h-5 mr-2" />
+                              Huidige plan
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-5 h-5 mr-2" />
+                              Start met {plan.name}
+                              <ArrowRight className="w-5 h-5 ml-2" />
+                            </>
+                          )}
+                        </Button>
+
+                        {isCurrentPlan && subscription?.subscription_end && (
+                          <p className="text-center text-sm text-muted-foreground mt-3">
+                            Actief tot {new Date(subscription.subscription_end).toLocaleDateString('nl-NL')}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
 
-        {/* Trust Indicators */}
-        <div className="text-center animate-fade-in">
-          <h3 className="text-2xl font-bold mb-8 text-foreground">Waarom kiezen voor AutoblogifyAI?</h3>
-          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            <div className="flex flex-col items-center gap-4 p-6 bg-white/60 rounded-xl shadow-lg hover-scale border border-green-200/50">
-              <Shield className="h-12 w-12 text-green-500" />
-              <span className="font-bold text-lg">SSL Beveiligd</span>
-              <span className="text-sm text-muted-foreground text-center">Enterprise-grade 256-bit encryptie voor maximale veiligheid</span>
+            {/* Trust Section */}
+            <div className="text-center mt-20 animate-fade-in">
+              <h3 className="text-2xl font-semibold mb-8">Waarom AutoblogifyAI?</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div className="text-center group">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Shield className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h4 className="font-semibold mb-2">30 dagen geld-terug-garantie</h4>
+                  <p className="text-sm text-muted-foreground">Niet tevreden? Krijg je geld terug, geen vragen gesteld.</p>
+                </div>
+                
+                <div className="text-center group">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Users className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="font-semibold mb-2">Vertrouwd door 10,000+ bedrijven</h4>
+                  <p className="text-sm text-muted-foreground">Van startups tot enterprise, wereldwijd gebruikt.</p>
+                </div>
+                
+                <div className="text-center group">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Zap className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold mb-2">Altijd opzegbaar</h4>
+                  <p className="text-sm text-muted-foreground">Geen verborgen kosten, stop wanneer je wilt.</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-4 p-6 bg-white/60 rounded-xl shadow-lg hover-scale border border-blue-200/50">
-              <Users className="h-12 w-12 text-blue-500" />
-              <span className="font-bold text-lg">2,500+ Klanten</span>
-              <span className="text-sm text-muted-foreground text-center">Succesvolle bedrijven vertrouwen ons dagelijks</span>
-            </div>
-            <div className="flex flex-col items-center gap-4 p-6 bg-white/60 rounded-xl shadow-lg hover-scale border border-purple-200/50">
-              <TrendingUp className="h-12 w-12 text-purple-500" />
-              <span className="font-bold text-lg">500% Groei</span>
-              <span className="text-sm text-muted-foreground text-center">Gemiddelde toename in content productie</span>
-            </div>
-            <div className="flex flex-col items-center gap-4 p-6 bg-white/60 rounded-xl shadow-lg hover-scale border border-orange-200/50">
-              <Clock className="h-12 w-12 text-orange-500" />
-              <span className="font-bold text-lg">24/7 Support</span>
-              <span className="text-sm text-muted-foreground text-center">Persoonlijke hulp wanneer je het nodig hebt</span>
+
+            {/* FAQ Section */}
+            <div className="mt-20 max-w-4xl mx-auto animate-fade-in">
+              <h3 className="text-2xl font-semibold text-center mb-8">Veelgestelde vragen</h3>
+              <div className="grid gap-4">
+                <Card className="hover:shadow-md transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Kan ik van plan wisselen?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">Ja, je kunt altijd upgraden of downgraden. Wijzigingen gaan direct in en worden pro-rata verrekend.</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="hover:shadow-md transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Hoe werkt de AI content generatie?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">Onze AI gebruikt de nieuwste taalmodellen om unieke, SEO-geoptimaliseerde content te genereren op basis van jouw onderwerpen en doelgroep.</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="hover:shadow-md transition-shadow duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Is er een setup fee?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">Nee, er zijn geen setup kosten. Je betaalt alleen je maandelijkse abonnement en kunt direct starten.</p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
-          
-          {/* Final CTA */}
-          <div className="mt-16 max-w-2xl mx-auto p-8 bg-gradient-to-r from-primary/5 to-purple-600/5 rounded-2xl border border-primary/20 shadow-xl">
-            <h4 className="text-3xl font-bold mb-4 text-foreground">Start je gratis trial vandaag!</h4>
-            <p className="text-lg text-muted-foreground mb-6">Geen risico, geen verplichtingen. Ervaar de kracht van AI-gestuurde content.</p>
-            <div className="flex items-center justify-center gap-4 text-sm text-green-600 font-semibold">
-              <span>✅ 14 dagen gratis</span>
-              <span>✅ Geen creditcard</span>
-              <span>✅ Direct opzegbaar</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+        </>
+      )}
     </div>
   );
 };
