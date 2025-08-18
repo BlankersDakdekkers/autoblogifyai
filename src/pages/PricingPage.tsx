@@ -50,18 +50,31 @@ const PricingPage = () => {
     setSelectedPlan(tier);
     
     try {
+      console.log('Starting checkout for tier:', tier);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { tier }
       });
 
-      if (error) throw error;
-      window.location.href = data.url;
+      console.log('Checkout response:', { data, error });
+
+      if (error) {
+        console.error('Checkout error details:', error);
+        throw error;
+      }
+      
+      if (!data?.url) {
+        throw new Error('Geen checkout URL ontvangen');
+      }
+
+      console.log('Redirecting to Stripe:', data.url);
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
       
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
         title: "Fout bij checkout",
-        description: "Er ging iets mis. Probeer het opnieuw.",
+        description: error instanceof Error ? error.message : "Er ging iets mis. Probeer het opnieuw.",
         variant: "destructive"
       });
     } finally {
