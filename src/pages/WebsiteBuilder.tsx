@@ -513,15 +513,8 @@ const WebsiteBuilder = () => {
   const path = location.pathname;
 
   // Determine which component to render based on current path
-  if (path.includes('/templates')) return <Templates />;
-  if (path.includes('/components')) return <ComponentsLibrary />;
   if (path.includes('/deployment')) return <Deployment />;
   if (path.includes('/integrations')) return <Integrations />;
-  if (path.includes('/ai-generator')) {
-    // Dynamically import the AI Generator component
-    const AIWebsiteGenerator = require('../AIWebsiteGenerator').default;
-    return <AIWebsiteGenerator />;
-  }
   
   // Default to websites overview
   return <WebsitesOverview />;

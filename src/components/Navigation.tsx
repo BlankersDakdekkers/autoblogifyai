@@ -81,18 +81,6 @@ export const navigationSections: NavigationSection[] = [
         description: "Beheer je websites en projecten"
       },
       { 
-        title: "Templates", 
-        url: "/dashboard/templates", 
-        icon: Palette,
-        description: "Website templates en themes"
-      },
-      { 
-        title: "Components", 
-        url: "/dashboard/components", 
-        icon: Code,
-        description: "Herbruikbare UI componenten"
-      },
-      { 
         title: "Deployment", 
         url: "/dashboard/deployment", 
         icon: Zap,

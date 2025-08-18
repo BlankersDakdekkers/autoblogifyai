@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import AutoBlogProducer from "./AutoBlogProducer";
 import PricingPage from "./PricingPage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -396,7 +397,7 @@ const Dashboard = () => {
   return (
     <Routes>
       <Route path="/" element={<DashboardOverview />} />
-      <Route path="/generate" element={<GeneratePosts />} />
+      <Route path="/generate" element={<AutoBlogProducer />} />
       <Route path="/validate" element={<ValidateCSV />} />
       <Route path="/publish" element={<PublishPosts />} />
       <Route path="/settings" element={<DashboardSettings />} />
