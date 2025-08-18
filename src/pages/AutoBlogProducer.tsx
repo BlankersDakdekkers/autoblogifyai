@@ -46,6 +46,7 @@ interface BlogPost {
   publishDate: string;
   wordCount: number;
   tags: string[];
+  category: string;
   metaDescription: string;
   generatedAt: string;
 }
@@ -57,6 +58,7 @@ interface CSVData {
   publish_date: string;
   summary: string;
   tags: string;
+  category: string;
   author: string;
   meta_title: string;
   meta_description: string;
@@ -123,39 +125,72 @@ const AutoBlogProducer = () => {
     "Publicatie scheduling"
   ];
 
+  // Blog categorieën zoals kennisbank
+  const blogCategories = [
+    "SEO", "Marketing", "Techniek", "Workflow", "Planning", 
+    "Tools", "Analytics", "Content", "WordPress", "Automation"
+  ];
+
   const mockBlogPosts: BlogPost[] = [
     {
       id: "1",
-      title: "Dakdekker Amsterdam - Complete Gids 2025",
-      slug: "dakdekker-amsterdam-gids-2025",
+      title: "10 SEO Tips voor Betere Rankings in 2024",
+      slug: "seo-tips-betere-rankings-2024",
       status: "published",
       publishDate: "2025-01-15",
       wordCount: 1250,
-      tags: ["dakdekker", "amsterdam", "renovatie"],
-      metaDescription: "Zoek je een betrouwbare dakdekker in Amsterdam? Lees onze complete gids met tips, prijzen en aanbevelingen.",
+      tags: ["seo", "rankings", "tips"],
+      category: "SEO",
+      metaDescription: "Praktische SEO tips voor betere Google rankings. Keyword research, meta descriptions en technische SEO uitgelegd.",
       generatedAt: "2025-01-14T10:30:00Z"
     },
     {
       id: "2", 
-      title: "Dakisolatie Kosten 2025 - Volledige Prijsoverzicht",
-      slug: "dakisolatie-kosten-2025-prijsoverzicht",
+      title: "Hoe AI je Content Strategie Revolutioneert",
+      slug: "ai-content-strategie-revolutie",
       status: "scheduled",
       publishDate: "2025-01-20",
       wordCount: 980,
-      tags: ["isolatie", "kosten", "energiebesparing"],
-      metaDescription: "Wat kost dakisolatie in 2025? Bekijk ons complete prijsoverzicht en bereken je besparingen.",
+      tags: ["ai", "content", "strategie"],
+      category: "Marketing",
+      metaDescription: "AI-tools voor contentcreatie, automatisering van blogposts en schaalbare content productie.",
       generatedAt: "2025-01-14T11:15:00Z"
     },
     {
       id: "3",
-      title: "Plat Dak Reparatie - Wanneer en Hoe?",
-      slug: "plat-dak-reparatie-wanneer-hoe",
+      title: "WordPress SEO Plugin Vergelijking: Yoast vs RankMath",
+      slug: "wordpress-seo-plugin-vergelijking-yoast-rankmath",
       status: "draft", 
       publishDate: "2025-01-25",
       wordCount: 750,
-      tags: ["plat dak", "reparatie", "onderhoud"],
-      metaDescription: "Plat dak reparatie nodig? Leer wanneer je moet handelen en hoe je de beste dakdekker vindt.",
+      tags: ["wordpress", "seo", "plugins"],
+      category: "Techniek",
+      metaDescription: "Gedetailleerde vergelijking van Yoast SEO en RankMath plugins voor WordPress websites.",
       generatedAt: "2025-01-14T12:00:00Z"
+    },
+    {
+      id: "4",
+      title: "CSV naar Blog Automation: Workflow Optimalisatie",
+      slug: "csv-blog-automation-workflow-optimalisatie",
+      status: "draft",
+      publishDate: "2025-01-30",
+      wordCount: 920,
+      tags: ["csv", "automation", "workflow"],
+      category: "Workflow",
+      metaDescription: "Stap-voor-stap uitleg van geautomatiseerde blog publicatie vanuit spreadsheets.",
+      generatedAt: "2025-01-14T13:30:00Z"
+    },
+    {
+      id: "5",
+      title: "Content Kalender Maken: Van Idee tot Publicatie",
+      slug: "content-kalender-maken-idee-publicatie",
+      status: "published",
+      publishDate: "2025-01-18",
+      wordCount: 1100,
+      tags: ["content", "planning", "kalender"],
+      category: "Planning",
+      metaDescription: "Best practices voor contentplanning, redactionele kalenders en publicatie schema's.",
+      generatedAt: "2025-01-14T14:00:00Z"
     }
   ];
 
@@ -891,11 +926,12 @@ const AutoBlogProducer = () => {
                       </CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>📝 {post.wordCount} woorden</span>
-                    <span>📅 {post.publishDate}</span>
-                    <span>🏷️ {post.tags.join(", ")}</span>
-                  </div>
+                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                     <span>📝 {post.wordCount} woorden</span>
+                     <span>📅 {post.publishDate}</span>
+                     <span>📂 {post.category}</span>
+                     <span>🏷️ {post.tags.join(", ")}</span>
+                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-sm">
