@@ -440,6 +440,11 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
     const matchesType = selectedType === "all" || item.type === selectedType;
     
+    // Debug logging for category issues
+    if (selectedCategory !== "all" && !matchesCategory) {
+      console.log(`Item "${item.title}" category "${item.category}" doesn't match selected "${selectedCategory}"`);
+    }
+    
     return matchesSearch && matchesCategory && matchesType && item.status === "published";
   });
 
@@ -471,7 +476,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           user_id: user.id,
           title: newItem.title,
           content: newItem.content,
-          category: newItem.category,
+          category: validateAndNormalizeCategory(newItem.category),
           type: newItem.type,
           author: "Beheerder",
           tags,
@@ -526,7 +531,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
             ...item,
             title: newItem.title,
             content: newItem.content,
-            category: newItem.category,
+            category: validateAndNormalizeCategory(newItem.category),
             type: newItem.type,
             tags: newItem.tags.split(',').map(tag => tag.trim()).filter(Boolean),
             updated_at: new Date().toISOString().split('T')[0]
@@ -584,7 +589,27 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
   };
 
   const getCategoryInfo = (categoryId: string) => {
-    return categories.find(cat => cat.id === categoryId) || categories[0];
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) {
+      console.warn(`Category not found: ${categoryId}, falling back to 'content'`);
+      return categories.find(cat => cat.id === 'content') || categories[0];
+    }
+    return category;
+  };
+
+  // Category validation function
+  const validateAndNormalizeCategory = (categoryId: string) => {
+    if (!categoryId) return 'content';
+    
+    const normalizedId = categoryId.toLowerCase().trim();
+    const validCategory = categories.find(cat => cat.id === normalizedId);
+    
+    if (!validCategory) {
+      console.warn(`Invalid category: "${categoryId}", using 'content' as fallback`);
+      return 'content';
+    }
+    
+    return normalizedId;
   };
 
   // Preview navigation functions
@@ -649,7 +674,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           user_id: user?.id,
           title: item.title,
           content: item.content,
-          category: item.category || 'seo',
+          category: validateAndNormalizeCategory(item.category),
           type: item.type || 'article',
           author: item.author,
           tags: item.tags || [],
