@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string | null
+          body_markdown: string | null
+          canonical_url: string | null
+          city: string | null
+          created_at: string
+          cta_heading: string | null
+          cta_subtext: string | null
+          faq_json: Json | null
+          hero_image_alt: string | null
+          hero_image_url: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          publish_date: string
+          slug: string
+          status: string
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          author?: string | null
+          body_markdown?: string | null
+          canonical_url?: string | null
+          city?: string | null
+          created_at?: string
+          cta_heading?: string | null
+          cta_subtext?: string | null
+          faq_json?: Json | null
+          hero_image_alt?: string | null
+          hero_image_url?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date: string
+          slug: string
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          author?: string | null
+          body_markdown?: string | null
+          canonical_url?: string | null
+          city?: string | null
+          created_at?: string
+          cta_heading?: string | null
+          cta_subtext?: string | null
+          faq_json?: Json | null
+          hero_image_alt?: string | null
+          hero_image_url?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date?: string
+          slug?: string
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: []
+      }
+      csv_processing_jobs: {
+        Row: {
+          created_at: string
+          csv_url: string
+          error_message: string | null
+          id: string
+          processed_rows: number | null
+          status: string
+          total_rows: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          csv_url: string
+          error_message?: string | null
+          id?: string
+          processed_rows?: number | null
+          status?: string
+          total_rows?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          csv_url?: string
+          error_message?: string | null
+          id?: string
+          processed_rows?: number | null
+          status?: string
+          total_rows?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -1,1 +1,25 @@
 project_id = "pmhplzqfdmgkkosapkit"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54325
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lovable.app"]
+jwt_expiry = 3600
+enable_signup = true
+
+[functions.process-csv]
+verify_jwt = true
+
+[functions.wordpress-publish]
+verify_jwt = true
+
+[functions.generate-keywords]
+verify_jwt = false
