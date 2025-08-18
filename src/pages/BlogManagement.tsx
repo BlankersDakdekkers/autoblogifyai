@@ -17,10 +17,21 @@ import {
   ExternalLink,
   Plus,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BlogPost {
   id: string;
@@ -44,6 +55,8 @@ const BlogManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     published: 0,
@@ -207,6 +220,40 @@ const BlogManagement = () => {
       description: "Bezig met ophalen van de nieuwste blogs...",
     });
     await fetchPosts();
+  };
+
+  // Delete functionaliteit
+  const handleDeleteClick = (post: BlogPost) => {
+    setPostToDelete(post);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!postToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Blog Verwijderd",
+        description: `"${postToDelete.title}" is succesvol verwijderd`,
+      });
+
+      setDeleteDialogOpen(false);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Fout bij verwijderen",
+        description: error instanceof Error ? error.message : "Kon blog niet verwijderen",
+        variant: "destructive",
+      });
+    }
   };
 
   // Debug component - alleen zichtbaar in development
@@ -415,6 +462,15 @@ const BlogManagement = () => {
                       <Edit className="h-4 w-4 mr-1" />
                       Bewerken
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleDeleteClick(post)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Verwijderen
+                    </Button>
                     {post.canonical_url && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={post.canonical_url} target="_blank" rel="noopener noreferrer">
@@ -440,6 +496,33 @@ const BlogManagement = () => {
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Blog Verwijderen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Weet je zeker dat je "{postToDelete?.title}" wilt verwijderen? 
+              Deze actie kan niet ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeleteDialogOpen(false);
+              setPostToDelete(null);
+            }}>
+              Annuleren
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
