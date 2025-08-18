@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface CSVJob {
   id: string;
@@ -32,6 +34,19 @@ interface CSVJob {
   error_message?: string;
   created_at: string;
   updated_at: string;
+}
+
+interface BlogPost {
+  id: string;
+  title: string;
+  body_markdown: string;
+  status: string;
+  hero_image_url?: string;
+  meta_description?: string;
+  tags: string[];
+  author: string;
+  created_at: string;
+  word_count: number;
 }
 
 interface ProcessingStep {
@@ -48,6 +63,9 @@ const CSVProcessor = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentJob, setCurrentJob] = useState<CSVJob | null>(null);
   const [jobs, setJobs] = useState<CSVJob[]>([]);
+  const [generatedPosts, setGeneratedPosts] = useState<BlogPost[]>([]);
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [showPostViewer, setShowPostViewer] = useState(false);
   
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     {
@@ -243,6 +261,7 @@ const CSVProcessor = () => {
         variant: "destructive"
       });
       setIsProcessing(false);
+      await loadGeneratedPosts(); // Refresh posts after processing
     }
   };
 
@@ -253,6 +272,73 @@ const CSVProcessor = () => {
       description: "CSV verwerking is gepauzeerd en kan later worden hervat"
     });
   };
+
+  const loadGeneratedPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setGeneratedPosts(data || []);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      toast({
+        title: "Fout bij laden posts",
+        description: "Kon gegenereerde posts niet laden",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadCSVResults = async () => {
+    if (generatedPosts.length === 0) {
+      toast({
+        title: "Geen data",
+        description: "Er zijn geen posts om te downloaden",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const csvContent = [
+      // CSV headers
+      ['ID', 'Titel', 'Status', 'Publish Datum', 'Woorden', 'Tags', 'Auteur', 'Meta Beschrijving'].join(','),
+      // CSV data
+      ...generatedPosts.map(post => [
+        post.id,
+        `"${post.title.replace(/"/g, '""')}"`,
+        post.status,
+        post.created_at.split('T')[0],
+        post.word_count,
+        `"${post.tags.join('; ')}"`,
+        post.author,
+        `"${(post.meta_description || '').replace(/"/g, '""')}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `blog-posts-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download gestart",
+      description: "CSV bestand wordt gedownload"
+    });
+  };
+
+  // Load posts on component mount
+  useEffect(() => {
+    loadGeneratedPosts();
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('nl-NL');
@@ -295,6 +381,7 @@ const CSVProcessor = () => {
       <Tabs defaultValue="processor" className="space-y-6">
         <TabsList>
           <TabsTrigger value="processor">CSV Verwerken</TabsTrigger>
+          <TabsTrigger value="posts">Gegenereerde Posts</TabsTrigger>
           <TabsTrigger value="jobs">Verwerkingshistorie</TabsTrigger>
           <TabsTrigger value="schema">CSV Schema</TabsTrigger>
         </TabsList>
@@ -410,7 +497,12 @@ const CSVProcessor = () => {
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={downloadCSVResults}
+                    disabled={generatedPosts.length === 0}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download Resultaten
                   </Button>
@@ -426,6 +518,114 @@ const CSVProcessor = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="posts" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Gegenereerde Blog Posts</CardTitle>
+                <CardDescription>
+                  Overzicht van alle gegenereerde blog posts uit CSV verwerking
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={downloadCSVResults}
+                  disabled={generatedPosts.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  CSV Export
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadGeneratedPosts}
+                >
+                  <Database className="h-4 w-4 mr-2" />
+                  Vernieuwen
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {generatedPosts.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nog geen blog posts gegenereerd</p>
+                  <p className="text-sm">Verwerk eerst een CSV bestand om posts te genereren</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      {generatedPosts.length} posts gevonden
+                    </p>
+                  </div>
+                  <div className="grid gap-4">
+                    {generatedPosts.map((post) => (
+                      <Card key={post.id} className="border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-medium line-clamp-1">{post.title}</h4>
+                                <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
+                                  {post.status}
+                                </Badge>
+                              </div>
+                              
+                              {post.meta_description && (
+                                <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                  {post.meta_description}
+                                </p>
+                              )}
+                              
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span>{post.word_count} woorden</span>
+                                <span>{post.author}</span>
+                                <span>{formatDate(post.created_at)}</span>
+                              </div>
+                              
+                              {post.tags.length > 0 && (
+                                <div className="flex gap-1 mt-2 flex-wrap">
+                                  {post.tags.slice(0, 3).map((tag, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                  {post.tags.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{post.tags.length - 3} meer
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex flex-col gap-2 ml-4">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPost(post);
+                                  setShowPostViewer(true);
+                                }}
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Bekijken
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="jobs" className="space-y-4">
@@ -519,6 +719,73 @@ const CSVProcessor = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Post Viewer Modal */}
+      {showPostViewer && selectedPost && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between py-4">
+              <div className="flex-1">
+                <CardTitle className="text-lg line-clamp-2">{selectedPost.title}</CardTitle>
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  <Badge variant={selectedPost.status === 'published' ? 'default' : 'secondary'}>
+                    {selectedPost.status}
+                  </Badge>
+                  <span>{selectedPost.word_count} woorden</span>
+                  <span>{selectedPost.author}</span>
+                  <span>{formatDate(selectedPost.created_at)}</span>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setShowPostViewer(false);
+                  setSelectedPost(null);
+                }}
+              >
+                Sluiten
+              </Button>
+            </CardHeader>
+            
+            <CardContent className="max-h-[70vh] overflow-y-auto">
+              {selectedPost.hero_image_url && (
+                <img 
+                  src={selectedPost.hero_image_url} 
+                  alt={selectedPost.title}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              )}
+              
+              {selectedPost.meta_description && (
+                <div className="mb-4 p-3 bg-muted rounded-lg">
+                  <p className="text-sm font-medium mb-1">Meta Beschrijving:</p>
+                  <p className="text-sm text-muted-foreground">{selectedPost.meta_description}</p>
+                </div>
+              )}
+              
+              <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-a:text-primary">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {selectedPost.body_markdown || 'Geen content beschikbaar'}
+                </ReactMarkdown>
+              </div>
+              
+              {selectedPost.tags.length > 0 && (
+                <div className="mt-6 pt-4 border-t">
+                  <p className="text-sm font-medium mb-2">Tags:</p>
+                  <div className="flex gap-1 flex-wrap">
+                    {selectedPost.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
