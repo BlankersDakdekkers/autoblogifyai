@@ -384,6 +384,7 @@ const PricingPage = () => {
           </div>
         </div>
       </div>
+
     </div>
   );
 };
