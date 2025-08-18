@@ -120,17 +120,57 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
     console.log('Starting background processing for job:', jobId);
     console.log('Fetching CSV from:', csvUrl);
     
-    // Fetch CSV data
-    const csvResponse = await fetch(csvUrl);
+    // Fetch CSV data with better error handling
+    console.log('Attempting to fetch CSV from:', csvUrl);
+    
+    let csvResponse;
+    try {
+      csvResponse = await fetch(csvUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; CSV-Processor/1.0)',
+          'Accept': 'text/csv,text/plain,*/*'
+        }
+      });
+    } catch (fetchError) {
+      console.error('Network error fetching CSV:', fetchError);
+      throw new Error(`Network error: Could not reach CSV URL. Check if the URL is accessible: ${fetchError.message}`);
+    }
+    
+    console.log('CSV fetch response status:', csvResponse.status, csvResponse.statusText);
+    console.log('CSV fetch response headers:', Object.fromEntries(csvResponse.headers.entries()));
+    
     if (!csvResponse.ok) {
-      throw new Error(`Failed to fetch CSV: ${csvResponse.status} ${csvResponse.statusText}`);
+      const errorBody = await csvResponse.text().catch(() => 'Could not read error body');
+      console.error('CSV fetch failed. Status:', csvResponse.status, 'Body:', errorBody);
+      
+      if (csvResponse.status === 404) {
+        throw new Error(`CSV file not found (404). Please check:
+1. The Google Sheet is published to web as CSV
+2. The sharing settings allow public access
+3. The URL format is correct: .../pub?output=csv`);
+      } else if (csvResponse.status === 403) {
+        throw new Error(`Access denied (403). The Google Sheet may not be publicly accessible. Please check sharing settings.`);
+      } else {
+        throw new Error(`Failed to fetch CSV (${csvResponse.status}): ${csvResponse.statusText}. Response: ${errorBody}`);
+      }
     }
     
     const csvText = await csvResponse.text();
-    console.log('CSV content preview:', csvText.substring(0, 200) + '...');
+    console.log('CSV content length:', csvText.length);
+    console.log('CSV content preview:', csvText.substring(0, 300) + '...');
+    
+    if (!csvText || csvText.trim().length === 0) {
+      throw new Error('CSV file is empty or contains no data');
+    }
     
     const rows = parseCSV(csvText);
-    console.log(`Parsed ${rows.length} rows from CSV. First row:`, rows[0]);
+    console.log(`Parsed ${rows.length} rows from CSV`);
+    
+    if (rows.length === 0) {
+      throw new Error('No valid data rows found in CSV. Please check the CSV format and content.');
+    }
+    
+    console.log('First row sample:', JSON.stringify(rows[0], null, 2));
 
     // Update job with total rows
     await supabase
@@ -328,25 +368,47 @@ Neem contact op voor een vrijblijvende offerte en professioneel advies.`;
 function parseCSV(csvText: string) {
   console.log('Parsing CSV with length:', csvText.length);
   
-  const lines = csvText.trim().split('\n');
+  if (!csvText || csvText.trim().length === 0) {
+    console.log('CSV text is empty');
+    return [];
+  }
+  
+  const lines = csvText.trim().split('\n').filter(line => line.trim().length > 0);
+  console.log('CSV lines after filtering:', lines.length);
+  
   if (lines.length < 2) {
     console.log('CSV has insufficient lines:', lines.length);
     return [];
   }
   
-  // Handle both comma and semicolon separated files
-  const delimiter = csvText.includes(';') && !csvText.includes(',') ? ';' : ',';
-  console.log('Using delimiter:', delimiter);
+  // Detect delimiter - prefer comma, but use semicolon if no commas found
+  const firstLine = lines[0];
+  const commaCount = (firstLine.match(/,/g) || []).length;
+  const semicolonCount = (firstLine.match(/;/g) || []).length;
   
-  const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+  const delimiter = semicolonCount > commaCount ? ';' : ',';
+  console.log('Using delimiter:', delimiter, `(commas: ${commaCount}, semicolons: ${semicolonCount})`);
+  
+  // Parse headers
+  const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
   console.log('CSV headers:', headers);
+  
+  if (headers.length === 0) {
+    console.log('No headers found');
+    return [];
+  }
   
   const rows = [];
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(delimiter).map(v => v.trim().replace(/"/g, ''));
-    if (values.length !== headers.length) {
-      console.log(`Skipping row ${i} - column count mismatch. Expected: ${headers.length}, Got: ${values.length}`);
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const values = line.split(delimiter).map(v => v.trim().replace(/^"|"$/g, ''));
+    
+    // Skip rows with too few values (but allow some flexibility)
+    if (values.length < Math.floor(headers.length / 2)) {
+      console.log(`Skipping row ${i} - too few values. Expected ~${headers.length}, Got: ${values.length}`);
       continue;
     }
     
@@ -355,10 +417,14 @@ function parseCSV(csvText: string) {
       row[header] = values[index] || '';
     });
     
-    rows.push(row);
+    // Only include rows that have at least a title
+    if (row.title || row.Title || row.TITLE || Object.values(row).some(v => v && String(v).trim().length > 0)) {
+      rows.push(row);
+    }
   }
   
-  console.log('Parsed rows:', rows.length, 'First few rows:', JSON.stringify(rows.slice(0, 2), null, 2));
+  console.log('Successfully parsed rows:', rows.length);
+  console.log('Sample rows:', JSON.stringify(rows.slice(0, 2), null, 2));
   return rows;
 }
 
