@@ -7,33 +7,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    logStep("Function started");
+    console.log("=== CHECK SUBSCRIPTION STARTED ===");
+    
+    // Debug environment variables
+    const allEnv = Deno.env.toObject();
+    console.log("Environment keys:", Object.keys(allEnv));
+    console.log("STRIPE_SECRET_KEY exists:", "STRIPE_SECRET_KEY" in allEnv);
+    console.log("STRIPE_SECRET_KEY value length:", allEnv.STRIPE_SECRET_KEY?.length || 0);
+    console.log("STRIPE_SECRET_KEY starts with sk_:", allEnv.STRIPE_SECRET_KEY?.startsWith("sk_") || false);
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey || stripeKey.trim() === "") {
-      logStep("ERROR: STRIPE_SECRET_KEY not configured or empty");
+    if (!stripeKey || stripeKey.trim() === "" || !stripeKey.startsWith("sk_")) {
+      console.error("STRIPE_SECRET_KEY is invalid:", {
+        exists: !!stripeKey,
+        length: stripeKey?.length || 0,
+        startsWithSk: stripeKey?.startsWith("sk_") || false
+      });
       return new Response(JSON.stringify({ error: "Stripe not configured" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
       });
     }
-    logStep("Stripe key found and validated");
+    console.log("Stripe key is valid");
     
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
     
-    // Use anon client for auth
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -45,9 +50,8 @@ serve(async (req) => {
     
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    console.log("User authenticated:", user.email);
 
-    // Use service role client for database operations
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -55,13 +59,13 @@ serve(async (req) => {
     );
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    logStep("Stripe client initialized");
+    console.log("Stripe client initialized");
     
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    logStep("Stripe customers retrieved", { count: customers.data.length });
+    console.log("Stripe customers retrieved:", customers.data.length);
     
     if (customers.data.length === 0) {
-      logStep("No customer found, setting unsubscribed");
+      console.log("No customer found, setting unsubscribed");
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -78,7 +82,7 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    console.log("Found Stripe customer:", customerId);
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
@@ -96,7 +100,6 @@ serve(async (req) => {
       stripeSubscriptionId = subscription.id;
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       
-      // Determine tier based on amount
       const priceId = subscription.items.data[0].price.id;
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
@@ -109,17 +112,16 @@ serve(async (req) => {
         subscriptionTier = "enterprise";
       }
       
-      logStep("Active subscription found", { 
+      console.log("Active subscription found:", { 
         subscriptionId: subscription.id, 
         tier: subscriptionTier, 
         amount,
         endDate: subscriptionEnd 
       });
     } else {
-      logStep("No active subscription");
+      console.log("No active subscription");
     }
 
-    // Update database
     const { error: upsertError } = await supabaseClient.from("subscribers").upsert({
       email: user.email,
       user_id: user.id,
@@ -132,11 +134,11 @@ serve(async (req) => {
     }, { onConflict: 'email' });
 
     if (upsertError) {
-      logStep("Database upsert error", { error: upsertError });
+      console.error("Database upsert error:", upsertError);
       throw new Error(`Database error: ${upsertError.message}`);
     }
 
-    logStep("Database updated successfully", { subscribed: hasActiveSub, tier: subscriptionTier });
+    console.log("Database updated successfully", { subscribed: hasActiveSub, tier: subscriptionTier });
     
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
@@ -148,7 +150,7 @@ serve(async (req) => {
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    console.error("ERROR:", errorMessage);
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
