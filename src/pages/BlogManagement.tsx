@@ -262,9 +262,14 @@ const BlogManagement = () => {
             <Plus className="h-4 w-4" />
             Nieuwe Blog
           </Button>
-          <Button variant="outline" onClick={handleRefresh} disabled={loading} className="flex items-center gap-2">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Vernieuwen
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Ververs Data
           </Button>
         </div>
       </div>
