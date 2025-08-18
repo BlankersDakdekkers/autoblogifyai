@@ -52,8 +52,23 @@ const WebsitesOverview = () => {
 
   const handleCreateWebsite = () => {
     toast({
-      title: "Nieuwe Website",
-      description: "Website aanmaak wizard geopend"
+      title: "Nieuwe Website Aanmaken",
+      description: "Website wizard wordt geladen..."
+    });
+  };
+
+  const handlePreview = (website: any) => {
+    toast({
+      title: `Preview: ${website.name}`,
+      description: "Opening preview in new tab..."
+    });
+    // In real app: window.open(website.url, '_blank');
+  };
+
+  const handleEdit = (website: any) => {
+    toast({
+      title: `Bewerken: ${website.name}`,
+      description: "Website editor wordt geladen..."
     });
   };
 
@@ -90,11 +105,21 @@ const WebsitesOverview = () => {
                 <div>Bijgewerkt: {website.lastUpdated}</div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => handlePreview(website)}
+                >
                   <Eye className="h-3 w-3" />
                   Preview
                 </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleEdit(website)}
+                >
                   <Settings className="h-3 w-3" />
                   Bewerk
                 </Button>
@@ -109,6 +134,22 @@ const WebsitesOverview = () => {
 
 // Templates Component
 const Templates = () => {
+  const { toast } = useToast();
+
+  const handleUseTemplate = (template: any) => {
+    toast({
+      title: `Template: ${template.name}`,
+      description: "Website wordt aangemaakt met dit template..."
+    });
+  };
+
+  const handlePreviewTemplate = (template: any) => {
+    toast({
+      title: `Preview: ${template.name}`,
+      description: "Template preview wordt geladen..."
+    });
+  };
+
   const templates = [
     {
       id: 1,
@@ -157,10 +198,17 @@ const Templates = () => {
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
-                <Button className="flex-1">
+                <Button 
+                  className="flex-1"
+                  onClick={() => handleUseTemplate(template)}
+                >
                   Gebruik Template
                 </Button>
-                <Button variant="outline" size="icon">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => handlePreviewTemplate(template)}
+                >
                   <Eye className="h-4 w-4" />
                 </Button>
               </div>
@@ -174,6 +222,29 @@ const Templates = () => {
 
 // Components Component
 const ComponentsLibrary = () => {
+  const { toast } = useToast();
+
+  const handleCreateComponent = () => {
+    toast({
+      title: "Nieuw Component",
+      description: "Component editor wordt geladen..."
+    });
+  };
+
+  const handlePreviewComponent = (component: any) => {
+    toast({
+      title: `Preview: ${component.name}`,
+      description: "Component preview wordt getoond..."
+    });
+  };
+
+  const handleEditComponent = (component: any) => {
+    toast({
+      title: `Bewerken: ${component.name}`,
+      description: "Component editor wordt geladen..."
+    });
+  };
+
   const components = [
     { name: "Hero Sectie", category: "Headers", usage: 45 },
     { name: "Contact Form", category: "Forms", usage: 32 },
@@ -191,7 +262,10 @@ const ComponentsLibrary = () => {
             Herbruikbare UI componenten voor je websites
           </p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={handleCreateComponent}
+        >
           <Plus className="h-4 w-4" />
           Nieuw Component
         </Button>
@@ -215,10 +289,18 @@ const ComponentsLibrary = () => {
                   {component.usage}x gebruikt
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePreviewComponent(component)}
+                  >
                     Preview
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditComponent(component)}
+                  >
                     Bewerk
                   </Button>
                 </div>
