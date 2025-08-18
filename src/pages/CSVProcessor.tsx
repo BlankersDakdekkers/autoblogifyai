@@ -467,13 +467,25 @@ const CSVProcessor = () => {
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Label htmlFor="csv-url">CSV URL</Label>
-                  <Input
-                    id="csv-url"
-                    value={csvUrl}
-                    onChange={(e) => setCsvUrl(e.target.value)}
-                    placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                    disabled={isProcessing}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="csv-url"
+                      value={csvUrl}
+                      onChange={(e) => setCsvUrl(e.target.value)}
+                      placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
+                      disabled={isProcessing}
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setCsvUrl("https://docs.google.com/spreadsheets/d/e/2PACX-1vQwm0_EjLBviXloiMoGPT3sDOg5MKPlz-iC7hmEs06Blj4nipUvJyg-pe1Efas/pub?output=csv")}
+                      disabled={isProcessing}
+                    >
+                      Test CSV
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex items-end gap-2">
                   <Button

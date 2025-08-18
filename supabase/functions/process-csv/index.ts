@@ -79,12 +79,20 @@ serve(async (req) => {
 
     console.log('Created job:', job.id);
 
-    // Start background processing with error handling
-    EdgeRuntime.waitUntil(
-      processCSVData(csvUrl, job.id, user.id, supabase).catch(error => {
-        console.error('Background processing failed:', error);
-      })
-    );
+    // Start background processing immediately (not in background)
+    try {
+      await processCSVData(csvUrl, job.id, user.id, supabase);
+    } catch (error) {
+      console.error('Processing failed:', error);
+      // Update job status to failed
+      await supabase
+        .from('csv_processing_jobs')
+        .update({ 
+          status: 'failed',
+          error_message: error.message 
+        })
+        .eq('id', job.id);
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -180,7 +188,10 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
 }
 
 async function processRow(row: any, userId: string, supabase: any) {
-  console.log('Processing row for user:', userId, 'Row data:', row);
+  console.log('Processing row for user:', userId, 'Row data:', Object.keys(row));
+  
+  // Generate content first to avoid async issues
+  const bodyContent = await generateContent(row);
   
   const blogPost = {
     user_id: userId,
@@ -194,14 +205,14 @@ async function processRow(row: any, userId: string, supabase: any) {
     canonical_url: row.canonical_url || '',
     hero_image_url: row.hero_image_url || '',
     hero_image_alt: row.hero_image_alt || '',
-    body_markdown: await generateContent(row),
+    body_markdown: bodyContent,
     faq_json: parseFAQ(row.faq_json),
     cta_heading: row.cta_heading || '',
     cta_subtext: row.cta_subtext || '',
-    tags: row.tags ? row.tags.split(';').map((tag: string) => tag.trim()) : [],
+    tags: row.tags ? row.tags.toString().split(';').map((tag: string) => tag.trim()).filter(Boolean) : [],
     author: row.author || 'AI Author',
     city: row.city || '',
-    word_count: parseInt(row.word_count_target) || 800
+    word_count: parseInt(row.word_count_target) || bodyContent.length / 5 // Rough estimate
   };
 
   console.log('Blog post object to insert:', JSON.stringify(blogPost, null, 2));
@@ -249,7 +260,7 @@ Schrijf de volledige blogpost in Markdown formaat:`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'Je bent een expert Nederlandse content schrijver gespecialiseerd in SEO-blogposts.' },
           { role: 'user', content: prompt }
@@ -357,12 +368,13 @@ function generateSlug(title: string): string {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim();
+    .trim('-');
 }
 
-function parseFAQ(faqJson: string) {
+function parseFAQ(faqString: string): any {
+  if (!faqString) return null;
   try {
-    return faqJson ? JSON.parse(faqJson) : null;
+    return JSON.parse(faqString);
   } catch {
     return null;
   }
