@@ -626,7 +626,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           user_id: user?.id,
           title: item.title,
           slug: item.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'),
-          status: 'publish',
+          status: 'published',
           publish_date: new Date().toISOString().split('T')[0],
           summary: item.meta_description,
           meta_title: item.title,
