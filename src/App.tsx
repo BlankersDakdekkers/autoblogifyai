@@ -14,6 +14,7 @@ import AutoBlogProducerWithTabs from "./pages/AutoBlogProducerWithTabs";
 import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
 import MediaPortal from "./pages/MediaPortal";
+import SalesPage from "./pages/SalesPage";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
         <Layout>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/sales" element={<SalesPage />} />
             <Route path="/dashboard/*" element={<Dashboard />} />
             <Route path="/dashboard/websites" element={<WebsiteBuilder />} />
             <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
