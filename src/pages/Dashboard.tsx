@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
+import { AdminSetup } from "@/components/AdminSetup";
 import { NewUserDashboard } from "@/components/NewUserDashboard";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -224,6 +225,9 @@ const Dashboard = () => {
                 <CreditsDisplay />
               </div>
             </div>
+          </div>
+          <div className="animate-fade-in mb-6" style={{ animationDelay: '100ms' }}>
+            <AdminSetup />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
             <NewUserDashboard />
