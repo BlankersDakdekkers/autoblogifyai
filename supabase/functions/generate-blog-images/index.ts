@@ -55,32 +55,72 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt);
 
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: prompt,
-        size: '1536x1024',
-        quality: 'high',
-        output_format: 'png',
-        n: 1
-      }),
-    });
+    // Try gpt-image-1 first, fallback to dall-e-3 if organization not verified
+    let imageResponse;
+    try {
+      imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1',
+          prompt: prompt,
+          size: '1536x1024',
+          quality: 'high',
+          output_format: 'png',
+          n: 1
+        }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
+      if (!imageResponse.ok) {
+        const errorData = await imageResponse.text();
+        console.log('gpt-image-1 failed, trying dall-e-3:', errorData);
+        
+        // Fallback to dall-e-3
+        imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'dall-e-3',
+            prompt: prompt.substring(0, 1000), // dall-e-3 has shorter prompt limit
+            size: '1792x1024',
+            quality: 'standard',
+            n: 1
+          }),
+        });
+      }
+    } catch (error) {
+      console.error('Image generation error:', error);
+      // Return without image if both fail
       return new Response(
-        JSON.stringify({ error: 'Failed to generate image', details: errorData }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          imageUrl: null,
+          success: true,
+          message: 'Content created without image due to generation error'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const data = await response.json();
+    if (!imageResponse.ok) {
+      const errorData = await imageResponse.text();
+      console.error('All image generation methods failed:', errorData);
+      return new Response(
+        JSON.stringify({ 
+          imageUrl: null,
+          success: true,
+          message: 'Content created without image'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const data = await imageResponse.json();
     console.log('Image generation successful');
 
     // Return the base64 image data
