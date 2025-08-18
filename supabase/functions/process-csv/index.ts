@@ -11,15 +11,27 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
+// Enhanced logging
+const logStep = (step: string, details?: any) => {
+  console.log(`[CSV-PROCESSOR] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
+};
+
+// Rate limiting configuration
+const BATCH_SIZE = 5; // Process 5 rows at a time
+const DELAY_BETWEEN_BATCHES = 1000; // 1 second delay
+const MAX_RETRIES = 3;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { csvUrl } = await req.json();
+    logStep("Processing CSV request started");
+    const { csvUrl, options = {} } = await req.json();
 
     if (!csvUrl) {
+      logStep("ERROR: Missing CSV URL");
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -41,6 +53,7 @@ serve(async (req) => {
     // Verify user authentication
     const { data: { user }, error: userError } = await userSupabase.auth.getUser(token);
     if (userError || !user) {
+      logStep("ERROR: User authentication failed", { userError });
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -50,10 +63,32 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing CSV for user:', user.id);
+    logStep("User authenticated", { userId: user.id });
 
     // Create service role client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check for existing processing jobs for this URL
+    const { data: existingJobs } = await supabase
+      .from('csv_processing_jobs')
+      .select('id, status')
+      .eq('user_id', user.id)
+      .eq('csv_url', csvUrl)
+      .eq('status', 'processing')
+      .limit(1);
+
+    if (existingJobs && existingJobs.length > 0) {
+      logStep("Found existing processing job", { jobId: existingJobs[0].id });
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'CSV wordt al verwerkt',
+          jobId: existingJobs[0].id,
+          status: 'processing'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create processing job
     const { data: job, error: jobError } = await supabase
@@ -67,7 +102,7 @@ serve(async (req) => {
       .single();
 
     if (jobError) {
-      console.error('Error creating job:', jobError);
+      logStep("ERROR: Job creation failed", { jobError });
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -77,22 +112,23 @@ serve(async (req) => {
       );
     }
 
-    console.log('Created job:', job.id);
+    logStep("Job created", { jobId: job.id });
 
-    // Start background processing immediately (not in background)
-    try {
-      await processCSVData(csvUrl, job.id, user.id, supabase);
-    } catch (error) {
-      console.error('Processing failed:', error);
-      // Update job status to failed
-      await supabase
-        .from('csv_processing_jobs')
-        .update({ 
-          status: 'failed',
-          error_message: error.message 
+    // Start background processing with improved error handling
+    EdgeRuntime.waitUntil(
+      processCSVData(csvUrl, job.id, user.id, supabase, options)
+        .catch(error => {
+          logStep("ERROR: Background processing failed", { error: error.message });
+          // Update job status to failed
+          supabase
+            .from('csv_processing_jobs')
+            .update({ 
+              status: 'failed',
+              error_message: error.message 
+            })
+            .eq('id', job.id);
         })
-        .eq('id', job.id);
-    }
+    );
 
     return new Response(
       JSON.stringify({ 
@@ -104,7 +140,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error in process-csv function:', error);
+    logStep("ERROR: Request processing failed", { error: error.message });
     return new Response(
       JSON.stringify({ 
         success: false,
@@ -115,10 +151,12 @@ serve(async (req) => {
   }
 });
 
-async function processCSVData(csvUrl: string, jobId: string, userId: string, supabase: any) {
+async function processCSVData(csvUrl: string, jobId: string, userId: string, supabase: any, options: any = {}) {
+  const startTime = Date.now();
+  let processedCount = 0;
+  
   try {
-    console.log('Starting background processing for job:', jobId);
-    console.log('Fetching CSV from:', csvUrl);
+    logStep("Background processing started", { jobId, csvUrl: csvUrl.substring(0, 100) + '...' });
     
     // Security: Validate CSV URL to prevent SSRF attacks
     if (!isValidCsvUrl(csvUrl)) {
@@ -247,66 +285,139 @@ Tip: Test je URL eerst in de browser om te controleren of deze werkt.`);
       .eq('id', jobId);
 
     let processedCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
 
-    // Process each row
-    for (const row of rows) {
-      try {
-        await processRow(row, userId, supabase);
-        processedCount++;
+    // Process rows in batches for better performance and rate limiting
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE);
+      logStep("Processing batch", { 
+        batchNumber: Math.floor(i / BATCH_SIZE) + 1, 
+        batchSize: batch.length,
+        totalBatches: Math.ceil(rows.length / BATCH_SIZE)
+      });
+
+      // Process batch rows in parallel with error handling
+      const batchPromises = batch.map(async (row, index) => {
+        const rowIndex = i + index;
+        let retryCount = 0;
         
-        // Update progress every 5 rows
-        if (processedCount % 5 === 0) {
-          await supabase
-            .from('csv_processing_jobs')
-            .update({ processed_rows: processedCount })
-            .eq('id', jobId);
+        while (retryCount < MAX_RETRIES) {
+          try {
+            await processRow(row, userId, supabase, rowIndex);
+            successCount++;
+            return { success: true, rowIndex };
+          } catch (error) {
+            retryCount++;
+            logStep("Row processing error", { 
+              rowIndex, 
+              attempt: retryCount, 
+              error: error.message 
+            });
+            
+            if (retryCount >= MAX_RETRIES) {
+              errorCount++;
+              return { success: false, rowIndex, error: error.message };
+            }
+            
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+          }
         }
-      } catch (error) {
-        console.error('Error processing row:', error);
-        // Continue processing other rows
+      });
+
+      // Wait for batch to complete
+      await Promise.all(batchPromises);
+      processedCount += batch.length;
+      
+      // Update progress every batch
+      await supabase
+        .from('csv_processing_jobs')
+        .update({ 
+          processed_rows: processedCount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+
+      // Add delay between batches to respect rate limits
+      if (i + BATCH_SIZE < rows.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
       }
     }
 
-    // Mark job as completed
+    const endTime = Date.now();
+    const processingTime = (endTime - startTime) / 1000;
+
+    // Mark job as completed with statistics
     await supabase
       .from('csv_processing_jobs')
       .update({ 
         status: 'completed',
-        processed_rows: processedCount
+        processed_rows: processedCount,
+        updated_at: new Date().toISOString()
       })
       .eq('id', jobId);
 
-    console.log(`Successfully processed ${processedCount}/${rows.length} rows`);
+    logStep("Processing completed successfully", { 
+      jobId,
+      totalRows: rows.length,
+      processedCount,
+      successCount,
+      errorCount,
+      processingTimeSeconds: processingTime
+    });
 
   } catch (error) {
-    console.error('Background processing error:', error);
+    logStep("ERROR: Background processing failed", { 
+      jobId, 
+      error: error.message,
+      processedRows: processedCount
+    });
     
-    // Mark job as failed
+    // Mark job as failed with detailed error info
     await supabase
       .from('csv_processing_jobs')
       .update({ 
         status: 'failed',
-        error_message: error.message
+        error_message: `Processing failed after ${processedCount} rows: ${error.message}`,
+        processed_rows: processedCount,
+        updated_at: new Date().toISOString()
       })
       .eq('id', jobId);
+      
+    throw error;
   }
 }
 
-async function processRow(row: any, userId: string, supabase: any) {
-  console.log('Processing row for user:', userId, 'Row data:', Object.keys(row));
+async function processRow(row: any, userId: string, supabase: any, rowIndex?: number) {
+  logStep("Processing row", { rowIndex, userId, rowKeys: Object.keys(row) });
   
-  // Generate content first to avoid async issues
-  const bodyContent = await generateContent(row);
+  // Enhanced row validation
+  const requiredFields = ['title'];
+  const missingFields = requiredFields.filter(field => !row[field] && !row[field.charAt(0).toUpperCase() + field.slice(1)]);
+  
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+  }
+  
+  // Generate content with retry logic
+  let bodyContent = '';
+  try {
+    bodyContent = await generateContentWithRetry(row);
+  } catch (error) {
+    logStep("Content generation failed, using fallback", { rowIndex, error: error.message });
+    bodyContent = generateMockContent(row);
+  }
   
   const blogPost = {
     user_id: userId,
     title: row.title || row.Title || 'Untitled',
-    slug: row.slug || generateSlug(row.title || row.Title || 'untitled'),
+    slug: generateUniqueSlug(row.title || row.Title || 'untitled', supabase),
     status: row.status || 'draft',
-    publish_date: row.publish_date || new Date().toISOString().split('T')[0],
+    publish_date: validateAndFormatDate(row.publish_date) || new Date().toISOString().split('T')[0],
     summary: row.summary || '',
     meta_title: row.meta_title || row.title || row.Title,
-    meta_description: row.meta_description || '',
+    meta_description: row.meta_description || truncateText(bodyContent, 160),
     canonical_url: row.canonical_url || '',
     hero_image_url: row.hero_image_url || '',
     hero_image_alt: row.hero_image_alt || '',
@@ -314,13 +425,13 @@ async function processRow(row: any, userId: string, supabase: any) {
     faq_json: parseFAQ(row.faq_json),
     cta_heading: row.cta_heading || '',
     cta_subtext: row.cta_subtext || '',
-    tags: row.tags ? row.tags.toString().split(';').map((tag: string) => tag.trim()).filter(Boolean) : [],
+    tags: parseTagsFromString(row.tags),
     author: row.author || 'AI Author',
     city: row.city || '',
-    word_count: parseInt(row.word_count_target) || bodyContent.length / 5 // Rough estimate
+    word_count: calculateWordCount(bodyContent)
   };
 
-  console.log('Blog post object to insert:', JSON.stringify(blogPost, null, 2));
+  logStep("Inserting blog post", { rowIndex, title: blogPost.title, slug: blogPost.slug });
 
   const { data, error } = await supabase
     .from('blog_posts')
@@ -328,12 +439,29 @@ async function processRow(row: any, userId: string, supabase: any) {
     .select();
 
   if (error) {
-    console.error('Error inserting blog post:', error);
-    console.error('Blog post data that failed:', blogPost);
-    throw error;
+    logStep("ERROR: Blog post insertion failed", { rowIndex, error, blogPost: Object.keys(blogPost) });
+    throw new Error(`Database insertion failed: ${error.message}`);
   }
   
-  console.log('Successfully inserted blog post:', data);
+  logStep("Blog post inserted successfully", { rowIndex, postId: data[0]?.id });
+  return data[0];
+}
+
+// Enhanced content generation with retry logic
+async function generateContentWithRetry(row: any, maxRetries: number = 2): Promise<string> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await generateContent(row);
+    } catch (error) {
+      logStep("Content generation attempt failed", { attempt, error: error.message });
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+  throw new Error('All content generation attempts failed');
 }
 
 async function generateContent(row: any): Promise<string> {
@@ -375,7 +503,7 @@ Schrijf de volledige blogpost in Markdown formaat:`;
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status);
+      logStep("OpenAI API error", { status: response.status });
       return generateMockContent(row);
     }
 
@@ -383,7 +511,7 @@ Schrijf de volledige blogpost in Markdown formaat:`;
     return data.choices[0].message.content;
 
   } catch (error) {
-    console.error('Error generating content with AI:', error);
+    logStep("Content generation error", { error: error.message });
     return generateMockContent(row);
   }
 }
@@ -570,4 +698,49 @@ function parseFAQ(faqString: string): any {
   } catch {
     return null;
   }
+}
+
+// Helper functions for enhanced processing
+function generateUniqueSlug(title: string, supabase: any): string {
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+  
+  // For now, return base slug with timestamp for uniqueness
+  // In production, you might want to check database for duplicates
+  return `${baseSlug}-${Date.now()}`;
+}
+
+function validateAndFormatDate(dateString: string): string | null {
+  if (!dateString) return null;
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    return date.toISOString().split('T')[0];
+  } catch {
+    return null;
+  }
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (!text || text.length <= maxLength) return text || '';
+  return text.substring(0, maxLength - 3).trim() + '...';
+}
+
+function parseTagsFromString(tagsString: string): string[] {
+  if (!tagsString) return [];
+  return tagsString.toString()
+    .split(/[;,]/)
+    .map(tag => tag.trim())
+    .filter(Boolean)
+    .slice(0, 10); // Limit to 10 tags
+}
+
+function calculateWordCount(text: string): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).length;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   FileSpreadsheet, 
   Upload, 
@@ -19,15 +20,21 @@ import {
   Loader2,
   Clock,
   BarChart3,
-  X
+  X,
+  RefreshCw,
+  Settings,
+  Zap,
+  Eye,
+  ExternalLink,
+  Copy,
+  AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CSVFileUploader } from "@/components/CSVFileUploader";
-import { ProgressSidebar } from "@/components/ProgressSidebar";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CSVJob {
   id: string;
@@ -63,6 +70,7 @@ interface ProcessingStep {
 
 const CSVProcessor = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [csvUrl, setCsvUrl] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentJob, setCurrentJob] = useState<CSVJob | null>(null);
@@ -70,6 +78,10 @@ const CSVProcessor = () => {
   const [generatedPosts, setGeneratedPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [showPostViewer, setShowPostViewer] = useState(false);
+  const [activeTab, setActiveTab] = useState("processor");
+  const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     {
@@ -122,8 +134,72 @@ const CSVProcessor = () => {
     { field: "hero_image_url", type: "string", required: false, description: "Hoofdafbeelding URL" },
     { field: "body_markdown", type: "text", required: false, description: "Markdown content" },
     { field: "faq_json", type: "json", required: false, description: "JSON array van FAQ items" },
-    { field: "city", type: "string", required: false, description: "Lokatie voor lokale SEO" }
+    { field: "city", type: "string", required: false, description: "Lokatie voor lokale SEO" },
+    { field: "word_count_target", type: "number", required: false, description: "Gewenst aantal woorden voor content" }
   ];
+
+  // Real-time URL validation
+  const validateCsvUrl = useCallback(async (url: string) => {
+    if (!url.trim()) {
+      setUrlValidationStatus('idle');
+      return;
+    }
+
+    setUrlValidationStatus('validating');
+    
+    try {
+      // Basic URL validation
+      new URL(url);
+      
+      // For Google Sheets, validate format
+      if (url.includes('docs.google.com/spreadsheets')) {
+        const hasValidFormat = /\/d\/([a-zA-Z0-9-_]+)\//.test(url) || /\/d\/e\/([a-zA-Z0-9-_]+)\//.test(url);
+        if (!hasValidFormat) {
+          setUrlValidationStatus('invalid');
+          return;
+        }
+      }
+      
+      setUrlValidationStatus('valid');
+    } catch {
+      setUrlValidationStatus('invalid');
+    }
+  }, []);
+
+  // Debounced URL validation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      validateCsvUrl(csvUrl);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [csvUrl, validateCsvUrl]);
+
+  // Load jobs on mount
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  const loadJobs = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('csv_processing_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setJobs((data || []).map(job => ({
+        ...job,
+        status: job.status as 'pending' | 'processing' | 'completed' | 'failed'
+      })));
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+    }
+  };
 
   const handleStartProcessing = async () => {
     if (!csvUrl.trim()) {
@@ -415,26 +491,79 @@ const CSVProcessor = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <FileSpreadsheet className="h-8 w-8 text-primary" />
-            CSV Processor
+            CSV Processor Pro
           </h2>
           <p className="text-muted-foreground">
-            Verwerk CSV bestanden naar SEO-geoptimaliseerde blogposts
+            Verwerk CSV bestanden naar SEO-geoptimaliseerde blogposts met AI content generatie
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            {showAdvancedOptions ? 'Verberg' : 'Geavanceerd'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={loadJobs}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Vernieuwen
+          </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="processor" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="processor">CSV Verwerken</TabsTrigger>
-          <TabsTrigger value="posts">Gegenereerde Posts</TabsTrigger>
-          <TabsTrigger value="jobs">Verwerkingshistorie</TabsTrigger>
-          <TabsTrigger value="schema">CSV Schema</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="processor">
+              <Zap className="h-4 w-4 mr-2" />
+              CSV Verwerken
+            </TabsTrigger>
+            <TabsTrigger value="posts">
+              <FileText className="h-4 w-4 mr-2" />
+              Posts ({generatedPosts.length})
+            </TabsTrigger>
+            <TabsTrigger value="jobs">
+              <Database className="h-4 w-4 mr-2" />
+              Historie ({jobs.length})
+            </TabsTrigger>
+            <TabsTrigger value="schema">
+              <Settings className="h-4 w-4 mr-2" />
+              Schema
+            </TabsTrigger>
+          </TabsList>
+          {activeTab === 'posts' && (
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={downloadCSVResults}
+                disabled={generatedPosts.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={loadGeneratedPosts}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Vernieuwen
+              </Button>
+            </div>
+          )}
+        </div>
 
         <TabsContent value="processor" className="space-y-6">
           {/* File Upload Section */}
@@ -463,19 +592,55 @@ const CSVProcessor = () => {
                 Alternatief: Voer de URL van je Google Sheets CSV in
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label htmlFor="csv-url">CSV URL</Label>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="csv-url" className="text-base font-medium">
+                    CSV URL
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Voer de directe URL van je CSV bestand in (Google Sheets: File → Publish to web → CSV)
+                  </p>
                   <div className="flex gap-2">
-                    <Input
-                      id="csv-url"
-                      value={csvUrl}
-                      onChange={(e) => setCsvUrl(e.target.value)}
-                      placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                      disabled={isProcessing}
-                      className="flex-1"
-                    />
+                    <div className="flex-1">
+                      <Input
+                        id="csv-url"
+                        value={csvUrl}
+                        onChange={(e) => setCsvUrl(e.target.value)}
+                        placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
+                        disabled={isProcessing}
+                        className={`transition-colors ${
+                          urlValidationStatus === 'valid' ? 'border-green-500 focus:border-green-500' :
+                          urlValidationStatus === 'invalid' ? 'border-red-500 focus:border-red-500' :
+                          'border-border'
+                        }`}
+                      />
+                      {urlValidationStatus === 'validating' && (
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          URL valideren...
+                        </div>
+                      )}
+                      {urlValidationStatus === 'valid' && (
+                        <div className="flex items-center gap-2 mt-1 text-sm text-green-600">
+                          <CheckCircle className="h-3 w-3" />
+                          Geldige URL
+                        </div>
+                      )}
+                      {urlValidationStatus === 'invalid' && (
+                        <div className="flex items-center gap-2 mt-1 text-sm text-red-600">
+                          <AlertTriangle className="h-3 w-3" />
+                          Ongeldige URL format
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick URL Examples */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Quick Start Voorbeelden:</Label>
+                  <div className="flex flex-wrap gap-2">
                     <Button 
                       type="button"
                       variant="outline" 
@@ -483,7 +648,8 @@ const CSVProcessor = () => {
                       onClick={() => setCsvUrl("https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv")}
                       disabled={isProcessing}
                     >
-                      Test CSV
+                      <Copy className="h-3 w-3 mr-1" />
+                      Test Dataset
                     </Button>
                     <Button 
                       type="button"
@@ -492,15 +658,37 @@ const CSVProcessor = () => {
                       onClick={() => setCsvUrl("https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv")}
                       disabled={isProcessing}
                     >
+                      <Copy className="h-3 w-3 mr-1" />
                       Demo CSV
                     </Button>
                   </div>
                 </div>
-                <div className="flex items-end gap-2">
+
+                {/* Advanced Options */}
+                {showAdvancedOptions && (
+                  <Alert>
+                    <Settings className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="space-y-2">
+                        <p className="font-medium">Geavanceerde Opties:</p>
+                        <ul className="text-sm space-y-1">
+                          <li>• Batch grootte: 10 rijen per keer</li>
+                          <li>• AI Model: GPT-4o-mini voor content generatie</li>
+                          <li>• Rate limiting: 60 requests per minuut</li>
+                          <li>• Max bestandsgrootte: 10MB</li>
+                        </ul>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
                   <Button
                     onClick={handleStartProcessing}
-                    disabled={isProcessing || !csvUrl.trim()}
-                    className="min-w-[120px]"
+                    disabled={isProcessing || urlValidationStatus !== 'valid'}
+                    className="min-w-[140px]"
+                    size="lg"
                   >
                     {isProcessing ? (
                       <>
@@ -520,6 +708,14 @@ const CSVProcessor = () => {
                       Pauzeren
                     </Button>
                   )}
+                  <Button 
+                    variant="outline"
+                    onClick={() => setActiveTab('schema')}
+                    disabled={isProcessing}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Bekijk Schema
+                  </Button>
                 </div>
               </div>
             </CardContent>
