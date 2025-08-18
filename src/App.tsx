@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import WebsiteBuilder from "./pages/WebsiteBuilder";
 import AffiliatePage from "./pages/AffiliatePage";
+import AIWebsiteGenerator from "./pages/AIWebsiteGenerator";
 import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/dashboard/templates" element={<WebsiteBuilder />} />
             <Route path="/dashboard/components" element={<WebsiteBuilder />} />
             <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/ai-generator" element={<AIWebsiteGenerator />} />
             <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
             <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
             <Route path="/dashboard/academy" element={<CoursePage />} />

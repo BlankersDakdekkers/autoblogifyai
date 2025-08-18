@@ -98,6 +98,12 @@ export const navigationSections: NavigationSection[] = [
         icon: Zap,
         description: "Sites deployen en beheren"
       },
+      { 
+        title: "AI Generator", 
+        url: "/dashboard/ai-generator", 
+        icon: Zap,
+        description: "AI website maker + WordPress"
+      },
     ]
   },
   {
