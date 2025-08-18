@@ -249,111 +249,111 @@ const Index = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
 
-      {/* Hero Section - Completely Redesigned */}
-      <section className="relative pt-20 pb-32 hero-gradient overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
+      {/* Hero Section - Mobile Optimized */}
+      <section className="relative pt-16 md:pt-20 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
         
-        <div className="container relative z-10">
+        <div className="container relative z-10 px-4">
           <div className="max-w-5xl mx-auto text-center text-white">
             {/* Enhanced Social Proof Badge */}
-            <Badge className="mb-8 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-8 py-4 text-lg font-bold animate-pulse shadow-xl">
-              <Star className="h-6 w-6 mr-3 fill-current" />
-              🔥 BEPERKTE TIJD: 14 Dagen Gratis + 50% Korting Voor Eerste 100 Klanten
+            <Badge className="mb-6 md:mb-8 bg-white text-primary border-0 px-4 md:px-8 py-2 md:py-4 text-sm md:text-lg font-bold animate-pulse shadow-xl">
+              <Star className="h-4 md:h-6 w-4 md:w-6 mr-2 md:mr-3 fill-current" />
+              🔥 14 Dagen Gratis + 50% Korting
             </Badge>
 
-            {/* Power Headline - Enhanced */}
-            <h1 className="text-6xl md:text-8xl font-heading font-bold mb-8 leading-tight drop-shadow-xl animate-fade-in">
-              <span className="text-white drop-shadow-lg">Van Excel naar</span>
-              <span className="block mt-4 bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent drop-shadow-lg animate-scale-in">
-                Duizenden SEO-geoptimaliseerde artikelen
+            {/* Power Headline - Mobile Optimized */}
+            <h1 className="text-3xl md:text-6xl lg:text-8xl font-bold mb-6 md:mb-8 leading-tight text-white animate-fade-in">
+              <span className="block">Van Excel naar</span>
+              <span className="block mt-2 md:mt-4 text-yellow-300">
+                Duizenden artikelen
               </span>
-              <span className="block text-5xl md:text-6xl mt-6 text-white drop-shadow-lg">in 24 uur</span>
+              <span className="block text-2xl md:text-5xl lg:text-6xl mt-3 md:mt-6">in 24 uur</span>
             </h1>
 
-            {/* Enhanced Value Proposition */}
-            <p className="text-2xl md:text-3xl mb-10 text-white font-medium max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
-              Stop met weken besteden aan het schrijven van content. Onze AI schrijft 
-              <span className="text-yellow-300 font-semibold drop-shadow-md bg-white/10 px-3 py-1 rounded-lg mx-2"> professionele, SEO-geoptimaliseerde blogposts</span> 
-              die hoger ranken dan handgeschreven content.
+            {/* Enhanced Value Proposition - Mobile Readable */}
+            <p className="text-lg md:text-2xl lg:text-3xl mb-6 md:mb-10 text-white/90 font-medium max-w-4xl mx-auto leading-relaxed px-4">
+              Stop met weken besteden aan content. Onze AI schrijft 
+              <span className="text-yellow-300 font-semibold bg-white/20 px-2 py-1 rounded-lg mx-1"> professionele, SEO-geoptimaliseerde blogposts</span> 
+              die hoger ranken.
             </p>
 
-            {/* Enhanced Value Stack */}
-            <div className="bg-white/20 backdrop-blur-lg rounded-3xl p-8 mb-10 border border-white/30 shadow-2xl max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-6 text-white font-semibold">
-                <div className="flex items-center justify-center drop-shadow-md">
-                  <CheckCircle className="h-6 w-6 text-green-400 mr-3 drop-shadow-sm" />
-                  <span className="text-lg">95% sneller dan handmatig</span>
+            {/* Enhanced Value Stack - Mobile Stacked */}
+            <div className="bg-white/20 backdrop-blur-lg rounded-2xl md:rounded-3xl p-4 md:p-8 mb-6 md:mb-10 border border-white/30 shadow-2xl max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-white font-semibold">
+                <div className="flex items-center justify-center text-center">
+                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
+                  <span className="text-sm md:text-lg">95% sneller</span>
                 </div>
-                <div className="flex items-center justify-center drop-shadow-md">
-                  <CheckCircle className="h-6 w-6 text-green-400 mr-3 drop-shadow-sm" />
-                  <span className="text-lg">€15.000+ besparing per maand</span>
+                <div className="flex items-center justify-center text-center">
+                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
+                  <span className="text-sm md:text-lg">€15k+ besparing</span>
                 </div>
-                <div className="flex items-center justify-center drop-shadow-md">
-                  <CheckCircle className="h-6 w-6 text-green-400 mr-3 drop-shadow-sm" />
-                  <span className="text-lg">Bewezen conversie-resultaten</span>
+                <div className="flex items-center justify-center text-center">
+                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
+                  <span className="text-sm md:text-lg">Bewezen resultaten</span>
                 </div>
               </div>
             </div>
 
-            {/* Enhanced CTA Stack */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+            {/* Enhanced CTA Stack - Mobile Optimized */}
+            <div className="flex flex-col gap-4 md:gap-6 justify-center items-center mb-6 md:mb-8 px-4">
               <Button 
                 size="lg" 
-                className="text-xl px-12 py-6 bg-gradient-to-r from-white to-gray-100 text-primary hover:from-gray-100 hover:to-white shadow-2xl font-bold group transform hover:scale-105 transition-all duration-300"
+                className="w-full md:w-auto text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 bg-white text-primary hover:bg-white/90 shadow-2xl font-bold group transform hover:scale-105 transition-all duration-300"
                 onClick={() => handleSubscribe('professional')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+                    <Loader2 className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6 animate-spin" />
                     Bezig met laden...
                   </>
                 ) : (
                   <>
-                    <Rocket className="mr-3 h-6 w-6 group-hover:animate-bounce" />
+                    <Rocket className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6 group-hover:animate-bounce" />
                     Start GRATIS 14 Dagen Trial
-                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                    <ArrowRight className="ml-2 md:ml-3 h-5 md:h-6 w-5 md:w-6 group-hover:translate-x-2 transition-transform" />
                   </>
                 )}
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-xl px-8 py-6 border-white/50 text-white hover:bg-white/20 backdrop-blur-lg shadow-xl"
+                className="w-full md:w-auto text-lg md:text-xl px-6 md:px-8 py-4 md:py-6 border-white/70 bg-white/10 text-white hover:bg-white/20 backdrop-blur-lg shadow-xl"
               >
-                <Play className="mr-3 h-6 w-6" />
+                <Play className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6" />
                 Bekijk 2-min Demo
               </Button>
             </div>
 
-            {/* Enhanced Trust Indicators */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-4 max-w-3xl mx-auto">
-              <p className="text-white text-lg drop-shadow-md font-semibold">
-                💳 Geen creditcard vereist • 🚀 Setup in 2 minuten • 💯 30 dagen geld terug garantie • 🔒 SSL beveiligd
+            {/* Enhanced Trust Indicators - Mobile Compact */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-8 py-3 md:py-4 max-w-3xl mx-auto">
+              <p className="text-white text-sm md:text-lg font-semibold">
+                💳 Geen creditcard • 🚀 Setup in 2 min • 💯 Geld terug garantie
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Enhanced Social Proof Stats */}
-      <section className="py-20 bg-gradient-to-r from-gray-50 to-gray-100 relative">
-        <div className="container relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Vertrouwd door 2.500+ succesvolle bedrijven</h2>
-            <p className="text-xl text-gray-600">Proven resultaten die spreken voor zich</p>
+      {/* Enhanced Social Proof Stats - Mobile Optimized */}
+      <section className="py-12 md:py-20 bg-gradient-to-r from-secondary/30 to-secondary/50 relative">
+        <div className="container relative z-10 px-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2 md:mb-4">Vertrouwd door 2.500+ succesvolle bedrijven</h2>
+            <p className="text-lg md:text-xl text-muted-foreground">Proven resultaten die spreken voor zich</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
                 <div key={index} className="text-center group">
-                  <div className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105">
-                    <IconComponent className="h-12 w-12 text-primary mx-auto mb-4 group-hover:animate-pulse" />
-                    <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>
-                    <div className="text-gray-600 font-medium">{stat.label}</div>
+                  <div className="bg-background rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 border border-border">
+                    <IconComponent className="h-8 md:h-12 w-8 md:w-12 text-primary mx-auto mb-2 md:mb-4 group-hover:animate-pulse" />
+                    <div className="text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">{stat.number}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
                   </div>
                 </div>
               );
@@ -373,35 +373,35 @@ const Index = () => {
               {String(timeLeft.seconds).padStart(2, '0')}
             </Badge>
             
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
+            <h2 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-6 md:mb-8 leading-tight">
               Kies je 
-              <span className="bg-gradient-to-r from-primary via-purple-600 to-primary/80 bg-clip-text text-transparent block mt-2 animate-scale-in">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary/80 bg-clip-text text-transparent block mt-2 animate-scale-in">
                 Succes Plan
               </span>
             </h2>
-            <p className="text-2xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-8 leading-relaxed">
-              Van handmatige blog posts naar geautomatiseerde content productie. <strong className="text-foreground bg-gradient-to-r from-primary/10 to-purple-600/10 px-3 py-2 rounded-lg">Start vandaag gratis</strong> en ervaar de kracht van AI.
+            <p className="text-lg md:text-2xl lg:text-3xl text-muted-foreground max-w-5xl mx-auto mb-6 md:mb-8 leading-relaxed px-4">
+              Van handmatige blog posts naar geautomatiseerde content productie. <strong className="text-foreground bg-gradient-to-r from-primary/10 to-accent/10 px-2 md:px-3 py-1 md:py-2 rounded-lg">Start vandaag gratis</strong> en ervaar de kracht van AI.
             </p>
             
-            {/* Enhanced Social Proof */}
-            <div className="flex flex-wrap items-center justify-center gap-8 text-lg text-muted-foreground">
-              <div className="flex items-center gap-3 bg-white/80 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                <Users className="h-6 w-6 text-primary" />
-                <span className="font-bold">2,500+ tevreden klanten</span>
+            {/* Enhanced Social Proof - Mobile Stacked */}
+            <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 md:gap-8 text-sm md:text-lg text-muted-foreground">
+              <div className="flex items-center gap-2 md:gap-3 bg-background/90 px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-border">
+                <Users className="h-5 md:h-6 w-5 md:w-6 text-primary" />
+                <span className="font-bold">2,500+ klanten</span>
               </div>
-              <div className="flex items-center gap-3 bg-white/80 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <span className="font-bold">500% meer content output</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-background/90 px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-border">
+                <TrendingUp className="h-5 md:h-6 w-5 md:w-6 text-primary" />
+                <span className="font-bold">500% meer content</span>
               </div>
-              <div className="flex items-center gap-3 bg-white/80 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                <Shield className="h-6 w-6 text-primary" />
-                <span className="font-bold">30-dagen geld terug</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-background/90 px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-border">
+                <Shield className="h-5 md:h-6 w-5 md:w-6 text-primary" />
+                <span className="font-bold">30-dagen garantie</span>
               </div>
             </div>
           </div>
 
-          {/* Premium Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto mb-20">
+          {/* Premium Pricing Cards - Mobile Optimized */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-7xl mx-auto mb-12 md:mb-20 px-4">
             {plans.map((plan, index) => {
               const IconComponent = plan.icon;
               const isCurrentPlan = subscription.subscription_tier?.toLowerCase() === plan.id;
