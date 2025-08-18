@@ -36,6 +36,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AIProgressSidebar } from "@/components/AIProgressSidebar";
+import { CreditsDisplay } from "@/components/CreditsDisplay";
 
 interface KnowledgeItem {
   id: string;

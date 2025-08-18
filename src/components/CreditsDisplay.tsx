@@ -50,20 +50,39 @@ export const CreditsDisplay = () => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
-          priceId: 'price_premium', // This should be your actual Stripe price ID
+          priceId: 'price_premium',
           returnUrl: window.location.origin 
         }
       });
 
       if (error) throw error;
 
-      // Open Stripe checkout in new tab
       window.open(data.url, '_blank');
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
         title: "Fout bij upgrade",
         description: "Kon niet upgraden naar premium",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleBuyCredits = async (creditPackage: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('buy-credits', {
+        body: { creditPackage }
+      });
+
+      if (error) throw error;
+
+      window.open(data.url, '_blank');
+      setShowUpgradeModal(false);
+    } catch (error) {
+      console.error('Error buying credits:', error);
+      toast({
+        title: "Fout bij aankoop",
+        description: "Kon credits niet kopen",
         variant: "destructive"
       });
     }
@@ -143,30 +162,79 @@ export const CreditsDisplay = () => {
       </Card>
 
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-yellow-500" />
-              Upgrade naar Premium
+              Credits Bijkopen of Premium Upgrade
             </DialogTitle>
             <DialogDescription>
-              Je hebt {creditsRemaining} credits over. Upgrade naar Premium voor onbeperkte credits en toegang tot alle functies.
+              Je hebt {creditsRemaining} credits over. Kies een optie om door te gaan met bloggen.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <span className="font-semibold">Premium Voordelen</span>
+            {/* Credit Packages */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm">💰 Credits Pakket (Eenmalig)</h4>
+              <div className="grid gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleBuyCredits(50)}
+                  className="justify-between p-4 h-auto"
+                >
+                  <div className="text-left">
+                    <div className="font-medium">50 Credits</div>
+                    <div className="text-sm text-muted-foreground">€30.00 (€0.60 per credit)</div>
+                  </div>
+                  <Coins className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleBuyCredits(100)}
+                  className="justify-between p-4 h-auto border-green-200 bg-green-50"
+                >
+                  <div className="text-left">
+                    <div className="font-medium">100 Credits</div>
+                    <div className="text-sm text-muted-foreground">€55.00 (€0.55 per credit) <span className="text-green-600 font-medium">Populair!</span></div>
+                  </div>
+                  <Coins className="h-4 w-4 text-green-600" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleBuyCredits(250)}
+                  className="justify-between p-4 h-auto border-purple-200 bg-purple-50"
+                >
+                  <div className="text-left">
+                    <div className="font-medium">250 Credits</div>
+                    <div className="text-sm text-muted-foreground">€125.00 (€0.50 per credit) <span className="text-purple-600 font-medium">Beste deal!</span></div>
+                  </div>
+                  <Coins className="h-4 w-4 text-purple-600" />
+                </Button>
               </div>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Onbeperkte AI blog generatie</li>
+            </div>
+
+            {/* Premium Option */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="h-4 w-4 text-yellow-500" />
+                <span className="font-semibold">Premium Abonnement</span>
+                <Badge className="bg-blue-100 text-blue-800">Beste waarde</Badge>
+              </div>
+              <ul className="text-sm space-y-1 text-muted-foreground mb-3">
+                <li>• <strong>Onbeperkte</strong> AI blog generatie</li>
                 <li>• Onbeperkte CSV processing</li>
-                <li>• Priority support</li>
-                <li>• Advanced SEO functies</li>
+                <li>• Priority support & nieuwe functies</li>
+                <li>• Advanced SEO + neuromarketing</li>
                 <li>• Hero image generatie</li>
               </ul>
+              <Button 
+                onClick={handleUpgrade}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade naar Premium
+              </Button>
             </div>
             
             <div className="flex gap-2">
@@ -176,13 +244,6 @@ export const CreditsDisplay = () => {
                 className="flex-1"
               >
                 Annuleren
-              </Button>
-              <Button 
-                onClick={handleUpgrade}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              >
-                <Crown className="h-4 w-4 mr-2" />
-                Upgrade Nu
               </Button>
             </div>
           </div>
