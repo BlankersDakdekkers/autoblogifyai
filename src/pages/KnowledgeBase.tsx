@@ -343,7 +343,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
 **Wil je hulp bij ${item.title}?** Neem contact met ons op voor professioneel advies en ondersteuning.
               `.trim();
 
-                const result = {
+              const result = {
                 ...item,
                 id: crypto.randomUUID(),
                 type: 'article' as const,
@@ -355,6 +355,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                 rating: 0,
                 status: 'draft' as const,
                 content: finalContent,
+                category: item.category || 'seo', // Ensure category is properly set
                 meta_description: contentData?.metaDescription || `Ontdek alles over ${item.title}. Complete gids met praktische tips en strategieën voor optimale resultaten.`,
                 faq: contentData?.faq || '',
                 cta: contentData?.cta || `Wil je hulp bij ${item.title}? Neem contact op voor professioneel advies.`,
@@ -392,6 +393,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                 views: 0,
                 rating: 0,
                 status: 'draft' as const,
+                category: item.category || 'seo', // Ensure category is properly set
                 content: item.content || `# ${item.title}\n\nContent voor dit artikel wordt nog gegenereerd...`,
                 image_url: null
               };
@@ -630,19 +632,47 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           meta_title: item.title,
           meta_description: item.meta_description,
           hero_image_url: item.hero_image_url,
+          hero_image_alt: item.hero_image_alt,
           body_markdown: item.content,
           tags: item.tags,
           author: item.author,
-          word_count: item.word_count
+          city: item.city || 'Nederland',
+          word_count: item.word_count || 0,
+          faq_json: item.faq ? JSON.stringify(item.faq) : null,
+          cta_heading: item.cta || 'Neem Contact Op',
+          cta_subtext: 'Voor meer informatie en persoonlijk advies'
         };
 
-        const { error } = await supabase
+        // Also save to knowledge_items for the knowledge base
+        const knowledgeItem = {
+          user_id: user?.id,
+          title: item.title,
+          content: item.content,
+          category: item.category || 'seo',
+          type: item.type || 'article',
+          author: item.author,
+          tags: item.tags || [],
+          status: 'published'
+        };
+
+        // Insert blog post
+        const { error: blogError } = await supabase
           .from('blog_posts')
           .insert(blogPost);
 
-        if (error) {
-          console.error('Error publishing post:', error);
-          throw error;
+        if (blogError) {
+          console.error('Error publishing blog post:', blogError);
+          throw blogError;
+        }
+
+        // Insert knowledge item
+        const { error: knowledgeError } = await supabase
+          .from('knowledge_items')
+          .insert(knowledgeItem);
+
+        if (knowledgeError) {
+          console.error('Error saving knowledge item:', knowledgeError);
+          // Don't throw here - blog post was successful
         }
       }
 
@@ -820,56 +850,90 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                   )}
                 </div>
 
-                {/* Article Content Preview */}
-                <div className="max-h-96 overflow-y-auto prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-a:text-primary hover:prose-a:text-primary/80">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      // Ensure proper styling for code blocks
-                      code: ({className, children, ...props}: any) => {
-                        const match = /language-(\w+)/.exec(className || '')
-                        const isInline = !match
-                        return isInline ? (
-                          <code className="bg-muted px-2 py-1 rounded text-sm" {...props}>
-                            {children}
-                          </code>
-                        ) : (
-                          <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                            <code className={className} {...props}>
+                  {/* Article Content Preview */}
+                  <div className="max-h-96 overflow-y-auto">
+                    <div className="prose prose-lg max-w-none 
+                                    prose-headings:text-foreground prose-headings:font-bold
+                                    prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-6
+                                    prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-5
+                                    prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-4
+                                    prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-4
+                                    prose-strong:text-foreground prose-strong:font-semibold
+                                    prose-em:text-foreground 
+                                    prose-ul:text-foreground prose-ul:space-y-2
+                                    prose-ol:text-foreground prose-ol:space-y-2
+                                    prose-li:text-foreground prose-li:leading-relaxed
+                                    prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80
+                                    prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:italic
+                                    prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                                    prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // Enhanced code styling
+                          code: ({className, children, ...props}: any) => {
+                            const match = /language-(\w+)/.exec(className || '')
+                            const isInline = !match
+                            return isInline ? (
+                              <code className="bg-muted text-foreground px-2 py-1 rounded text-sm font-mono" {...props}>
+                                {children}
+                              </code>
+                            ) : (
+                              <pre className="bg-muted p-4 rounded-lg overflow-x-auto border">
+                                <code className={`${className} text-foreground font-mono text-sm`} {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                            )
+                          },
+                          // Enhanced table styling
+                          table: ({children}) => (
+                            <div className="overflow-x-auto my-4">
+                              <table className="w-full border-collapse border border-border rounded-lg overflow-hidden">
+                                {children}
+                              </table>
+                            </div>
+                          ),
+                          th: ({children}) => (
+                            <th className="border border-border bg-muted p-3 text-left font-semibold text-foreground">
                               {children}
-                            </code>
-                          </pre>
-                        )
-                      },
-                      // Style tables
-                      table: ({children}) => (
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse border border-border">
-                            {children}
-                          </table>
-                        </div>
-                      ),
-                      th: ({children}) => (
-                        <th className="border border-border bg-muted p-2 text-left font-semibold">
-                          {children}
-                        </th>
-                      ),
-                      td: ({children}) => (
-                        <td className="border border-border p-2">
-                          {children}
-                        </td>
-                      ),
-                      // Style blockquotes
-                      blockquote: ({children}) => (
-                        <blockquote className="border-l-4 border-primary bg-muted/50 p-4 italic">
-                          {children}
-                        </blockquote>
-                      )
-                    }}
-                  >
-                    {previewItems[currentPreviewIndex].content}
-                  </ReactMarkdown>
-                </div>
+                            </th>
+                          ),
+                          td: ({children}) => (
+                            <td className="border border-border p-3 text-foreground">
+                              {children}
+                            </td>
+                          ),
+                          // Enhanced blockquote styling
+                          blockquote: ({children}) => (
+                            <blockquote className="border-l-4 border-primary bg-muted/30 p-4 my-4 italic rounded-r-lg">
+                              <div className="text-foreground">
+                                {children}
+                              </div>
+                            </blockquote>
+                          ),
+                          // Enhanced list styling
+                          ul: ({children}) => (
+                            <ul className="list-disc list-inside space-y-2 my-4 text-foreground">
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({children}) => (
+                            <ol className="list-decimal list-inside space-y-2 my-4 text-foreground">
+                              {children}
+                            </ol>
+                          ),
+                          li: ({children}) => (
+                            <li className="text-foreground leading-relaxed">
+                              {children}
+                            </li>
+                          )
+                        }}
+                      >
+                        {previewItems[currentPreviewIndex].content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
 
                 {/* Tags */}
                 {previewItems[currentPreviewIndex].tags && previewItems[currentPreviewIndex].tags.length > 0 && (
