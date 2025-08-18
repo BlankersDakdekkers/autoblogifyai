@@ -69,6 +69,9 @@ const MediaPortal = () => {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [newMedia, setNewMedia] = useState({
     name: '',
+    title: '',
+    altText: '',
+    metaDescription: '',
     category: '',
     tags: '',
     description: ''
@@ -90,9 +93,19 @@ const MediaPortal = () => {
   });
 
   const handleUpload = () => {
+    // Validatie van verplichte velden
+    if (!newMedia.name || !newMedia.title || !newMedia.altText || !newMedia.metaDescription || !newMedia.category) {
+      toast({
+        title: "Velden ontbreken",
+        description: "Vul alle verplichte velden in voordat je uploadt.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newItem: MediaItem = {
       id: (mediaItems.length + 1).toString(),
-      name: newMedia.name || 'nieuw-bestand',
+      name: newMedia.name,
       type: 'image',
       url: '/placeholder.svg',
       category: newMedia.category,
@@ -104,12 +117,12 @@ const MediaPortal = () => {
     };
 
     setMediaItems([...mediaItems, newItem]);
-    setNewMedia({ name: '', category: '', tags: '', description: '' });
+    setNewMedia({ name: '', title: '', altText: '', metaDescription: '', category: '', tags: '', description: '' });
     setIsUploadOpen(false);
     
     toast({
       title: "Media geüpload",
-      description: "Het bestand is succesvol toegevoegd aan je media bibliotheek.",
+      description: "Het bestand is succesvol toegevoegd met alle SEO metadata.",
     });
   };
 
@@ -147,11 +160,11 @@ const MediaPortal = () => {
               Media Uploaden
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Nieuwe Media Uploaden</DialogTitle>
               <DialogDescription>
-                Voeg nieuwe media toe aan je bibliotheek met de juiste categorisatie
+                Voeg nieuwe media toe met volledige SEO metadata voor optimale vindbaarheid
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -168,18 +181,56 @@ const MediaPortal = () => {
               
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="media-name">Bestandsnaam</Label>
+                  <Label htmlFor="media-name">Bestandsnaam *</Label>
                   <Input
                     id="media-name"
                     value={newMedia.name}
                     onChange={(e) => setNewMedia({...newMedia, name: e.target.value})}
-                    placeholder="Bijv. seo-hero-afbeelding"
+                    placeholder="Bijv. seo-hero-afbeelding.jpg"
+                    required
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="media-title">Titel * (voor HTML title attribute)</Label>
+                  <Input
+                    id="media-title"
+                    value={newMedia.title}
+                    onChange={(e) => setNewMedia({...newMedia, title: e.target.value})}
+                    placeholder="Beschrijvende titel die bij hover wordt getoond"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="media-alt">Alt Tekst * (voor toegankelijkheid)</Label>
+                  <Input
+                    id="media-alt"
+                    value={newMedia.altText}
+                    onChange={(e) => setNewMedia({...newMedia, altText: e.target.value})}
+                    placeholder="Beschrijf wat er in de afbeelding te zien is"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="media-meta">Meta Omschrijving * (voor SEO)</Label>
+                  <Textarea
+                    id="media-meta"
+                    value={newMedia.metaDescription}
+                    onChange={(e) => setNewMedia({...newMedia, metaDescription: e.target.value})}
+                    placeholder="SEO-vriendelijke omschrijving van de afbeelding (max 160 tekens)"
+                    maxLength={160}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {newMedia.metaDescription.length}/160 tekens
+                  </p>
                 </div>
                 
                 <div>
-                  <Label htmlFor="media-category">Categorie</Label>
-                  <Select value={newMedia.category} onValueChange={(value) => setNewMedia({...newMedia, category: value})}>
+                  <Label htmlFor="media-category">Categorie *</Label>
+                  <Select value={newMedia.category} onValueChange={(value) => setNewMedia({...newMedia, category: value})} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecteer categorie" />
                     </SelectTrigger>
@@ -202,18 +253,24 @@ const MediaPortal = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="media-description">Beschrijving</Label>
+                  <Label htmlFor="media-description">Interne Beschrijving</Label>
                   <Textarea
                     id="media-description"
                     value={newMedia.description}
                     onChange={(e) => setNewMedia({...newMedia, description: e.target.value})}
-                    placeholder="Korte beschrijving van het mediabestand"
+                    placeholder="Interne notities over dit mediabestand"
                   />
                 </div>
               </div>
               
               <div className="flex gap-2">
-                <Button onClick={handleUpload} className="flex-1">Upload Media</Button>
+                <Button 
+                  onClick={handleUpload} 
+                  className="flex-1"
+                  disabled={!newMedia.name || !newMedia.title || !newMedia.altText || !newMedia.metaDescription || !newMedia.category}
+                >
+                  Upload Media
+                </Button>
                 <Button variant="outline" onClick={() => setIsUploadOpen(false)}>Annuleren</Button>
               </div>
             </div>
