@@ -479,13 +479,13 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="keywords">Keywords</TabsTrigger>
-          <TabsTrigger value="voice">Voice Input</TabsTrigger>
-          <TabsTrigger value="generator">CSV Generator</TabsTrigger>
-          <TabsTrigger value="posts">Blog Posts</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="settings">Instellingen</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 gap-1">
+          <TabsTrigger value="keywords" className="text-xs sm:text-sm">Keywords</TabsTrigger>
+          <TabsTrigger value="voice" className="text-xs sm:text-sm">Voice</TabsTrigger>
+          <TabsTrigger value="generator" className="text-xs sm:text-sm">CSV</TabsTrigger>
+          <TabsTrigger value="posts" className="text-xs sm:text-sm">Posts</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm">Settings</TabsTrigger>
         </TabsList>
 
         {/* Keywords Tab */}
