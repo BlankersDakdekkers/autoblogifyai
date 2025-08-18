@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { 
   Search, 
   Book, 
@@ -341,7 +343,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
 **Wil je hulp bij ${item.title}?** Neem contact met ons op voor professioneel advies en ondersteuning.
               `.trim();
 
-              const result = {
+                const result = {
                 ...item,
                 id: crypto.randomUUID(),
                 type: 'article' as const,
@@ -356,7 +358,9 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                 meta_description: contentData?.metaDescription || `Ontdek alles over ${item.title}. Complete gids met praktische tips en strategieën voor optimale resultaten.`,
                 faq: contentData?.faq || '',
                 cta: contentData?.cta || `Wil je hulp bij ${item.title}? Neem contact op voor professioneel advies.`,
-                image_url: imageData?.imageUrl || null
+                image_url: imageData?.imageUrl || null,
+                hero_image_url: contentData?.post?.hero_image_url || null,
+                hero_image_alt: contentData?.post?.hero_image_alt || null
               };
 
               // Mark as completed
@@ -817,18 +821,54 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                 </div>
 
                 {/* Article Content Preview */}
-                <div className="max-h-96 overflow-y-auto prose prose-sm max-w-none">
-                  <div 
-                    dangerouslySetInnerHTML={{ 
-                      __html: previewItems[currentPreviewIndex].content
-                        .replace(/^# /gm, '<h1>')
-                        .replace(/^## /gm, '<h2>')
-                        .replace(/^### /gm, '<h3>')
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                        .replace(/\n/g, '<br/>')
+                <div className="max-h-96 overflow-y-auto prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-a:text-primary hover:prose-a:text-primary/80">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // Ensure proper styling for code blocks
+                      code: ({className, children, ...props}: any) => {
+                        const match = /language-(\w+)/.exec(className || '')
+                        const isInline = !match
+                        return isInline ? (
+                          <code className="bg-muted px-2 py-1 rounded text-sm" {...props}>
+                            {children}
+                          </code>
+                        ) : (
+                          <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          </pre>
+                        )
+                      },
+                      // Style tables
+                      table: ({children}) => (
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse border border-border">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      th: ({children}) => (
+                        <th className="border border-border bg-muted p-2 text-left font-semibold">
+                          {children}
+                        </th>
+                      ),
+                      td: ({children}) => (
+                        <td className="border border-border p-2">
+                          {children}
+                        </td>
+                      ),
+                      // Style blockquotes
+                      blockquote: ({children}) => (
+                        <blockquote className="border-l-4 border-primary bg-muted/50 p-4 italic">
+                          {children}
+                        </blockquote>
+                      )
                     }}
-                  />
+                  >
+                    {previewItems[currentPreviewIndex].content}
+                  </ReactMarkdown>
                 </div>
 
                 {/* Tags */}
