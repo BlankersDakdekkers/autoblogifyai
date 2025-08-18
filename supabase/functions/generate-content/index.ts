@@ -18,11 +18,15 @@ serve(async (req) => {
       targetKeyword, 
       city, 
       contentType = 'blog', 
-      wordCount = 800,
+      wordCount = 1200,  // Updated to match frontend
       language = 'nl',
       includeLocalSEO = false,
       includeImages = false,
-      includeSchema = false
+      includeSchema = false,
+      includeMetaDescription = true,  // Added from frontend
+      includeFaq = true,              // Added from frontend
+      includeCta = true,              // Added from frontend
+      useNeuromarketing = true        // Added from frontend
     } = await req.json();
 
     // Use anon key for auth, service role key for database writes
@@ -56,16 +60,16 @@ serve(async (req) => {
       );
     }
 
-    // Enhanced system prompt for comprehensive, SEO-optimized long-form content
-    const systemPrompt = `Je bent een SEO-expert content writer die uitgebreide, professionele artikelen schrijft van 3000-5000 woorden.
+    // Enhanced system prompt with neuromarketing and consistent quality
+    const basePrompt = `Je bent een expert SEO content writer die hoogkwalitatieve, professionele artikelen schrijft van ${wordCount} woorden.
 
-BELANGRIJKE EISEN:
-- Schrijf ALTIJD artikelen van minimaal 3000-5000 woorden
+KWALITEITSEISEN:
+- Schrijf CONSISTENTE, hoogkwalitatieve artikelen van exact ${wordCount} woorden
 - Gebruik moderne SEO-technieken (2024/2025)
 - Gebruik perfecte Nederlandse markdown opmaak
-- Maak de tekst zeer uitgebreid en informatief
+- Maak de tekst informatief en boeiend
 - Gebruik headers (H2, H3), lijsten, tabellen waar relevant
-- Voeg praktische tips en voorbeelden toe
+- Voeg praktische tips en concrete voorbeelden toe
 - Optimaliseer voor zoekintentie en gebruikerservaring
 
 MARKDOWN OPMAAK VEREISTEN:
@@ -75,60 +79,63 @@ MARKDOWN OPMAAK VEREISTEN:
 - Gebruik bullet points (- ) en genummerde lijsten (1. )
 - Voeg tabellen toe met | syntax waar relevant
 - Gebruik > voor belangrijke quotes/tips
-- Voeg code blocks toe met \`\`\` waar relevant
 
 MODERNE SEO TECHNIEKEN:
 - Focus op zoekintentie en gebruikerservaring
 - Gebruik LSI keywords en semantische varianten
 - Optimaliseer voor featured snippets
-- Voeg FAQ secties toe
 - Gebruik interne linking concepten
-- Optimaliseer voor Core Web Vitals
 - Focus op E-A-T (Expertise, Authority, Trust)
-
-STRUCTUUR TEMPLATE:
-1. Inleiding (300-500 woorden)
-2. 6-8 hoofdstukken (400-600 woorden elk)
-3. Praktische tips sectie
-4. FAQ sectie
-5. Conclusie (200-300 woorden)
 
 Taal: ${language}`;
 
-    // Enhanced user prompt for comprehensive content
-    const userPrompt = `Schrijf een uitgebreid, professioneel artikel van 3000-5000 woorden over: "${title}"
+    const neuromarketingAddition = useNeuromarketing ? `
+
+NEUROMARKETING TECHNIEKEN:
+- Gebruik emotionele triggers (angst, verlangen, urgentie)
+- Voeg sociale bewijskracht toe (testimonials, cijfers)
+- Gebruik machtsproblemen en oplossingsgerichte taal
+- Creëer urgentie en schaarste waar relevant
+- Gebruik specifieke, concrete taal in plaats van vaag
+- Voeg vertrouwenssignalen toe
+- Gebruik actieve, overtuigende taal` : '';
+
+    const systemPrompt = basePrompt + neuromarketingAddition;
+
+    // Enhanced user prompt for consistent, high-quality content
+    const userPrompt = `Schrijf een professioneel, hoogkwalitatief artikel van exact ${wordCount} woorden over: "${title}"
 
 ONDERWERP FOCUS: ${title}
-DOELGROEP: ${city} - lokaal bedrijf/organisatie
-TREFWOORDEN: Gebruik "${targetKeyword}" en varianten natuurlijk door de tekst
+DOELGROEP: ${city} - Nederlandse doelgroep
+TREFWOORDEN: Gebruik "${targetKeyword}" en varianten natuurlijk door de tekst (keyword density 1-2%)
 
 ARTIKEL INHOUD VEREISTEN:
-- Minimaal 3000-5000 woorden
-- Uitgebreide inleiding die de waarde duidelijk maakt
-- 6-8 hoofdstukken met diepgaande informatie
-- Praktische tips en stap-voor-stap instructies
-- Echte voorbeelden en case studies
+- Exact ${wordCount} woorden (tel zorgvuldig!)
+- Boeiende inleiding die de waarde direct duidelijk maakt
+- 4-6 goed gestructureerde hoofdstukken
+- Praktische tips en concrete voorbeelden
 - Actuele trends en ontwikkelingen (2024/2025)
 - Lokale relevantie voor ${city} waar mogelijk
 - Actionable insights die direct bruikbaar zijn
+- Professionele, betrouwbare toon
 
-STRUCTUUR:
+VERPLICHTE STRUCTUUR:
 ## Inleiding
-Leg uit waarom dit onderwerp belangrijk is, wat de lezer kan verwachten
+Directe waardepropositie en overview (150-200 woorden)
 
-## [6-8 Hoofdstukken]
-Elk hoofdstuk 400-600 woorden met diepgaande informatie
-
-## Praktische Tips
-Concrete, uitvoerbare adviezen
-
-## Veelgestelde Vragen (FAQ)
-5-8 relevante vragen met uitgebreide antwoorden
+## [4-6 Hoofdstukken met beschrijvende titels]
+Elk hoofdstuk ${Math.floor(wordCount / 6)}-${Math.floor(wordCount / 4)} woorden met diepgaande, praktische informatie
 
 ## Conclusie
-Samenvatting en volgende stappen
+Samenvatting, key takeaways en volgende stappen (100-150 woorden)
 
-Gebruik perfecte markdown opmaak met headers, lijsten, **vetgedrukte tekst**, tabellen en quotes.`;
+KWALITEITSVEREISTEN:
+- Gebruik perfecte markdown opmaak met ##, ###, **vet**, lijsten
+- Voeg concrete voorbeelden en data toe
+- Schrijf in de derde persoon, professioneel
+- Gebruik actieve zinnen
+- Vermijd clichés en vage taal
+- Tel woorden nauwkeurig en kom uit op exact ${wordCount} woorden`;
     // Generate main content with enhanced parameters
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -142,8 +149,10 @@ Gebruik perfecte markdown opmaak met headers, lijsten, **vetgedrukte tekst**, ta
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 16000, // Increased for longer content
+        max_completion_tokens: Math.min(16000, Math.max(4000, wordCount * 8)), // Scale with word count
         // Note: temperature parameter is not supported for GPT-5 models
+        // Using seed for more consistent results
+        seed: Math.abs(title.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0))
       }),
     });
 
