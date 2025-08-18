@@ -178,14 +178,34 @@ const KnowledgeBase = () => {
           description: "AI genereert automatisch passende afbeeldingen voor elk artikel"
         });
 
-        // Generate images for each item
-        const itemsWithImages = await Promise.all(
+        toast({
+          title: "Content genereren...",
+          description: "AI genereert complete geoptimaliseerde blogposts met neuromarketing technieken"
+        });
+
+        // Generate AI-optimized content and images for each item
+        const itemsWithAIContent = await Promise.all(
           data.preview.map(async (item: any) => {
             try {
+              // Generate complete AI blog content with neuromarketing
+              const { data: contentData } = await supabase.functions.invoke('generate-content', {
+                body: {
+                  title: item.title,
+                  targetKeyword: item.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim(),
+                  city: "Nederland",
+                  contentType: "blog",
+                  language: "nl",
+                  includeMetaDescription: true,
+                  includeFaq: true,
+                  includeCta: true
+                }
+              });
+
+              // Generate AI image
               const { data: imageData } = await supabase.functions.invoke('generate-blog-images', {
                 body: {
                   title: item.title,
-                  content: item.content || '',
+                  content: contentData?.content || item.content || '',
                   category: item.category || 'content'
                 }
               });
@@ -194,22 +214,26 @@ const KnowledgeBase = () => {
                 ...item,
                 id: crypto.randomUUID(),
                 type: 'article' as const,
-                author: user?.email || 'Onbekend',
+                author: "Beheerder",
                 created_at: new Date().toISOString().split('T')[0],
                 updated_at: new Date().toISOString().split('T')[0],
                 tags: item.tags || [],
                 views: 0,
                 rating: 0,
                 status: 'draft' as const,
+                content: contentData?.content || item.content || '',
+                meta_description: contentData?.metaDescription || '',
+                faq: contentData?.faq || '',
+                cta: contentData?.cta || '',
                 image_url: imageData?.imageUrl || null
               };
-            } catch (imageError) {
-              console.error('Failed to generate image for item:', item.title, imageError);
+            } catch (error) {
+              console.error('Failed to generate AI content for item:', item.title, error);
               return {
                 ...item,
                 id: crypto.randomUUID(),
                 type: 'article' as const,
-                author: user?.email || 'Onbekend',
+                author: "Beheerder",
                 created_at: new Date().toISOString().split('T')[0],
                 updated_at: new Date().toISOString().split('T')[0],
                 tags: item.tags || [],
@@ -222,12 +246,12 @@ const KnowledgeBase = () => {
           })
         );
 
-        setPreviewItems(itemsWithImages);
+        setPreviewItems(itemsWithAIContent);
         setShowPreview(true);
         
         toast({
           title: "Bestand verwerkt! 🎉",
-          description: `${itemsWithImages.length} items gevonden met AI-gegenereerde afbeeldingen`
+          description: `${itemsWithAIContent.length} complete SEO-geoptimaliseerde artikelen gegenereerd met neuromarketing technieken`
         });
         
         // Reset file input
@@ -288,7 +312,7 @@ const KnowledgeBase = () => {
           content: newItem.content,
           category: newItem.category,
           type: newItem.type,
-          author: user.email || 'Onbekend',
+          author: "Beheerder",
           tags,
           status: 'published'
         });
@@ -465,8 +489,8 @@ const KnowledgeBase = () => {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>Excel/CSV Upload:</strong> Upload Excel (.xlsx, .xls) of CSV bestanden met kolommen 'Title' en 'Content'. 
-          AI genereert automatisch passende afbeeldingen voor elk artikel. Je krijgt eerst een preview voordat items worden toegevoegd.
+          <strong>AI Content Generator:</strong> Upload Excel (.xlsx, .xls) of CSV bestanden met minimaal een 'Title' kolom. 
+          AI genereert automatisch complete SEO-geoptimaliseerde blogposts met neuromarketing technieken, inclusief meta beschrijvingen, FAQ's, CTA's en passende afbeeldingen. Je krijgt eerst een preview voordat items worden toegevoegd.
         </AlertDescription>
       </Alert>
 
