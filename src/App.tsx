@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import SimpleHeader from "@/components/SimpleHeader";
 import { AppSidebar } from "@/components/app-sidebar";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
@@ -51,16 +51,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     </SidebarProvider>
   );
 };
-
-// Simple header component for non-dashboard pages
-const SimpleHeader = () => (
-  <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="container flex h-14 items-center justify-between">
-      <div className="font-bold">AutoblogifyAI</div>
-      <LanguageSwitcher />
-    </div>
-  </header>
-);
 
 const App = () => (
   <LanguageProvider>
