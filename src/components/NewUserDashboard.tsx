@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import WordPressSetupWizard from "./WordPressSetupWizard";
 import { 
   FileText, 
   TrendingUp, 
@@ -17,7 +18,9 @@ import {
   Play,
   BookOpen,
   Zap,
-  Target
+  Target,
+  Globe,
+  Settings
 } from "lucide-react";
 
 interface WelcomeModalProps {
@@ -163,6 +166,7 @@ export const NewUserDashboard = () => {
   const { toast } = useToast();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const [showWordPressSetup, setShowWordPressSetup] = useState(false);
 
   useEffect(() => {
     // Check if user has seen welcome modal
@@ -285,11 +289,11 @@ export const NewUserDashboard = () => {
         />
         
         <EmptyState
-          icon={<Target className="h-6 w-6" />}
-          title="Leer SEO"
-          description="Ontdek tips en tricks in onze kennisbank voor betere rankings"
-          actionText="Bekijk Kennisbank"
-          onAction={() => navigate('/dashboard/knowledge')}
+          icon={<Globe className="h-6 w-6" />}
+          title="WordPress Koppelen"
+          description="Verbind je WordPress site om direct te kunnen publiceren"
+          actionText="WordPress Instellen"
+          onAction={() => setShowWordPressSetup(true)}
         />
       </div>
 
@@ -324,6 +328,30 @@ export const NewUserDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* WordPress Setup Dialog */}
+      <Dialog open={showWordPressSetup} onOpenChange={setShowWordPressSetup}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              WordPress Koppeling Instellen
+            </DialogTitle>
+          </DialogHeader>
+          <WordPressSetupWizard
+            onComplete={(config) => {
+              console.log('WordPress configured:', config);
+              setShowWordPressSetup(false);
+              toast({
+                title: "WordPress Gekoppeld!",
+                description: "Je kunt nu direct publiceren naar je WordPress site",
+              });
+              // TODO: Save config to user settings in Supabase
+            }}
+            onSkip={() => setShowWordPressSetup(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
