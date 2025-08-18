@@ -298,33 +298,33 @@ const Index = () => {
             </div>
 
             {/* Enhanced CTA Stack - Mobile Optimized */}
-            <div className="flex flex-col gap-4 md:gap-6 justify-center items-center mb-6 md:mb-8 px-4">
+            <div className="flex flex-col gap-3 md:gap-6 justify-center items-stretch mb-6 md:mb-8 px-4 max-w-md md:max-w-none mx-auto">
               <Button 
                 size="lg" 
-                className="w-full md:w-auto text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 bg-white text-primary hover:bg-white/90 shadow-2xl font-bold group transform hover:scale-105 transition-all duration-300"
+                className="w-full text-base md:text-xl px-6 md:px-12 py-5 md:py-6 bg-white text-primary hover:bg-white/90 shadow-2xl font-bold group transition-all duration-300 min-h-[60px] md:min-h-[70px] touch-manipulation"
                 onClick={() => handleSubscribe('professional')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6 animate-spin" />
-                    Bezig met laden...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <span className="text-sm md:text-base">Bezig met laden...</span>
                   </>
                 ) : (
-                  <>
-                    <Rocket className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6 group-hover:animate-bounce" />
-                    Start GRATIS 14 Dagen Trial
-                    <ArrowRight className="ml-2 md:ml-3 h-5 md:h-6 w-5 md:w-6 group-hover:translate-x-2 transition-transform" />
-                  </>
+                  <div className="flex items-center justify-center w-full">
+                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce flex-shrink-0" />
+                    <span className="text-center leading-tight">Start GRATIS<br className="md:hidden" /> 14 Dagen Trial</span>
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  </div>
                 )}
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="w-full md:w-auto text-lg md:text-xl px-6 md:px-8 py-4 md:py-6 border-white/70 bg-white/10 text-white hover:bg-white/20 backdrop-blur-lg shadow-xl"
+                className="w-full text-base md:text-xl px-6 md:px-8 py-4 md:py-6 border-2 border-white/70 bg-white/10 text-white hover:bg-white/20 backdrop-blur-lg shadow-xl min-h-[50px] md:min-h-[60px] touch-manipulation"
               >
-                <Play className="mr-2 md:mr-3 h-5 md:h-6 w-5 md:w-6" />
-                Bekijk 2-min Demo
+                <Play className="mr-2 h-5 w-5 flex-shrink-0" />
+                <span>Bekijk 2-min Demo</span>
               </Button>
             </div>
 
