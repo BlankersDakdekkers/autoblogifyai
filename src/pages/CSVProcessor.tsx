@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { CSVFileUploader } from "@/components/CSVFileUploader";
 
 interface CSVJob {
   id: string;
@@ -131,6 +132,18 @@ const CSVProcessor = () => {
       return;
     }
 
+    // Validate URL format
+    try {
+      new URL(csvUrl);
+    } catch {
+      toast({
+        title: "Ongeldige URL",
+        description: "Voer een geldige URL in voor je CSV bestand",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
@@ -142,102 +155,115 @@ const CSVProcessor = () => {
       })));
 
       // Step 1: Download CSV
-      setProcessingSteps(steps => steps.map((step, index) => 
-        step.id === "download" ? { ...step, status: "running", progress: 50 } : step
-      ));
+      updateProcessingStep("download", "running", 25);
 
-      // Call the actual edge function
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) {
+      // Get user auth token
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.access_token) {
         throw new Error("Niet ingelogd");
       }
 
-      const { data, error } = await supabase.functions.invoke('process-csv', {
-        body: { csvUrl }
+      updateProcessingStep("download", "running", 50);
+
+      // Call the process-csv edge function
+      const response = await fetch(`https://pmhplzqfdmgkkosapkit.supabase.co/functions/v1/process-csv`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.session.access_token}`,
+          'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtaHBsenFmZG1na2tvc2Fwa2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NzE5MzgsImV4cCI6MjA3MTA0NzkzOH0.MK5-3lujJB7jjEXrM6A-gQN9SimblbdMbxqV4SmYXLM'
+        },
+        body: JSON.stringify({ csvUrl })
       });
 
-      console.log('Edge function response:', { data, error });
-
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(error.message || 'Onbekende fout in edge function');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
-      // Complete download step
-      setProcessingSteps(steps => steps.map((step, index) => 
-        step.id === "download" ? { ...step, status: "completed", progress: 100 } : step
-      ));
+      const result = await response.json();
+      console.log('Edge function response:', result);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Onbekende fout in edge function');
+      }
+
+      updateProcessingStep("download", "completed", 100);
+      updateProcessingStep("validate", "running", 50);
 
       // Monitor job progress
-      const jobId = data.jobId;
+      const jobId = result.jobId;
       console.log('Starting job monitoring for:', jobId);
-      let job: CSVJob | null = null;
       
-      const monitorJob = async () => {
+      let pollCount = 0;
+      const maxPolls = 120; // 4 minutes timeout
+      
+      const monitorJob = async (): Promise<CSVJob | null> => {
         try {
           const { data: jobData, error: jobError } = await supabase
             .from('csv_processing_jobs')
             .select('*')
             .eq('id', jobId)
-            .single();
+            .maybeSingle();
             
           if (jobError) {
             console.error('Error fetching job:', jobError);
             return null;
           }
             
-          if (jobData) {
-            job = jobData as CSVJob;
-            setCurrentJob(job);
-            console.log('Job status update:', job.status, `${job.processed_rows}/${job.total_rows}`);
-          
-            const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
-          
-            // Update step progress based on job status
-            setProcessingSteps(steps => steps.map(step => {
-              switch(step.id) {
-                case "download": return { ...step, status: "completed", progress: 100 };
-                case "validate": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
-                case "parse": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
-                case "generate": return { ...step, status: job.status === 'processing' ? "running" : job.status === 'completed' ? "completed" : "pending", progress: Math.round(progress) };
-                case "store": return { ...step, status: job.status === 'completed' ? "completed" : "pending", progress: job.status === 'completed' ? 100 : 0 };
-                default: return step;
-              }
-            }));
-          }
+          return jobData as CSVJob;
         } catch (error) {
           console.error('Error in monitorJob:', error);
+          return null;
         }
-        
-        return job;
       };
-
-      // Poll for job completion with timeout
-      let pollCount = 0;
-      const maxPolls = 60; // 2 minutes timeout
       
       const pollInterval = setInterval(async () => {
         pollCount++;
         console.log(`Polling attempt ${pollCount}/${maxPolls}`);
         
-        const currentJob = await monitorJob();
-        if (currentJob && (currentJob.status === 'completed' || currentJob.status === 'failed')) {
-          clearInterval(pollInterval);
+        const job = await monitorJob();
+        if (job) {
+          setCurrentJob(job);
+          console.log('Job status update:', job.status, `${job.processed_rows}/${job.total_rows}`);
           
-          if (currentJob.status === 'completed') {
-            setJobs(prev => [currentJob, ...prev]);
+          const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
+          
+          // Update processing steps based on job status
+          if (job.status === 'processing' || job.status === 'completed') {
+            updateProcessingStep("validate", "completed", 100);
+            updateProcessingStep("parse", "completed", 100);
+            updateProcessingStep("generate", job.status === 'completed' ? "completed" : "running", Math.round(progress));
+            
+            if (job.status === 'completed') {
+              updateProcessingStep("store", "completed", 100);
+            }
+          }
+          
+          if (job.status === 'completed') {
+            clearInterval(pollInterval);
+            setJobs(prev => [job, ...prev]);
             toast({
               title: "CSV Verwerkt! 🎉",
-              description: `${currentJob.processed_rows} rijen succesvol verwerkt`
+              description: `${job.processed_rows} rijen succesvol verwerkt`
             });
-          } else {
+            setIsProcessing(false);
+            await loadGeneratedPosts();
+          } else if (job.status === 'failed') {
+            clearInterval(pollInterval);
             toast({
               title: "Verwerkingsfout",
-              description: currentJob.error_message || "Er is een fout opgetreden",
+              description: job.error_message || "Er is een fout opgetreden",
               variant: "destructive"
             });
+            setIsProcessing(false);
+            // Mark all remaining steps as failed
+            setProcessingSteps(steps => steps.map(step => 
+              step.status === 'pending' || step.status === 'running' 
+                ? { ...step, status: 'failed' as const } 
+                : step
+            ));
           }
-          setIsProcessing(false);
         } else if (pollCount >= maxPolls) {
           clearInterval(pollInterval);
           console.error('Job monitoring timeout');
@@ -250,19 +276,31 @@ const CSVProcessor = () => {
         }
       }, 2000);
 
-      // Initial poll
+      // Start with initial poll
       await monitorJob();
 
     } catch (error) {
       console.error("Processing error:", error);
       toast({
         title: "Verwerkingsfout",
-        description: "Er is een fout opgetreden tijdens het verwerken van de CSV",
+        description: error instanceof Error ? error.message : "Er is een onbekende fout opgetreden",
         variant: "destructive"
       });
       setIsProcessing(false);
-      await loadGeneratedPosts(); // Refresh posts after processing
+      
+      // Mark all steps as failed
+      setProcessingSteps(steps => steps.map(step => ({
+        ...step,
+        status: step.status === 'completed' ? step.status : 'failed' as const,
+        progress: step.status === 'completed' ? step.progress : 0
+      })));
     }
+  };
+
+  const updateProcessingStep = (stepId: string, status: ProcessingStep['status'], progress: number) => {
+    setProcessingSteps(steps => steps.map(step => 
+      step.id === stepId ? { ...step, status, progress } : step
+    ));
   };
 
   const handlePauseProcessing = () => {
@@ -387,15 +425,30 @@ const CSVProcessor = () => {
         </TabsList>
 
         <TabsContent value="processor" className="space-y-6">
-          {/* CSV Input Section */}
+          {/* File Upload Section */}
+          <CSVFileUploader 
+            onPreviewGenerated={(items, fileName) => {
+              console.log('Preview generated:', items.length, 'items from', fileName);
+            }}
+            onPublishItems={async (items, fileName) => {
+              console.log('Publishing items:', items.length, 'from', fileName);
+              // For now, just show success
+              toast({
+                title: "Items gepubliceerd!",
+                description: `${items.length} items succesvol verwerkt`
+              });
+            }}
+          />
+
+          {/* CSV URL Section - Alternative method */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5" />
-                CSV Bestand Invoer
+                CSV URL Verwerking
               </CardTitle>
               <CardDescription>
-                Voer de URL van je Google Sheets CSV in
+                Alternatief: Voer de URL van je Google Sheets CSV in
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
