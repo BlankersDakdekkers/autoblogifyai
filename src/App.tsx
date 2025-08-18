@@ -20,6 +20,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import NotificationSystem from "./pages/NotificationSystem";
 import HelpSupport from "./pages/HelpSupport";
 import AchievementsPage from "./pages/AchievementsPage";
+import ContentFeatures from "./pages/ContentFeatures";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="/dashboard/integrations" element={<IntegrationsPage />} />
             <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
             <Route path="/dashboard/achievements" element={<AchievementsPage />} />
+            <Route path="/dashboard/content-features" element={<ContentFeatures />} />
             <Route path="/dashboard/notifications" element={<NotificationSystem />} />
             <Route path="/dashboard/help" element={<HelpSupport />} />
             <Route path="/dashboard/keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />

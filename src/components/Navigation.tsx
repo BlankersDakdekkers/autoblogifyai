@@ -84,6 +84,12 @@ export const navigationSections: NavigationSection[] = [
         description: "Beheer en categoriseer media bestanden"
       },
       { 
+        title: "Content Features", 
+        url: "/dashboard/content-features", 
+        icon: FileText,
+        description: "Templates, scheduler en A/B testing"
+      },
+      { 
         title: "Valideren", 
         url: "/dashboard/validate", 
         icon: CheckCircle2,
