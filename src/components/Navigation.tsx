@@ -121,6 +121,12 @@ export const navigationSections: NavigationSection[] = [
         icon: Database,
         description: "Partner programma en commissies"
       },
+      { 
+        title: "Academy", 
+        url: "/dashboard/academy", 
+        icon: Database,
+        description: "Cursussen en tutorials"
+      },
     ]
   }
 ];

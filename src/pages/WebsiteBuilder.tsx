@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { 
   Layout, 
   Palette, 
@@ -22,6 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 // Websites Overview Component
 const WebsitesOverview = () => {
   const { toast } = useToast();
+  const [newWebsiteName, setNewWebsiteName] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState("business-pro");
 
   const mockWebsites = [
     { 
@@ -50,11 +53,28 @@ const WebsitesOverview = () => {
     },
   ];
 
+  const templates = [
+    { id: "business-pro", name: "Business Pro" },
+    { id: "blog-starter", name: "Blog Starter" },
+    { id: "service-directory", name: "Service Directory" }
+  ];
+
   const handleCreateWebsite = () => {
+    if (!newWebsiteName.trim()) {
+      toast({
+        title: "Fout",
+        description: "Voer een website naam in",
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
-      title: "Nieuwe Website Aanmaken",
-      description: "Website wizard wordt geladen..."
+      title: "Website Aangemaakt! 🎉",
+      description: `"${newWebsiteName}" wordt nu opgezet met het ${templates.find(t => t.id === selectedTemplate)?.name} template`
     });
+    
+    setNewWebsiteName("");
   };
 
   const handlePreview = (website: any) => {
@@ -81,10 +101,51 @@ const WebsitesOverview = () => {
             Beheer al je websites en projecten op één plek
           </p>
         </div>
-        <Button onClick={handleCreateWebsite} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nieuwe Website
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nieuwe Website
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nieuwe Website Aanmaken</DialogTitle>
+              <DialogDescription>
+                Kies een naam en template voor je nieuwe website
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="website-name">Website Naam</Label>
+                <Input
+                  id="website-name"
+                  value={newWebsiteName}
+                  onChange={(e) => setNewWebsiteName(e.target.value)}
+                  placeholder="Mijn geweldige website"
+                />
+              </div>
+              <div>
+                <Label htmlFor="template-select">Template</Label>
+                <select
+                  id="template-select"
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                >
+                  {templates.map(template => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button onClick={handleCreateWebsite} className="w-full">
+                Website Aanmaken
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -186,8 +247,12 @@ const Templates = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {templates.map((template) => (
           <Card key={template.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-video bg-muted flex items-center justify-center">
-              <Palette className="h-12 w-12 text-muted-foreground" />
+            <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20" />
+              <div className="relative z-10 text-center">
+                <Palette className="h-12 w-12 text-primary mx-auto mb-2" />
+                <div className="text-sm font-medium text-primary">{template.name}</div>
+              </div>
             </div>
             <CardHeader>
               <div className="flex items-center justify-between">
