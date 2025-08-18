@@ -186,14 +186,22 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
       console.error('CSV fetch failed. Status:', csvResponse.status, 'Body:', errorBody);
       
       if (csvResponse.status === 404) {
-        throw new Error(`CSV file not found (404). Please check:
-1. The Google Sheet is published to web as CSV
-2. The sharing settings allow public access
-3. The URL format is correct: .../pub?output=csv`);
+        throw new Error(`CSV bestand niet gevonden (404). Voor Google Sheets:
+1. Ga naar je Google Sheet
+2. Klik op 'Bestand' > 'Publiceren op internet'  
+3. Kies 'Hele document' en 'CSV'
+4. Klik 'Publiceren' en kopieer de link
+5. Of gebruik het format: https://docs.google.com/spreadsheets/d/SHEET_ID/export?format=csv
+
+Voor andere CSV bestanden: controleer of de URL publiek toegankelijk is.`);
       } else if (csvResponse.status === 403) {
-        throw new Error(`Access denied (403). The Google Sheet may not be publicly accessible. Please check sharing settings.`);
+        throw new Error(`Toegang geweigerd (403). Het CSV bestand is niet publiek toegankelijk. 
+Voor Google Sheets: zorg dat het document gedeeld is met 'Iedereen met de link kan bekijken'.`);
       } else {
-        throw new Error(`Failed to fetch CSV (${csvResponse.status}): ${csvResponse.statusText}. Response: ${errorBody}`);
+        throw new Error(`Fout bij ophalen CSV (${csvResponse.status}): ${csvResponse.statusText}. 
+Response: ${errorBody}
+        
+Tip: Test je URL eerst in de browser om te controleren of deze werkt.`);
       }
     }
     

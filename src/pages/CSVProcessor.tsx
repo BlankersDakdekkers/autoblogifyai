@@ -480,7 +480,7 @@ const CSVProcessor = () => {
                       type="button"
                       variant="outline" 
                       size="sm"
-                      onClick={() => setCsvUrl("https://docs.google.com/spreadsheets/d/e/2PACX-1vS5Q8mP9X2zK4lF6hJ3vR7nE8wT1cG9sA2bN5dO6pQ1mL8kY4uI3rT7sW9fE2x/pub?output=csv")}
+                      onClick={() => setCsvUrl("https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv")}
                       disabled={isProcessing}
                     >
                       Test CSV
@@ -489,7 +489,7 @@ const CSVProcessor = () => {
                       type="button"
                       variant="outline" 
                       size="sm"
-                      onClick={() => setCsvUrl("https://docs.google.com/spreadsheets/d/1BxGF5ckI6-VgXK9RSthTmgM_UoFZP5VH6xT3LqEVpx4/edit#gid=0")}
+                      onClick={() => setCsvUrl("https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv")}
                       disabled={isProcessing}
                     >
                       Demo CSV
