@@ -15,7 +15,8 @@ import {
   Folder,
   Edit,
   TestTube,
-  Calendar
+  Calendar,
+  Book
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -192,6 +193,12 @@ export const navigationSections: NavigationSection[] = [
         url: "/dashboard/help", 
         icon: Database,
         description: "Hulp en documentatie"
+      },
+      { 
+        title: "Kennisbank", 
+        url: "/dashboard/knowledge-base", 
+        icon: Book,
+        description: "Uitgebreide kennisbank en documentatie"
       },
     ]
   }
