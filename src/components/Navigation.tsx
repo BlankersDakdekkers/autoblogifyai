@@ -11,7 +11,11 @@ import {
   Database,
   Zap,
   Image,
-  Trophy
+  Trophy,
+  Folder,
+  Edit,
+  TestTube,
+  Calendar
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -86,8 +90,26 @@ export const navigationSections: NavigationSection[] = [
       { 
         title: "Content Features", 
         url: "/dashboard/content-features", 
-        icon: FileText,
+        icon: TestTube,
         description: "Templates, scheduler en A/B testing"
+      },
+      { 
+        title: "Categorieën Beheer", 
+        url: "/dashboard/category-manager", 
+        icon: Folder,
+        description: "Beheer content categorieën"
+      },
+      { 
+        title: "Template Editor", 
+        url: "/dashboard/template-editor", 
+        icon: Edit,
+        description: "Maak en bewerk content templates"
+      },
+      { 
+        title: "CSV Processor", 
+        url: "/dashboard/csv-processor", 
+        icon: Database,
+        description: "Geavanceerde CSV verwerking en validatie"
       },
       { 
         title: "Valideren", 
@@ -140,6 +162,12 @@ export const navigationSections: NavigationSection[] = [
         url: "/dashboard/integrations", 
         icon: Database,
         description: "API's en externe services"
+      },
+      { 
+        title: "Webhooks", 
+        url: "/dashboard/webhooks", 
+        icon: Zap,
+        description: "Webhook integraties en automation"
       },
       { 
         title: "Affiliate", 

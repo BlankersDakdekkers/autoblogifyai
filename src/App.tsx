@@ -28,6 +28,10 @@ import CoursePage from "./pages/CoursePage";
 import AffiliatePage from "./pages/AffiliatePage";
 import PricingPage from "./pages/PricingPage";
 import ContentFeatures from "./pages/ContentFeatures";
+import CategoryManager from "./pages/CategoryManager";
+import TemplateEditor from "./pages/TemplateEditor";
+import WebhookIntegration from "./pages/WebhookIntegration";
+import CSVProcessor from "./pages/CSVProcessor";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +83,10 @@ const App = () => (
               <Route path="/dashboard/course" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/affiliate" element={<ProtectedRoute><Layout><AffiliatePage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/content-features" element={<ProtectedRoute><Layout><ContentFeatures /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/category-manager" element={<ProtectedRoute><Layout><CategoryManager /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/template-editor" element={<ProtectedRoute><Layout><TemplateEditor /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
