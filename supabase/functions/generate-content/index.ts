@@ -7,35 +7,78 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const logStep = (step: string, details?: any) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[GENERATE-CONTENT] ${timestamp} - ${step}`, details ? JSON.stringify(details) : '');
+};
+
+const checkRateLimit = async (req: Request, user: any): Promise<{ allowed: boolean; error?: string }> => {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    const { data, error } = await supabase.functions.invoke('rate-limiter', {
+      body: { 
+        endpoint: 'generate-content',
+        method: req.method
+      },
+      headers: {
+        Authorization: req.headers.get('Authorization') || ''
+      }
+    });
+
+    if (error) {
+      logStep("Rate limit check failed", { error: error.message });
+      return { allowed: true }; // Allow on error to prevent blocking
+    }
+
+    if (!data.allowed) {
+      logStep("Rate limit exceeded", { userId: user?.id });
+      return { 
+        allowed: false, 
+        error: `Rate limit exceeded. Reset time: ${data.resetTime}` 
+      };
+    }
+
+    return { allowed: true };
+  } catch (error) {
+    logStep("Rate limit check error", { error: error.message });
+    return { allowed: true }; // Allow on error
+  }
+};
+
 serve(async (req) => {
-  console.log('=== GENERATE CONTENT FUNCTION STARTED ===');
+  logStep('Function started');
   
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log('Parsing request body...');
+
+    logStep('Parsing request body');
     const { 
       title, 
       targetKeyword, 
       city, 
       contentType = 'blog', 
-      wordCount = 1200,  // Updated to match frontend
+      wordCount = 1200,
       language = 'nl',
       includeLocalSEO = false,
       includeImages = false,
       includeSchema = false,
-      includeMetaDescription = true,  // Added from frontend
-      includeFaq = true,              // Added from frontend
-      includeCta = true,              // Added from frontend
-      useNeuromarketing = true        // Added from frontend
+      includeMetaDescription = true,
+      includeFaq = true,
+      includeCta = true,
+      useNeuromarketing = true
     } = await req.json();
 
-    console.log('Request data:', { title, targetKeyword, city, contentType, wordCount });
+    logStep('Request data parsed', { title, targetKeyword, city, contentType, wordCount });
 
-    console.log('Initializing Supabase clients...');
-    // Use anon key for auth, service role key for database writes
+    logStep('Initializing Supabase clients');
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -47,31 +90,40 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    console.log('Authenticating user...');
+    logStep('Authenticating user');
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabaseClient.auth.getUser(token)
 
     if (!user) {
-      console.error('User authentication failed');
+      logStep('User authentication failed');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('User authenticated successfully:', user.email);
+    logStep('User authenticated successfully', { email: user.email });
 
-    console.log('Checking OpenAI API key...');
+    // Check rate limits
+    const rateLimitResult = await checkRateLimit(req, user);
+    if (!rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ error: rateLimitResult.error }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    logStep('Checking OpenAI API key');
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      console.error('OpenAI API key is missing');
+      logStep('OpenAI API key missing');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key niet geconfigureerd' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    console.log('OpenAI API key found');
+    logStep('OpenAI API key verified');
 
     // Enhanced system prompt with neuromarketing and consistent quality
     const basePrompt = `Je bent een expert SEO content writer die hoogkwalitatieve, professionele artikelen schrijft van ${wordCount} woorden.
@@ -383,10 +435,17 @@ Taal: ${language}`
     );
 
   } catch (error) {
-    console.error('Error in content generation:', error);
-    console.error('Error stack:', error.stack);
+    logStep('Critical error in content generation', { 
+      error: error.message, 
+      stack: error.stack?.substring(0, 1000) 
+    });
+    
     return new Response(
-      JSON.stringify({ error: `Server fout: ${error.message}` }),
+      JSON.stringify({ 
+        error: `Server fout: ${error.message}`,
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID()
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

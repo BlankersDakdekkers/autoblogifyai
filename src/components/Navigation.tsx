@@ -17,7 +17,8 @@ import {
   TestTube,
   Calendar,
   Book,
-  Users
+  Users,
+  Activity
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -219,6 +220,12 @@ export const useNavigationSections = (): NavigationSection[] => {
           url: "/dashboard/admin/customers",
           icon: Users,
           description: "Beheer alle klanten en abonnementen"
+        },
+        {
+          title: "System Monitoring",
+          url: "/dashboard/admin/monitoring",
+          icon: Activity,
+          description: "System health en performance monitoring"
         }
       ]
     });

@@ -34,6 +34,7 @@ import WebhookIntegration from "./pages/WebhookIntegration";
 import CSVProcessor from "./pages/CSVProcessor";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import AdminCustomerPortal from "./pages/AdminCustomerPortal";
+import SystemMonitoringPage from "./pages/SystemMonitoringPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -104,6 +105,7 @@ const App = () => (
               <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
