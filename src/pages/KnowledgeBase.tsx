@@ -220,24 +220,41 @@ const KnowledgeBase = () => {
                   : p
               ));
 
-              const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-content', {
-                body: {
-                  title: item.title,
-                  targetKeyword: item.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim(),
-                  city: "Nederland",
-                  contentType: "blog",
-                  language: "nl",
-                  includeMetaDescription: true,
-                  includeFaq: true,
-                  includeCta: true
-                }
-              });
+               console.log('Calling generate-content function with:', {
+                 title: item.title,
+                 targetKeyword: item.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim(),
+                 city: "Nederland",
+                 contentType: "blog",
+                 language: "nl",
+                 wordCount: 1200,
+                 includeMetaDescription: true,
+                 includeFaq: true,
+                 includeCta: true,
+                 useNeuromarketing: true
+               });
 
-              if (contentError) {
-                console.error('Content generation error:', contentError);
-                setProgressItems(prev => prev.map(p => 
-                  p.title === item.title 
-                    ? { ...p, status: 'error', step: 'Content generatie gefaald', progress: 100 }
+               const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-content', {
+                 body: {
+                   title: item.title,
+                   targetKeyword: item.title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim(),
+                   city: "Nederland",
+                   contentType: "blog",
+                   language: "nl",
+                   wordCount: 1200,
+                   includeMetaDescription: true,
+                   includeFaq: true,
+                   includeCta: true,
+                   useNeuromarketing: true
+                 }
+               });
+
+               console.log('Generate-content response:', { contentData, contentError });
+
+               if (contentError) {
+                 console.error('Content generation error:', contentError);
+                 setProgressItems(prev => prev.map(p => 
+                   p.title === item.title 
+                     ? { ...p, status: 'error', step: `Content fout: ${contentError.message}`, progress: 100 }
                     : p
                 ));
               } else {
