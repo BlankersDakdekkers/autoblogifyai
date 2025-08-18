@@ -119,6 +119,12 @@ export const useNavigationSections = (): NavigationSection[] => {
         description: "Geavanceerde CSV verwerking en validatie"
       },
       { 
+        title: "Blog Management", 
+        url: "/dashboard/blogs", 
+        icon: FileText,
+        description: "Beheer en publiceer je blogs naar WordPress"
+      },
+      { 
         title: "Valideren", 
         url: "/dashboard/validate", 
         icon: CheckCircle2,

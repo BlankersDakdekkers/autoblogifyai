@@ -506,6 +506,15 @@ const CSVProcessor = () => {
           <Button 
             variant="outline" 
             size="sm"
+            onClick={() => window.open('/dashboard/blogs', '_blank')}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Blog Management
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
             onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
           >
             <Settings className="h-4 w-4 mr-2" />
