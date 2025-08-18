@@ -160,42 +160,39 @@ const CSVProcessor = () => {
       // Step 1: Download CSV
       updateProcessingStep("download", "running", 25);
 
-      // Get user auth token
+      // Verify user authentication
       const { data: session } = await supabase.auth.getSession();
       if (!session.session?.access_token) {
-        throw new Error("Niet ingelogd");
+        throw new Error("Niet ingelogd - probeer opnieuw in te loggen");
       }
 
       updateProcessingStep("download", "running", 50);
 
-      // Call the process-csv edge function
-      const response = await fetch(`https://pmhplzqfdmgkkosapkit.supabase.co/functions/v1/process-csv`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.session.access_token}`,
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtaHBsenFmZG1na2tvc2Fwa2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NzE5MzgsImV4cCI6MjA3MTA0NzkzOH0.MK5-3lujJB7jjEXrM6A-gQN9SimblbdMbxqV4SmYXLM'
-        },
-        body: JSON.stringify({ csvUrl })
+      // Call the process-csv edge function using Supabase client
+      const { data, error } = await supabase.functions.invoke('process-csv', {
+        body: { csvUrl }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      console.log('Edge function response:', { data, error });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Fout bij aanroepen van process-csv functie');
       }
 
-      const result = await response.json();
-      console.log('Edge function response:', result);
+      if (!data) {
+        throw new Error('Geen response data ontvangen van edge function');
+      }
 
-      if (!result.success) {
-        throw new Error(result.error || 'Onbekende fout in edge function');
+      if (!data.success) {
+        throw new Error(data.error || 'Edge function geeft geen success response');
       }
 
       updateProcessingStep("download", "completed", 100);
       updateProcessingStep("validate", "running", 50);
 
-      // Monitor job progress
-      const jobId = result.jobId;
+      // Monitor job progress - use the jobId from the response
+      const jobId = data.jobId;
       console.log('Starting job monitoring for:', jobId);
       
       let pollCount = 0;
@@ -284,9 +281,17 @@ const CSVProcessor = () => {
 
     } catch (error) {
       console.error("Processing error:", error);
+      
+      let errorMessage = "Er is een onbekende fout opgetreden";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       toast({
         title: "Verwerkingsfout",
-        description: error instanceof Error ? error.message : "Er is een onbekende fout opgetreden",
+        description: errorMessage,
         variant: "destructive"
       });
       setIsProcessing(false);
