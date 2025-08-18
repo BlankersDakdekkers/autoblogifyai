@@ -33,6 +33,7 @@ import TemplateEditor from "./pages/TemplateEditor";
 import WebhookIntegration from "./pages/WebhookIntegration";
 import CSVProcessor from "./pages/CSVProcessor";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import BlogManagement from "./pages/BlogManagement";
 import AdminCustomerPortal from "./pages/AdminCustomerPortal";
 import SystemMonitoringPage from "./pages/SystemMonitoringPage";
 import NotFound from "./pages/NotFound";
@@ -83,6 +84,7 @@ const App = () => (
               
               {/* Dashboard internal routes - handled by Dashboard component */}
               <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/voice" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/validate" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/publish" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
