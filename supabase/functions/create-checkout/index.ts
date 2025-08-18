@@ -32,15 +32,50 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     console.log("User authenticated:", user.email);
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey || !stripeKey.startsWith("sk_")) {
-      console.error("STRIPE_SECRET_KEY invalid");
+    // More robust key retrieval
+    let stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
+    console.log("=== STRIPE KEY DEBUG ===");
+    console.log("Initial key exists:", !!stripeKey);
+    console.log("Initial key length:", stripeKey?.length || 0);
+    console.log("Initial key type:", typeof stripeKey);
+    
+    // If key is empty string, try to get from env object
+    if (!stripeKey || stripeKey.trim() === "") {
+      const allEnv = Deno.env.toObject();
+      stripeKey = allEnv.STRIPE_SECRET_KEY;
+      console.log("Fallback from env object:", !!stripeKey, stripeKey?.length || 0);
+    }
+    
+    // Clean the key (remove any whitespace/invisible chars)
+    if (stripeKey) {
+      stripeKey = stripeKey.trim();
+      console.log("After trim - length:", stripeKey.length);
+      console.log("After trim - starts with sk_:", stripeKey.startsWith("sk_"));
+      console.log("First 15 chars:", stripeKey.substring(0, 15));
+    }
+    
+    if (!stripeKey || stripeKey.length === 0 || !stripeKey.startsWith("sk_")) {
+      console.error("STRIPE_SECRET_KEY validation failed");
+      console.error("Key:", stripeKey);
+      console.error("Length:", stripeKey?.length || 0);
+      console.error("Starts with sk_:", stripeKey?.startsWith("sk_"));
+      
       return new Response(
-        JSON.stringify({ error: "Stripe configuratie probleem" }),
+        JSON.stringify({ 
+          error: "Stripe key configuratie probleem",
+          debug: {
+            hasKey: !!stripeKey,
+            keyLength: stripeKey?.length || 0,
+            keyValid: stripeKey?.startsWith("sk_") || false,
+            keyPreview: stripeKey?.substring(0, 10) || "none"
+          }
+        }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    console.log("Stripe key valid");
+    
+    console.log("Stripe key validation passed");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
