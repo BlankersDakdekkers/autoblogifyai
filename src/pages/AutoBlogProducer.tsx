@@ -22,7 +22,17 @@ import {
   Calendar,
   Globe,
   BarChart3,
-  Wand2
+  Wand2,
+  Search,
+  Mic,
+  Volume2,
+  Target,
+  TrendingUp,
+  Star,
+  Copy,
+  RefreshCw,
+  Hash,
+  Eye
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,6 +69,23 @@ interface CSVData {
   word_count_target: number;
 }
 
+interface KeywordSuggestion {
+  keyword: string;
+  searchVolume: number;
+  difficulty: number;
+  cpc: number;
+  intent: 'informational' | 'commercial' | 'transactional' | 'navigational';
+  relatedTerms: string[];
+}
+
+interface ContentIdea {
+  title: string;
+  angle: string;
+  targetKeyword: string;
+  estimatedTraffic: number;
+  contentType: string;
+}
+
 const AutoBlogProducer = () => {
   const { toast } = useToast();
   const [csvUrl, setCsvUrl] = useState("");
@@ -67,12 +94,28 @@ const AutoBlogProducer = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [csvData, setCsvData] = useState<CSVData[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // Keyword Generator State
+  const [seedKeyword, setSeedKeyword] = useState("");
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<KeywordSuggestion[]>([]);
+  const [contentIdeas, setContentIdeas] = useState<ContentIdea[]>([]);
+  
+  // Voice & Audio State
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioContent, setAudioContent] = useState("");
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  
+  // AI Analysis State
+  const [contentScore, setContentScore] = useState(0);
+  const [seoAnalysis, setSeoAnalysis] = useState<any>(null);
 
   const processingSteps = [
     "CSV downloaden en valideren",
+    "Keyword research en analyse", 
     "Content structuur analyseren", 
     "AI content generatie",
-    "SEO optimalisatie",
+    "SEO score optimalisatie",
     "Afbeeldingen genereren",
     "Markdown bestanden creëren",
     "Publicatie scheduling"
@@ -141,6 +184,202 @@ const AutoBlogProducer = () => {
     toast({
       title: "CSV Verwerkt! 🎉",
       description: `${mockBlogPosts.length} blogposts gegenereerd en klaar voor publicatie`
+    });
+  };
+
+  // Keyword Generator Functions
+  const generateKeywords = async () => {
+    if (!seedKeyword.trim()) {
+      toast({
+        title: "Fout",
+        description: "Voer een seed keyword in",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingKeywords(true);
+    
+    // Simuleer keyword research
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const mockKeywords: KeywordSuggestion[] = [
+      {
+        keyword: `${seedKeyword} Amsterdam`,
+        searchVolume: 1200,
+        difficulty: 35,
+        cpc: 2.80,
+        intent: 'commercial',
+        relatedTerms: [`beste ${seedKeyword}`, `${seedKeyword} kosten`, `${seedKeyword} prijzen`]
+      },
+      {
+        keyword: `${seedKeyword} kosten`,
+        searchVolume: 890,
+        difficulty: 28,
+        cpc: 3.20,
+        intent: 'informational',
+        relatedTerms: [`${seedKeyword} prijzen`, `${seedKeyword} tarief`, `${seedKeyword} offerte`]
+      },
+      {
+        keyword: `beste ${seedKeyword}`,
+        searchVolume: 650,
+        difficulty: 42,
+        cpc: 4.10,
+        intent: 'commercial',
+        relatedTerms: [`${seedKeyword} vergelijken`, `top ${seedKeyword}`, `${seedKeyword} reviews`]
+      },
+      {
+        keyword: `${seedKeyword} tips`,
+        searchVolume: 520,
+        difficulty: 25,
+        cpc: 1.50,
+        intent: 'informational',
+        relatedTerms: [`${seedKeyword} gids`, `${seedKeyword} advies`, `${seedKeyword} handleiding`]
+      },
+      {
+        keyword: `${seedKeyword} Nederland`,
+        searchVolume: 430,
+        difficulty: 30,
+        cpc: 2.90,
+        intent: 'commercial',
+        relatedTerms: [`${seedKeyword} landelijk`, `${seedKeyword} bedrijf`, `${seedKeyword} service`]
+      }
+    ];
+
+    const mockContentIdeas: ContentIdea[] = [
+      {
+        title: `Complete ${seedKeyword} Gids Nederland 2024`,
+        angle: "Uitgebreide handleiding",
+        targetKeyword: `${seedKeyword} gids`,
+        estimatedTraffic: 850,
+        contentType: "Pillar Content"
+      },
+      {
+        title: `${seedKeyword} Kosten: Wat Betaal Je in 2024?`,
+        angle: "Prijsvergelijking",
+        targetKeyword: `${seedKeyword} kosten`,
+        estimatedTraffic: 690,
+        contentType: "Commercial"
+      },
+      {
+        title: `Top 10 ${seedKeyword} Bedrijven in Amsterdam`,
+        angle: "Lokale directory",
+        targetKeyword: `${seedKeyword} Amsterdam`,
+        estimatedTraffic: 520,
+        contentType: "Local SEO"
+      }
+    ];
+
+    setKeywordSuggestions(mockKeywords);
+    setContentIdeas(mockContentIdeas);
+    setIsGeneratingKeywords(false);
+    
+    toast({
+      title: "Keywords Gegenereerd! 🎯",
+      description: `${mockKeywords.length} keywords en ${mockContentIdeas.length} content ideeën gevonden`
+    });
+  };
+
+  // Voice Functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setIsRecording(true);
+      
+      toast({
+        title: "Opname Gestart 🎤",
+        description: "Spreek je content idee in..."
+      });
+      
+      // Simuleer opname
+      setTimeout(() => {
+        setIsRecording(false);
+        setAudioContent("Ik wil een blogpost over dakisolatie kosten in Amsterdam, met focus op energiebesparing en verschillende isolatiematerialen.");
+        toast({
+          title: "Opname Voltooid",
+          description: "Audio is getranscribeerd naar tekst"
+        });
+      }, 3000);
+      
+    } catch (error) {
+      toast({
+        title: "Microfoon Fout",
+        description: "Geef microfoon toegang voor voice input",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const playGeneratedContent = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'nl-NL';
+      utterance.rate = 0.9;
+      
+      setIsPlayingAudio(true);
+      utterance.onend = () => setIsPlayingAudio(false);
+      
+      speechSynthesis.speak(utterance);
+      
+      toast({
+        title: "Content Wordt Voorgelezen 🔊",
+        description: "Luister naar je gegenereerde content"
+      });
+    }
+  };
+
+  const analyzeContentQuality = (content: string) => {
+    // Simuleer AI content analyse
+    const wordCount = content.split(' ').length;
+    const sentenceCount = content.split('.').length;
+    const avgWordsPerSentence = wordCount / sentenceCount;
+    
+    let score = 60;
+    if (wordCount > 300) score += 15;
+    if (avgWordsPerSentence < 20) score += 10;
+    if (content.includes('?')) score += 5;
+    if (content.toLowerCase().includes(seedKeyword.toLowerCase())) score += 10;
+    
+    setContentScore(Math.min(score, 100));
+    
+    setSeoAnalysis({
+      readability: score > 75 ? 'Goed' : 'Matig',
+      keywordDensity: '2.3%',
+      sentimentScore: 0.8,
+      suggestions: [
+        'Voeg meer headings toe voor betere structuur',
+        'Verhoog keyword density naar 3-4%',
+        'Voeg call-to-action toe'
+      ]
+    });
+  };
+
+  const copyKeywordToClipboard = (keyword: string) => {
+    navigator.clipboard.writeText(keyword);
+    toast({
+      title: "Keyword Gekopieerd",
+      description: `"${keyword}" staat nu in je clipboard`
+    });
+  };
+
+  const generateBulkContent = async () => {
+    setIsProcessing(true);
+    
+    toast({
+      title: "Bulk Generatie Gestart 🚀",
+      description: "Genereer 50+ posts van geselecteerde keywords..."
+    });
+    
+    // Simuleer bulk processing
+    for (let i = 0; i < processingSteps.length; i++) {
+      setProcessingStep(i);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    setIsProcessing(false);
+    toast({
+      title: "Bulk Content Klaar! 🎉",
+      description: "Alle posts zijn gegenereerd en klaar voor review"
     });
   };
 
@@ -225,12 +464,319 @@ const AutoBlogProducer = () => {
       </Card>
 
       <Tabs defaultValue="generator" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="keywords">Keywords</TabsTrigger>
+          <TabsTrigger value="voice">Voice Input</TabsTrigger>
           <TabsTrigger value="generator">CSV Generator</TabsTrigger>
           <TabsTrigger value="posts">Blog Posts</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="settings">Instellingen</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="keywords" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Keyword Generator */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Keyword Research
+                </CardTitle>
+                <CardDescription>
+                  Ontdek high-value keywords voor je niche
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="seed-keyword">Seed Keyword</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="seed-keyword"
+                      value={seedKeyword}
+                      onChange={(e) => setSeedKeyword(e.target.value)}
+                      placeholder="dakdekker, tandarts, restaurant..."
+                    />
+                    <Button 
+                      onClick={generateKeywords}
+                      disabled={isGeneratingKeywords}
+                      className="min-w-[100px]"
+                    >
+                      {isGeneratingKeywords ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Top Keywords
+                  </h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {keywordSuggestions.map((kw, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{kw.keyword}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {kw.intent}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Vol: {kw.searchVolume} | Diff: {kw.difficulty} | CPC: €{kw.cpc}
+                          </div>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => copyKeywordToClipboard(kw.keyword)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {keywordSuggestions.length > 0 && (
+                  <Button 
+                    onClick={generateBulkContent}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    Genereer 50+ Posts van Keywords
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Content Ideas */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Content Ideeën
+                </CardTitle>
+                <CardDescription>
+                  AI-gegenereerde content voorstellen
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {contentIdeas.map((idea, index) => (
+                  <Card key={index} className="p-3">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-sm">{idea.title}</h4>
+                        <Badge variant="secondary" className="text-xs">
+                          {idea.contentType}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{idea.angle}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>🎯 {idea.targetKeyword}</span>
+                        <span>📈 ~{idea.estimatedTraffic} bezoeken/maand</span>
+                      </div>
+                      <Button size="sm" className="w-full" variant="outline">
+                        <FileText className="mr-2 h-3 w-3" />
+                        Genereer Deze Post
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+
+                {contentIdeas.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <TrendingUp className="h-8 w-8 mx-auto mb-2" />
+                    <p>Genereer keywords om content ideeën te zien</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Keyword Strategy Cards */}
+          {keywordSuggestions.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="border-emerald-200 bg-emerald-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <Star className="h-4 w-4" />
+                    <span className="font-medium">High Volume</span>
+                  </div>
+                  <p className="text-sm text-emerald-600 mt-1">
+                    {keywordSuggestions.filter(k => k.searchVolume > 800).length} keywords met 800+ zoekopdrachten
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Target className="h-4 w-4" />
+                    <span className="font-medium">Low Competition</span>
+                  </div>
+                  <p className="text-sm text-blue-600 mt-1">
+                    {keywordSuggestions.filter(k => k.difficulty < 30).length} keywords met lage concurrentie
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-purple-700">
+                    <Hash className="h-4 w-4" />
+                    <span className="font-medium">Commercial Intent</span>
+                  </div>
+                  <p className="text-sm text-purple-600 mt-1">
+                    {keywordSuggestions.filter(k => k.intent === 'commercial').length} commercial keywords ontdekt
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="voice" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Voice Input */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mic className="h-5 w-5" />
+                  Voice Content Input
+                </CardTitle>
+                <CardDescription>
+                  Spreek je content ideeën in voor snelle verwerking
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center space-y-4">
+                  <Button
+                    onClick={startRecording}
+                    disabled={isRecording}
+                    size="lg"
+                    className={`w-32 h-32 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : ''}`}
+                  >
+                    <Mic className={`h-8 w-8 ${isRecording ? 'text-white' : ''}`} />
+                  </Button>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">
+                      {isRecording ? 'Aan het opnemen...' : 'Klik om op te nemen'}
+                    </p>
+                    {isRecording && (
+                      <p className="text-xs text-muted-foreground">
+                        Spreek duidelijk en beschrijf je content idee
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {audioContent && (
+                  <div className="space-y-3">
+                    <Label>Getranscribeerde Content:</Label>
+                    <Textarea 
+                      value={audioContent}
+                      onChange={(e) => setAudioContent(e.target.value)}
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <Button 
+                      className="w-full"
+                      onClick={() => analyzeContentQuality(audioContent)}
+                    >
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Analyseer & Verbeter Content
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* AI Content Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Content Quality Score
+                </CardTitle>
+                <CardDescription>
+                  Real-time AI analyse van je content
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {contentScore > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Quality Score</span>
+                        <span className={`font-bold ${contentScore > 75 ? 'text-emerald-600' : contentScore > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {contentScore}/100
+                        </span>
+                      </div>
+                      <Progress value={contentScore} className="h-3" />
+                    </div>
+
+                    {seoAnalysis && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Leesbaarheid:</span>
+                            <div className="font-medium">{seoAnalysis.readability}</div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Keyword Density:</span>
+                            <div className="font-medium">{seoAnalysis.keywordDensity}</div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-medium mb-2">AI Suggesties:</h4>
+                          <ul className="space-y-1">
+                            {seoAnalysis.suggestions.map((suggestion: string, index: number) => (
+                              <li key={index} className="text-xs text-muted-foreground flex items-start gap-1">
+                                <span className="text-primary">•</span>
+                                {suggestion}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => playGeneratedContent(audioContent)}
+                      disabled={isPlayingAudio}
+                    >
+                      {isPlayingAudio ? (
+                        <>
+                          <Pause className="mr-2 h-4 w-4" />
+                          Aan het afspelen...
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="mr-2 h-4 w-4" />
+                          Lees Content Voor
+                        </>
+                      )}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Eye className="h-8 w-8 mx-auto mb-2" />
+                    <p>Voer content in voor AI analyse</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="generator" className="space-y-6">
           <Card>
