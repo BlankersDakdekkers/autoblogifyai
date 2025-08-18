@@ -35,6 +35,7 @@ import CSVProcessor from "./pages/CSVProcessor";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import BlogManagement from "./pages/BlogManagement";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminSetup from "./pages/AdminSetup";
 import AdminCustomerPortal from "./pages/AdminCustomerPortal";
 import SystemMonitoringPage from "./pages/SystemMonitoringPage";
 import NotFound from "./pages/NotFound";
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
               <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+              <Route path="/admin-setup" element={<ProtectedRoute><AdminSetup /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
               {/* Dashboard routes */}
