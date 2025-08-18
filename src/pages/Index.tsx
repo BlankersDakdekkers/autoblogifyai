@@ -68,9 +68,9 @@ const Index = () => {
             {/* Power Headline - Improved Contrast */}
             <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight drop-shadow-xl">
               <span className="text-white drop-shadow-lg">Van Excel naar</span>
-              <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent drop-shadow-lg">
-                1000+ SEO Blogposts
-              </span>
+                <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent drop-shadow-lg">
+                  Duizenden SEO-geoptimaliseerde artikelen
+                </span>
               <span className="block text-4xl md:text-5xl mt-4 text-white drop-shadow-lg">in 24 uur</span>
             </h1>
 
