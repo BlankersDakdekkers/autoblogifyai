@@ -337,6 +337,9 @@ export const NewUserDashboard = () => {
               <Settings className="h-5 w-5" />
               WordPress Koppeling Instellen
             </DialogTitle>
+            <DialogDescription>
+              Configureer je WordPress site voor automatische publicatie van je gegenereerde content.
+            </DialogDescription>
           </DialogHeader>
           <WordPressSetupWizard
             onComplete={(config) => {
