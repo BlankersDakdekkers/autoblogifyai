@@ -70,8 +70,12 @@ serve(async (req) => {
 
     console.log('Created job:', job.id);
 
-    // Start background processing
-    EdgeRuntime.waitUntil(processCSVData(csvUrl, job.id, user.id, supabase));
+    // Start background processing with error handling
+    EdgeRuntime.waitUntil(
+      processCSVData(csvUrl, job.id, user.id, supabase).catch(error => {
+        console.error('Background processing failed:', error);
+      })
+    );
 
     return new Response(
       JSON.stringify({ 
@@ -92,18 +96,20 @@ serve(async (req) => {
 
 async function processCSVData(csvUrl: string, jobId: string, userId: string, supabase: any) {
   try {
+    console.log('Starting background processing for job:', jobId);
     console.log('Fetching CSV from:', csvUrl);
     
     // Fetch CSV data
     const csvResponse = await fetch(csvUrl);
     if (!csvResponse.ok) {
-      throw new Error(`Failed to fetch CSV: ${csvResponse.status}`);
+      throw new Error(`Failed to fetch CSV: ${csvResponse.status} ${csvResponse.statusText}`);
     }
     
     const csvText = await csvResponse.text();
-    const rows = parseCSV(csvText);
+    console.log('CSV content preview:', csvText.substring(0, 200) + '...');
     
-    console.log(`Parsed ${rows.length} rows from CSV`);
+    const rows = parseCSV(csvText);
+    console.log(`Parsed ${rows.length} rows from CSV. First row:`, rows[0]);
 
     // Update job with total rows
     await supabase
@@ -161,14 +167,16 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
 }
 
 async function processRow(row: any, userId: string, supabase: any) {
+  console.log('Processing row for user:', userId, 'Row data:', row);
+  
   const blogPost = {
     user_id: userId,
-    title: row.title || 'Untitled',
-    slug: row.slug || generateSlug(row.title || 'untitled'),
+    title: row.title || row.Title || 'Untitled',
+    slug: row.slug || generateSlug(row.title || row.Title || 'untitled'),
     status: row.status || 'draft',
     publish_date: row.publish_date || new Date().toISOString().split('T')[0],
     summary: row.summary || '',
-    meta_title: row.meta_title || row.title,
+    meta_title: row.meta_title || row.title || row.Title,
     meta_description: row.meta_description || '',
     canonical_url: row.canonical_url || '',
     hero_image_url: row.hero_image_url || '',
@@ -183,14 +191,20 @@ async function processRow(row: any, userId: string, supabase: any) {
     word_count: parseInt(row.word_count_target) || 800
   };
 
-  const { error } = await supabase
+  console.log('Blog post object to insert:', JSON.stringify(blogPost, null, 2));
+
+  const { data, error } = await supabase
     .from('blog_posts')
-    .insert(blogPost);
+    .insert(blogPost)
+    .select();
 
   if (error) {
     console.error('Error inserting blog post:', error);
+    console.error('Blog post data that failed:', blogPost);
     throw error;
   }
+  
+  console.log('Successfully inserted blog post:', data);
 }
 
 async function generateContent(row: any): Promise<string> {
@@ -288,16 +302,31 @@ Neem contact op voor een vrijblijvende offerte en professioneel advies.`;
 }
 
 function parseCSV(csvText: string) {
-  const lines = csvText.trim().split('\n');
-  if (lines.length < 2) return [];
+  console.log('Parsing CSV with length:', csvText.length);
   
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  const lines = csvText.trim().split('\n');
+  if (lines.length < 2) {
+    console.log('CSV has insufficient lines:', lines.length);
+    return [];
+  }
+  
+  // Handle both comma and semicolon separated files
+  const delimiter = csvText.includes(';') && !csvText.includes(',') ? ';' : ',';
+  console.log('Using delimiter:', delimiter);
+  
+  const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+  console.log('CSV headers:', headers);
+  
   const rows = [];
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-    const row: any = {};
+    const values = lines[i].split(delimiter).map(v => v.trim().replace(/"/g, ''));
+    if (values.length !== headers.length) {
+      console.log(`Skipping row ${i} - column count mismatch. Expected: ${headers.length}, Got: ${values.length}`);
+      continue;
+    }
     
+    const row: any = {};
     headers.forEach((header, index) => {
       row[header] = values[index] || '';
     });
@@ -305,6 +334,7 @@ function parseCSV(csvText: string) {
     rows.push(row);
   }
   
+  console.log('Parsed rows:', rows.length, 'First few rows:', JSON.stringify(rows.slice(0, 2), null, 2));
   return rows;
 }
 

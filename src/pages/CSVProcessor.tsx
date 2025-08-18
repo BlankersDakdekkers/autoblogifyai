@@ -138,7 +138,12 @@ const CSVProcessor = () => {
         body: { csvUrl }
       });
 
-      if (error) throw error;
+      console.log('Edge function response:', { data, error });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Onbekende fout in edge function');
+      }
 
       // Complete download step
       setProcessingSteps(steps => steps.map((step, index) => 
@@ -147,39 +152,56 @@ const CSVProcessor = () => {
 
       // Monitor job progress
       const jobId = data.jobId;
+      console.log('Starting job monitoring for:', jobId);
       let job: CSVJob | null = null;
       
       const monitorJob = async () => {
-        const { data: jobData } = await supabase
-          .from('csv_processing_jobs')
-          .select('*')
-          .eq('id', jobId)
-          .single();
+        try {
+          const { data: jobData, error: jobError } = await supabase
+            .from('csv_processing_jobs')
+            .select('*')
+            .eq('id', jobId)
+            .single();
+            
+          if (jobError) {
+            console.error('Error fetching job:', jobError);
+            return null;
+          }
+            
+          if (jobData) {
+            job = jobData as CSVJob;
+            setCurrentJob(job);
+            console.log('Job status update:', job.status, `${job.processed_rows}/${job.total_rows}`);
           
-         if (jobData) {
-           job = jobData as CSVJob;
-           setCurrentJob(job);
+            const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
           
-          const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
-          
-          // Update step progress based on job status
-          setProcessingSteps(steps => steps.map(step => {
-            switch(step.id) {
-              case "download": return { ...step, status: "completed", progress: 100 };
-              case "validate": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
-              case "parse": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
-              case "generate": return { ...step, status: job.status === 'processing' ? "running" : job.status === 'completed' ? "completed" : "pending", progress: Math.round(progress) };
-              case "store": return { ...step, status: job.status === 'completed' ? "completed" : "pending", progress: job.status === 'completed' ? 100 : 0 };
-              default: return step;
-            }
-          }));
+            // Update step progress based on job status
+            setProcessingSteps(steps => steps.map(step => {
+              switch(step.id) {
+                case "download": return { ...step, status: "completed", progress: 100 };
+                case "validate": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
+                case "parse": return { ...step, status: job.status === 'processing' || job.status === 'completed' ? "completed" : "pending", progress: job.status === 'processing' || job.status === 'completed' ? 100 : 0 };
+                case "generate": return { ...step, status: job.status === 'processing' ? "running" : job.status === 'completed' ? "completed" : "pending", progress: Math.round(progress) };
+                case "store": return { ...step, status: job.status === 'completed' ? "completed" : "pending", progress: job.status === 'completed' ? 100 : 0 };
+                default: return step;
+              }
+            }));
+          }
+        } catch (error) {
+          console.error('Error in monitorJob:', error);
         }
         
         return job;
       };
 
-      // Poll for job completion
+      // Poll for job completion with timeout
+      let pollCount = 0;
+      const maxPolls = 60; // 2 minutes timeout
+      
       const pollInterval = setInterval(async () => {
+        pollCount++;
+        console.log(`Polling attempt ${pollCount}/${maxPolls}`);
+        
         const currentJob = await monitorJob();
         if (currentJob && (currentJob.status === 'completed' || currentJob.status === 'failed')) {
           clearInterval(pollInterval);
@@ -197,6 +219,15 @@ const CSVProcessor = () => {
               variant: "destructive"
             });
           }
+          setIsProcessing(false);
+        } else if (pollCount >= maxPolls) {
+          clearInterval(pollInterval);
+          console.error('Job monitoring timeout');
+          toast({
+            title: "Timeout",
+            description: "Verwerking duurt langer dan verwacht. Check de logs voor details.",
+            variant: "destructive"
+          });
           setIsProcessing(false);
         }
       }, 2000);
