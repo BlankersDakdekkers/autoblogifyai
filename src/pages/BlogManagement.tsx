@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,73 @@ const BlogManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [stats, setStats] = useState({
+    total: 0,
+    published: 0,
+    drafts: 0,
+    totalWords: 0
+  });
+
+  // Real-time subscription voor live updates
+  useEffect(() => {
+    if (!user) return;
+
+    console.log('Setting up real-time subscription for blog posts');
+    
+    const channel = supabase
+      .channel('blog-management-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'blog_posts',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setPosts(prev => [payload.new as BlogPost, ...prev]);
+            toast({
+              title: "Nieuwe Blog Toegevoegd",
+              description: `"${(payload.new as BlogPost).title}" is toegevoegd`,
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            setPosts(prev => prev.map(post => 
+              post.id === payload.new.id ? payload.new as BlogPost : post
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            setPosts(prev => prev.filter(post => post.id !== payload.old.id));
+          }
+          
+          // Herbereken stats na wijzigingen
+          calculateStats();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
+
+  // Bereken statistieken
+  const calculateStats = useCallback(() => {
+    const total = posts.length;
+    const published = posts.filter(p => p.status === 'published').length;
+    const drafts = posts.filter(p => p.status === 'draft').length;
+    const totalWords = posts.reduce((sum, post) => sum + (post.word_count || 0), 0);
+    
+    setStats({ total, published, drafts, totalWords });
+  }, [posts]);
+
+  useEffect(() => {
+    calculateStats();
+  }, [posts, calculateStats]);
 
   useEffect(() => {
     if (user) {
@@ -51,23 +118,43 @@ const BlogManagement = () => {
   }, [user]);
 
   const fetchPosts = async () => {
+    if (!user) {
+      console.log('No user found, skipping fetchPosts');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      console.log('Fetching blog posts for user:', user.id);
+      
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Fetched posts:', data?.length || 0, 'posts');
       setPosts(data || []);
+      
+      if ((data || []).length === 0) {
+        console.log('No blog posts found for this user');
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
         title: "Fout bij laden",
-        description: "Kon blogposts niet laden",
+        description: error instanceof Error ? error.message : "Kon blogposts niet laden",
         variant: "destructive",
       });
+      
+      // Zet posts naar lege array bij fout
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -111,6 +198,47 @@ const BlogManagement = () => {
       </div>
     );
   }
+
+  // Debug component - alleen zichtbaar in development
+  const DebugInfo = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+    
+    return (
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-sm text-yellow-800">Debug Informatie</CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs text-yellow-700">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <strong>User ID:</strong> {user?.id || 'Geen gebruiker'}
+            </div>
+            <div>
+              <strong>Posts geladen:</strong> {posts.length}
+            </div>
+            <div>
+              <strong>Loading status:</strong> {loading ? 'Aan het laden...' : 'Klaar'}
+            </div>
+            <div>
+              <strong>Filter term:</strong> {searchTerm || 'Geen filter'}
+            </div>
+            <div>
+              <strong>Status filter:</strong> {statusFilter}
+            </div>
+            <div>
+              <strong>Gefilterde posts:</strong> {filteredPosts.length}
+            </div>
+          </div>
+          <div className="mt-4">
+            <strong>Raw posts data:</strong>
+            <pre className="text-xs overflow-auto max-h-32 bg-yellow-100 p-2 rounded mt-1">
+              {JSON.stringify(posts.slice(0, 2), null, 2)}
+            </pre>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -158,6 +286,9 @@ const BlogManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Debug Info */}
+      <DebugInfo />
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -165,7 +296,7 @@ const BlogManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Totaal Blogs</p>
-                <p className="text-2xl font-bold">{posts.length}</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <FileText className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -176,9 +307,7 @@ const BlogManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Gepubliceerd</p>
-                <p className="text-2xl font-bold">
-                  {posts.filter(p => p.status === 'published').length}
-                </p>
+                <p className="text-2xl font-bold text-green-600">{stats.published}</p>
               </div>
               <Globe className="h-8 w-8 text-green-600" />
             </div>
@@ -189,9 +318,7 @@ const BlogManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Concepten</p>
-                <p className="text-2xl font-bold">
-                  {posts.filter(p => p.status === 'draft').length}
-                </p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.drafts}</p>
               </div>
               <Edit className="h-8 w-8 text-yellow-600" />
             </div>
@@ -202,9 +329,7 @@ const BlogManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Totaal Woorden</p>
-                <p className="text-2xl font-bold">
-                  {posts.reduce((sum, post) => sum + (post.word_count || 0), 0).toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-blue-600">{stats.totalWords.toLocaleString()}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
             </div>
