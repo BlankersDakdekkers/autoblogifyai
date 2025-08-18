@@ -243,7 +243,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-secondary/10">
+    <div className="min-h-screen overflow-hidden bg-background">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
