@@ -404,7 +404,7 @@ const Index = () => {
           </div>
 
           {/* Premium Pricing Cards - Mobile Optimized */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-7xl mx-auto mb-12 md:mb-20 px-4">
+          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
             {plans.map((plan, index) => {
               const IconComponent = plan.icon;
               const isCurrentPlan = subscription.subscription_tier?.toLowerCase() === plan.id;
@@ -412,114 +412,124 @@ const Index = () => {
               return (
                 <Card 
                   key={plan.id} 
-                  className={`relative transition-all duration-700 hover:shadow-2xl hover:-translate-y-4 group ${
+                  className={`relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-3 animate-fade-in group ${
                     plan.popular 
-                      ? 'border-primary shadow-2xl shadow-primary/25 scale-110 bg-gradient-to-b from-background to-primary/5 ring-4 ring-primary/30' 
-                      : 'border hover:border-primary/50 hover:shadow-xl hover:scale-105'
-                  } ${isCurrentPlan ? 'border-green-500 bg-green-50/50 shadow-green-200' : ''}`}
-                  style={{ animationDelay: `${index * 0.15}s` }}
+                      ? 'border-primary shadow-xl shadow-primary/20 scale-105 bg-gradient-to-b from-background to-primary/5 ring-2 ring-primary/20' 
+                      : 'border hover:border-primary/50 hover:shadow-lg'
+                  } ${isCurrentPlan ? 'border-green-500 bg-green-50/50 shadow-green-100' : ''}`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-10">
-                      <Badge className="bg-gradient-to-r from-primary via-purple-600 to-primary text-white px-8 py-3 text-lg font-bold shadow-2xl animate-pulse">
-                        <Star className="h-5 w-5 mr-3 fill-current" />
-                        🔥 MEEST POPULAIR - 73% KIEST DIT
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
+                      <Badge className="bg-gradient-to-r from-primary to-purple-600 text-white px-6 py-2 text-sm font-bold shadow-xl animate-pulse">
+                        <Star className="h-4 w-4 mr-2 fill-current" />
+                        🔥 MEEST POPULAIR
                       </Badge>
                     </div>
                   )}
                   
                   {isCurrentPlan && (
-                    <div className="absolute -top-6 right-6 z-10">
-                      <Badge className="bg-green-500 text-white px-4 py-2 text-sm shadow-xl animate-bounce">
+                    <div className="absolute -top-4 right-4 z-10">
+                      <Badge className="bg-green-500 text-white px-3 py-1 text-xs shadow-lg animate-bounce">
                         ✅ JE HUIDIGE PLAN
                       </Badge>
                     </div>
                   )}
                   
-                  <CardHeader className="text-center pb-8 relative">
-                    <div className="mb-8 transform group-hover:scale-125 transition-transform duration-500">
-                      <IconComponent className={`h-24 w-24 mx-auto ${plan.popular ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+                  <CardHeader className="text-center pb-6 relative">
+                    <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent className={`h-20 w-20 mx-auto ${plan.popular ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
                     </div>
-                    <CardTitle className="text-4xl mb-3">{plan.name}</CardTitle>
-                    <CardDescription className="text-xl font-medium">{plan.description}</CardDescription>
+                    <CardTitle className="text-3xl mb-2">{plan.name}</CardTitle>
+                    <CardDescription className="text-lg font-medium">{plan.description}</CardDescription>
                      
-                    <div className="mt-10">
-                      <div className="flex items-center justify-center gap-4 mb-4">
-                        <span className="text-3xl text-muted-foreground line-through">{plan.originalPrice}</span>
-                        <span className="text-7xl font-bold text-primary animate-scale-in">{plan.price}</span>
+                    {/* Urgency Timer */}
+                    <div className="flex items-center justify-center gap-2 text-orange-600 bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl mt-6 border border-orange-200 shadow-sm animate-pulse">
+                      <Clock className="h-5 w-5 animate-spin" />
+                      <span className="text-sm font-bold">
+                        ⏰ Actie eindigt over {String(timeLeft.hours).padStart(2, '0')}:
+                        {String(timeLeft.minutes).padStart(2, '0')}:
+                        {String(timeLeft.seconds).padStart(2, '0')}
+                      </span>
+                    </div>
+                    
+                    <div className="mt-8">
+                      <div className="flex items-center justify-center gap-4 mb-3">
+                        <span className="text-2xl text-muted-foreground line-through">{plan.originalPrice}</span>
+                        <span className="text-6xl font-bold text-primary animate-scale-in">{plan.price}</span>
                       </div>
-                      <span className="text-muted-foreground text-2xl">{plan.period}</span>
-                      <div className="mt-6 space-y-3">
-                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-xl px-6 py-3 shadow-lg">
+                      <span className="text-muted-foreground text-xl">{plan.period}</span>
+                      <div className="mt-4 space-y-2">
+                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-base px-4 py-2 shadow-sm">
                           ✨ {plan.trialPeriod}
                         </Badge>
-                        <Badge className="bg-gradient-to-r from-red-100 to-orange-100 text-red-800 text-lg px-4 py-2 animate-bounce shadow-md">
+                        <Badge className="bg-gradient-to-r from-red-100 to-orange-100 text-red-800 text-sm px-3 py-1 animate-bounce">
                           🔥 {plan.savings}
                         </Badge>
                       </div>
-                      <p className="text-lg text-green-600 mt-4 font-bold">🎯 Automatische verlenging na trial</p>
+                      <p className="text-sm text-green-600 mt-3 font-semibold">🎯 Automatische verlenging na trial</p>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-10 p-10">
-                    <ul className="space-y-6">
+                  <CardContent className="space-y-8 p-8">
+                    <ul className="space-y-5">
                       {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-4 group/item">
-                          <CheckCircle2 className="h-7 w-7 text-green-500 mt-0.5 flex-shrink-0 group-hover/item:scale-125 transition-transform" />
-                          <span className="text-lg font-medium leading-relaxed group-hover/item:text-primary transition-colors">{feature}</span>
+                        <li key={index} className="flex items-start gap-4 group">
+                          <CheckCircle2 className="h-6 w-6 text-green-500 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <span className="text-base font-medium leading-relaxed group-hover:text-primary transition-colors">{feature}</span>
                         </li>
                       ))}
                     </ul>
 
-                    <div className="space-y-8">
-                      {/* Enhanced Progress Bar for Loading */}
+                    <div className="space-y-6">
+                      {/* Progress Bar for Loading */}
                       {isLoading && selectedPlan === plan.id && (
-                        <div className="space-y-4 bg-gradient-to-r from-primary/10 to-purple-600/10 p-6 rounded-xl border-2 border-primary/30 shadow-lg">
-                          <div className="flex items-center justify-between text-lg font-bold">
+                        <div className="space-y-3 bg-gradient-to-r from-primary/5 to-purple-600/5 p-4 rounded-lg border border-primary/20">
+                          <div className="flex items-center justify-between text-sm font-medium">
                             <span className="text-primary">🚀 Checkout voorbereiden...</span>
-                            <span className="text-primary font-bold text-xl">{checkoutProgress}%</span>
+                            <span className="text-primary font-bold">{checkoutProgress}%</span>
                           </div>
-                          <Progress value={checkoutProgress} className="h-4 bg-white shadow-inner" />
-                          <p className="text-sm text-center text-muted-foreground animate-pulse">
+                          <Progress value={checkoutProgress} className="h-3 bg-white" />
+                          <p className="text-xs text-center text-muted-foreground animate-pulse">
                             Secure betaling via Stripe wordt geladen...
                           </p>
                         </div>
                       )}
                       
                       <Button 
-                        className={`w-full h-20 text-2xl font-bold transition-all duration-500 transform hover:scale-110 shadow-xl ${
+                        className={`w-full h-16 text-xl font-bold transition-all duration-500 transform hover:scale-105 ${
                           plan.popular 
-                            ? 'bg-gradient-to-r from-primary via-purple-600 to-primary hover:from-primary/90 hover:via-purple-600/90 hover:to-primary/90 shadow-2xl hover:shadow-3xl animate-pulse text-white' 
-                            : 'hover:scale-110 shadow-lg hover:shadow-2xl'
+                            ? 'bg-gradient-to-r from-primary via-purple-600 to-primary hover:from-primary/90 hover:via-purple-600/90 hover:to-primary/90 shadow-xl hover:shadow-2xl animate-pulse' 
+                            : 'hover:scale-105 shadow-lg hover:shadow-xl'
                         } ${isCurrentPlan ? 'bg-green-500 hover:bg-green-600' : ''}`}
                         variant={plan.popular ? "default" : "outline"}
                         onClick={() => handleSubscribe(plan.id)}
                         disabled={isLoading || isCurrentPlan}
                       >
                         {isCurrentPlan ? (
-                          <span className="flex items-center gap-4">
-                            <CheckCircle2 className="h-8 w-8" />
+                          <span className="flex items-center gap-3">
+                            <CheckCircle2 className="h-6 w-6" />
                             Actief Plan
                           </span>
                         ) : isLoading && selectedPlan === plan.id ? (
-                          <span className="flex items-center gap-4">
-                            <Loader2 className="h-8 w-8 animate-spin" />
+                          <span className="flex items-center gap-3">
+                            <Loader2 className="h-6 w-6 animate-spin" />
                             Bezig met laden...
                           </span>
                         ) : (
-                          <span className="flex items-center gap-4">
-                            <CreditCard className="h-8 w-8" />
+                          <span className="flex items-center gap-3">
+                            <CreditCard className="h-6 w-6" />
                             Start GRATIS Trial Nu
-                            <ArrowRight className="h-8 w-8 group-hover:translate-x-2 transition-transform" />
+                            <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
                           </span>
                         )}
                       </Button>
                       
-                      <div className="text-center space-y-3">
-                        <p className="text-lg text-muted-foreground bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl border border-green-200/50 shadow-sm">
+                      <div className="text-center space-y-2">
+                        <p className="text-sm text-muted-foreground bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg border border-green-200/50">
                           💳 <strong>Geen creditcard vereist</strong> • ✨ <strong>Opzeggen wanneer je wilt</strong>
                         </p>
-                        <p className="text-lg text-green-600 font-bold bg-green-50 p-3 rounded-xl border border-green-200 shadow-sm">
+                        <p className="text-sm text-green-600 font-bold bg-green-50 p-2 rounded-lg border border-green-200">
                           🛡️ 30 dagen geld-terug-garantie • 🔒 SSL beveiligd
                         </p>
                       </div>
