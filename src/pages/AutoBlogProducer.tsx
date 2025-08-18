@@ -468,9 +468,9 @@ const AutoBlogProducer = () => {
             <Wand2 className="h-8 w-8 text-primary" />
             AutoblogifyAI Producer
           </h2>
-          <p className="text-muted-foreground">
-            Van Google Sheets naar SEO-geoptimaliseerde blogposts in minuten
-          </p>
+           <p className="text-muted-foreground">
+             AI-powered keyword research, voice input en advanced content analytics voor professionele bloggers
+           </p>
         </div>
         <Badge variant="outline" className="bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
           <Zap className="h-3 w-3 mr-1" />
@@ -478,27 +478,25 @@ const AutoBlogProducer = () => {
         </Badge>
       </div>
 
-      {/* Supabase Warning */}
-      <Card className="border-amber-200 bg-amber-50">
+      {/* Optimalized Info Card */}
+      <Card className="border-emerald-200 bg-emerald-50">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+            <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
             <div>
-              <h4 className="font-medium text-amber-800">Backend Vereist voor Volledige Functionaliteit</h4>
-              <p className="text-sm text-amber-700">
-                Voor AI content generatie, CSV processing en automatische publicatie moet je Supabase connecteren. 
-                Klik op de groene Supabase knop rechts bovenin.
+              <h4 className="font-medium text-emerald-800">System Geoptimaliseerd ✨</h4>
+              <p className="text-sm text-emerald-700">
+                Gebruik de kennisbank voor CSV uploads en content management. Deze tool richt zich op keyword research, voice input en content analyse.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="generator" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs defaultValue="keywords" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="keywords">Keywords</TabsTrigger>
           <TabsTrigger value="voice">Voice Input</TabsTrigger>
-          <TabsTrigger value="generator">CSV Generator</TabsTrigger>
           <TabsTrigger value="posts">Blog Posts</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="settings">Instellingen</TabsTrigger>
@@ -809,96 +807,6 @@ const AutoBlogProducer = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="generator" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                CSV Input & Verwerking
-              </CardTitle>
-              <CardDescription>
-                Upload je Google Sheets CSV en laat AI je content genereren
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="csv-url">Google Sheets CSV URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="csv-url"
-                    value={csvUrl}
-                    onChange={(e) => setCsvUrl(e.target.value)}
-                    placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?gid=0&single=true&output=csv"
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleCsvUrlSubmit}
-                    disabled={isProcessing}
-                    className="min-w-[120px]"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Settings className="mr-2 h-4 w-4 animate-spin" />
-                        Verwerken...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" />
-                        Start Generatie
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Zorg dat je Google Sheet gepubliceerd is als CSV (File → Share → Publish to web → CSV)
-                </p>
-              </div>
-
-              {isProcessing && (
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Voortgang</span>
-                      <span>{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} className="h-3" />
-                  </div>
-
-                  <div className="space-y-2">
-                    {processingSteps.map((step, index) => (
-                      <div key={step} className="flex items-center gap-3 p-2 border rounded">
-                        {index < processingStep ? (
-                          <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        ) : index === processingStep ? (
-                          <Settings className="h-4 w-4 text-primary animate-spin" />
-                        ) : (
-                          <div className="h-4 w-4 border-2 border-muted rounded-full" />
-                        )}
-                        <span className={index <= processingStep ? "font-medium" : "text-muted-foreground"}>
-                          {step}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-800 mb-2">CSV Schema Vereisten:</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
-                  <div>• title (verplicht)</div>
-                  <div>• slug (verplicht)</div>
-                  <div>• status (publish/draft)</div>
-                  <div>• publish_date (YYYY-MM-DD)</div>
-                  <div>• meta_description</div>
-                  <div>• tags (semicolon gescheiden)</div>
-                  <div>• body_markdown</div>
-                  <div>• word_count_target</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="posts" className="space-y-6">
           <div className="flex items-center justify-between">
