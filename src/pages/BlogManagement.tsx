@@ -16,7 +16,8 @@ import {
   Globe,
   ExternalLink,
   Plus,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -199,6 +200,15 @@ const BlogManagement = () => {
     );
   }
 
+  // Refresh functie voor handmatige refresh  
+  const handleRefresh = async () => {
+    toast({
+      title: "Blogs Vernieuwen",
+      description: "Bezig met ophalen van de nieuwste blogs...",
+    });
+    await fetchPosts();
+  };
+
   // Debug component - alleen zichtbaar in development
   const DebugInfo = () => {
     if (process.env.NODE_ENV !== 'development') return null;
@@ -230,10 +240,7 @@ const BlogManagement = () => {
             </div>
           </div>
           <div className="mt-4">
-            <strong>Raw posts data:</strong>
-            <pre className="text-xs overflow-auto max-h-32 bg-yellow-100 p-2 rounded mt-1">
-              {JSON.stringify(posts.slice(0, 2), null, 2)}
-            </pre>
+            <strong>Stats:</strong> Totaal: {stats.total}, Gepubliceerd: {stats.published}, Concepten: {stats.drafts}
           </div>
         </CardContent>
       </Card>
@@ -250,10 +257,16 @@ const BlogManagement = () => {
             Beheer en publiceer je blogs naar WordPress
           </p>
         </div>
-        <Button onClick={() => navigate('/dashboard/generate')} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nieuwe Blog
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => navigate('/dashboard/generate')} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Nieuwe Blog
+          </Button>
+          <Button variant="outline" onClick={handleRefresh} disabled={loading} className="flex items-center gap-2">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Vernieuwen
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
