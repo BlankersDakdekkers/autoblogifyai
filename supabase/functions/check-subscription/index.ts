@@ -13,38 +13,46 @@ serve(async (req) => {
   }
 
   try {
-    console.log("=== CHECK SUBSCRIPTION STARTED ===");
+    console.log("=== CHECK SUBSCRIPTION FUNCTION STARTED ===");
     
-    // Force environment refresh - try multiple ways to get the key
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || 
-                     globalThis.Deno?.env?.get?.("STRIPE_SECRET_KEY") ||
-                     process?.env?.STRIPE_SECRET_KEY;
-    
-    console.log("=== STRIPE KEY DEBUG ===");
-    console.log("Key found:", !!stripeKey);
+    // Get Stripe key with detailed validation
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    console.log("=== STRIPE KEY VALIDATION ===");
+    console.log("Key exists:", !!stripeKey);
+    console.log("Key type:", typeof stripeKey);
     console.log("Key length:", stripeKey?.length || 0);
-    console.log("Key prefix:", stripeKey?.substring(0, 8) || "none");
-    console.log("Key starts with sk_:", stripeKey?.startsWith("sk_") || false);
+    console.log("Key starts with sk_:", stripeKey?.startsWith("sk_"));
     
-    if (!stripeKey || stripeKey.trim() === "" || !stripeKey.startsWith("sk_")) {
-      console.error("STRIPE_SECRET_KEY validation failed");
-      console.error("Available env vars:", Object.keys(Deno.env.toObject()));
+    if (!stripeKey) {
+      console.error("STRIPE_SECRET_KEY not found");
       return new Response(JSON.stringify({ 
-        error: "Stripe configuration missing",
-        debug: {
-          hasKey: !!stripeKey,
-          keyLength: stripeKey?.length || 0,
-          keyValid: stripeKey?.startsWith("sk_") || false
-        }
+        error: "Stripe key niet gevonden",
+        debug: "STRIPE_SECRET_KEY environment variable not set"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
       });
     }
-    console.log("Stripe key is valid");
     
+    if (!stripeKey.startsWith("sk_")) {
+      console.error("Invalid Stripe key format");
+      return new Response(JSON.stringify({ 
+        error: "Ongeldige Stripe key",
+        debug: "Key does not start with sk_"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+    
+    console.log("Stripe key validation passed");
+    
+    // Authenticate user
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      console.error("No authorization header");
+      throw new Error("No authorization header");
+    }
     
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -53,26 +61,47 @@ serve(async (req) => {
     
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
+    if (userError) {
+      console.error("Authentication error:", userError);
+      throw new Error(`Auth error: ${userError.message}`);
+    }
     
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    if (!user?.email) {
+      console.error("User not authenticated or no email");
+      throw new Error("User not authenticated");
+    }
     console.log("User authenticated:", user.email);
 
+    // Initialize Supabase with service role for database operations
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    console.log("Stripe client initialized");
+    // Initialize Stripe
+    let stripe;
+    try {
+      stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+      console.log("Stripe client initialized");
+    } catch (stripeError) {
+      console.error("Stripe initialization failed:", stripeError);
+      return new Response(JSON.stringify({ 
+        error: "Stripe initialisatie gefaald",
+        debug: stripeError.message
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
     
+    // Check for Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    console.log("Stripe customers retrieved:", customers.data.length);
+    console.log("Stripe customers found:", customers.data.length);
     
     if (customers.data.length === 0) {
-      console.log("No customer found, setting unsubscribed");
+      console.log("No customer found, setting unsubscribed state");
       await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -157,8 +186,11 @@ serve(async (req) => {
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("ERROR:", errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    console.error("GENERAL ERROR in check-subscription:", errorMessage);
+    return new Response(JSON.stringify({ 
+      error: "Er is een onbekende fout opgetreden",
+      debug: errorMessage
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
