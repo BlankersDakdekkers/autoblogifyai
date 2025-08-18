@@ -15,6 +15,7 @@ import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
 import MediaPortal from "./pages/MediaPortal";
 import SalesPage from "./pages/SalesPage";
+import IntegrationsPage from "./pages/IntegrationsPage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/dashboard/websites" element={<WebsiteBuilder />} />
             <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
             <Route path="/dashboard/ai-generator" element={<AIWebsiteGenerator />} />
+            <Route path="/dashboard/integrations" element={<IntegrationsPage />} />
             <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
             <Route path="/dashboard/keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
             <Route path="/dashboard/voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
