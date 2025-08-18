@@ -11,22 +11,43 @@ serve(async (req) => {
   }
 
   try {
+    // Get environment variables
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    console.log("=== ENVIRONMENT CHECK ===");
     console.log("STRIPE_SECRET_KEY exists:", !!stripeKey);
     console.log("STRIPE_SECRET_KEY length:", stripeKey?.length || 0);
-    console.log("STRIPE_SECRET_KEY starts with sk_:", stripeKey?.startsWith("sk_") || false);
+    console.log("STRIPE_SECRET_KEY starts with sk_test_:", stripeKey?.startsWith("sk_test_"));
+    console.log("STRIPE_SECRET_KEY starts with sk_live_:", stripeKey?.startsWith("sk_live_"));
+    console.log("STRIPE_SECRET_KEY first 15 chars:", stripeKey?.substring(0, 15) || "none");
+    console.log("SUPABASE_URL exists:", !!supabaseUrl);
+    console.log("SUPABASE_ANON_KEY exists:", !!supabaseAnonKey);
+    
+    // List all environment variables (without values for security)
+    const allEnvKeys = Object.keys(Deno.env.toObject());
+    console.log("All environment keys:", allEnvKeys);
     
     return new Response(JSON.stringify({ 
-      hasKey: !!stripeKey,
-      keyLength: stripeKey?.length || 0,
-      startsWithSk: stripeKey?.startsWith("sk_") || false
+      stripe_key_exists: !!stripeKey,
+      stripe_key_length: stripeKey?.length || 0,
+      stripe_key_type: stripeKey?.startsWith("sk_test_") ? "test" : 
+                      stripeKey?.startsWith("sk_live_") ? "live" : "unknown",
+      stripe_key_prefix: stripeKey?.substring(0, 15) || "none",
+      environment_keys: allEnvKeys,
+      supabase_configured: !!supabaseUrl && !!supabaseAnonKey
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+    
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Error in test function:", error);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stripe_key_exists: !!Deno.env.get("STRIPE_SECRET_KEY")
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
