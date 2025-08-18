@@ -1,4 +1,4 @@
-import { useState } from "react";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -51,7 +51,7 @@ interface BlogViewModalProps {
 }
 
 const BlogViewModal = ({ post, children }: BlogViewModalProps) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('nl-NL', {
