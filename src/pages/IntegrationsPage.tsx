@@ -50,6 +50,16 @@ const IntegrationsPage = () => {
   const { toast } = useToast();
 
   const handleConnect = (integration: string) => {
+    // Simuleer echte integratie setup
+    if (integration === 'google') {
+      toast({
+        title: "Google Workspace Setup",
+        description: "OAuth flow zou hier starten...",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIntegrations(prev => ({
       ...prev,
       [integration]: { connected: true, status: "active" }

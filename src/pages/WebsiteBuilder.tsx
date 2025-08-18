@@ -69,9 +69,22 @@ const WebsitesOverview = () => {
       return;
     }
 
+    // Simuleer website creatie proces
+    const newWebsite = {
+      id: Date.now(),
+      name: newWebsiteName,
+      url: `${newWebsiteName.toLowerCase().replace(/\s+/g, '-')}.autoblogify.nl`,
+      status: "Draft",
+      lastUpdated: "Nu",
+      template: templates.find(t => t.id === selectedTemplate)?.name || "Business Pro"
+    };
+
+    // Voeg toe aan mock websites (in echte app zou dit naar database gaan)
+    mockWebsites.push(newWebsite);
+
     toast({
       title: "Website Aangemaakt! 🎉",
-      description: `"${newWebsiteName}" wordt nu opgezet met het ${templates.find(t => t.id === selectedTemplate)?.name} template`
+      description: `"${newWebsiteName}" wordt nu opgezet met het ${newWebsite.template} template`,
     });
     
     setNewWebsiteName("");

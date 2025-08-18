@@ -166,7 +166,7 @@ function generateMockKeywords(seedKeyword: string) {
       difficulty: Math.floor(Math.random() * 30) + 15,
       cpc: Math.round((Math.random() * 2.5 + 0.5) * 100) / 100,
       intent: modifier === 'kosten' || modifier === 'prijzen' ? 'informational' : 'commercial',
-      relatedTerms: [`${modifier} ${seedKeyword}`, `${seedKeyword} ${modifier} 2024`]
+      relatedTerms: [`${modifier} ${seedKeyword}`, `${seedKeyword} ${modifier} 2025`]
     });
   });
 
@@ -176,19 +176,19 @@ function generateMockKeywords(seedKeyword: string) {
 function generateMockContentIdeas(seedKeyword: string) {
   return [
     {
-      title: `Complete ${seedKeyword} Gids Nederland 2024`,
-      angle: "Uitgebreide handleiding",
-      targetKeyword: `${seedKeyword} gids`,
-      estimatedTraffic: Math.floor(Math.random() * 800) + 200,
-      contentType: "Pillar Content"
-    },
-    {
-      title: `${seedKeyword} Kosten: Wat Betaal Je in 2024?`,
-      angle: "Prijsvergelijking",
-      targetKeyword: `${seedKeyword} kosten`,
-      estimatedTraffic: Math.floor(Math.random() * 600) + 150,
-      contentType: "Commercial"
-    },
+        title: `Complete ${seedKeyword} Gids Nederland 2025`,
+        angle: "Uitgebreide handleiding",
+        targetKeyword: `${seedKeyword} gids`,
+        estimatedTraffic: Math.floor(Math.random() * 800) + 200,
+        contentType: "Pillar Content"
+      },
+      {
+        title: `${seedKeyword} Kosten: Wat Betaal Je in 2025?`,
+        angle: "Prijsvergelijking",
+        targetKeyword: `${seedKeyword} kosten`,
+        estimatedTraffic: Math.floor(Math.random() * 600) + 150,
+        contentType: "Commercial"
+      },
     {
       title: `Top 10 ${seedKeyword} Bedrijven in Amsterdam`,
       angle: "Lokale directory",

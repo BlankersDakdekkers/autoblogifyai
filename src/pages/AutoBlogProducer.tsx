@@ -124,8 +124,8 @@ const AutoBlogProducer = () => {
   const mockBlogPosts: BlogPost[] = [
     {
       id: "1",
-      title: "Dakdekker Amsterdam - Complete Gids 2024",
-      slug: "dakdekker-amsterdam-gids-2024",
+      title: "Dakdekker Amsterdam - Complete Gids 2025",
+      slug: "dakdekker-amsterdam-gids-2025",
       status: "published",
       publishDate: "2024-01-15",
       wordCount: 1250,
@@ -135,13 +135,13 @@ const AutoBlogProducer = () => {
     },
     {
       id: "2", 
-      title: "Dakisolatie Kosten 2024 - Volledige Prijsoverzicht",
-      slug: "dakisolatie-kosten-2024-prijsoverzicht",
+      title: "Dakisolatie Kosten 2025 - Volledige Prijsoverzicht",
+      slug: "dakisolatie-kosten-2025-prijsoverzicht",
       status: "scheduled",
       publishDate: "2024-01-20",
       wordCount: 980,
       tags: ["isolatie", "kosten", "energiebesparing"],
-      metaDescription: "Wat kost dakisolatie in 2024? Bekijk ons complete prijsoverzicht en bereken je besparingen.",
+      metaDescription: "Wat kost dakisolatie in 2025? Bekijk ons complete prijsoverzicht en bereken je besparingen.",
       generatedAt: "2024-01-14T11:15:00Z"
     },
     {
@@ -248,14 +248,14 @@ const AutoBlogProducer = () => {
 
     const mockContentIdeas: ContentIdea[] = [
       {
-        title: `Complete ${seedKeyword} Gids Nederland 2024`,
+        title: `Complete ${seedKeyword} Gids Nederland 2025`,
         angle: "Uitgebreide handleiding",
         targetKeyword: `${seedKeyword} gids`,
         estimatedTraffic: 850,
         contentType: "Pillar Content"
       },
       {
-        title: `${seedKeyword} Kosten: Wat Betaal Je in 2024?`,
+        title: `${seedKeyword} Kosten: Wat Betaal Je in 2025?`,
         angle: "Prijsvergelijking",
         targetKeyword: `${seedKeyword} kosten`,
         estimatedTraffic: 690,
