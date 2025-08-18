@@ -571,13 +571,11 @@ const Dashboard = () => {
   return (
     <Routes>
       <Route path="/" element={<DashboardOverview />} />
-      <Route path="/generate" element={<AutoBlogProducerWithTabs initialTab="generator" />} />
       <Route path="/validate" element={<ValidateCSV />} />
       <Route path="/publish" element={<PublishPosts />} />
       <Route path="/settings" element={<DashboardSettings />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/pricing" element={<PricingPage />} />
-      {/* Website Builder routes handled by WebsiteBuilder component */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
