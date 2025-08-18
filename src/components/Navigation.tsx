@@ -140,6 +140,18 @@ export const navigationSections: NavigationSection[] = [
         icon: Database,
         description: "Cursussen en tutorials"
       },
+      { 
+        title: "Notificaties", 
+        url: "/dashboard/notifications", 
+        icon: Database,
+        description: "Meldingen en waarschuwingen"
+      },
+      { 
+        title: "Help & Support", 
+        url: "/dashboard/help", 
+        icon: Database,
+        description: "Hulp en documentatie"
+      },
     ]
   }
 ];
