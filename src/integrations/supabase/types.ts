@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_rate_limits: {
+        Row: {
+          attempt_type: string
+          attempts: number
+          blocked_until: string | null
+          created_at: string
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          attempt_type: string
+          attempts?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          attempt_type?: string
+          attempts?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string | null
@@ -128,6 +158,7 @@ export type Database = {
       google_integrations: {
         Row: {
           created_at: string
+          encrypted_tokens: string | null
           google_email: string
           google_name: string | null
           id: string
@@ -139,6 +170,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          encrypted_tokens?: string | null
           google_email: string
           google_name?: string | null
           id?: string
@@ -150,6 +182,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          encrypted_tokens?: string | null
           google_email?: string
           google_name?: string | null
           id?: string
