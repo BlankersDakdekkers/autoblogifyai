@@ -26,6 +26,8 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CSVFileUploader } from "@/components/CSVFileUploader";
+import { ProgressSidebar } from "@/components/ProgressSidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 interface CSVJob {
   id: string;
