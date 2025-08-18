@@ -120,29 +120,44 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
     console.log('Starting background processing for job:', jobId);
     console.log('Fetching CSV from:', csvUrl);
     
-    // Validate and correct CSV URL format
+    // Validate and correct CSV URL format for Google Sheets
     let correctedUrl = csvUrl;
     
     // Check if it's a Google Sheets URL and correct format if needed
     if (csvUrl.includes('docs.google.com/spreadsheets')) {
-      console.log('Detected Google Sheets URL, checking format...');
+      console.log('Detected Google Sheets URL, correcting format...');
+      console.log('Original URL:', csvUrl);
       
-      // Extract spreadsheet ID from various Google Sheets URL formats
       let spreadsheetId = '';
       
-      if (csvUrl.includes('/d/')) {
-        const match = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      // Extract spreadsheet ID from various Google Sheets URL formats
+      const patterns = [
+        /\/d\/([a-zA-Z0-9-_]+)/, // Standard format
+        /spreadsheets\/d\/([a-zA-Z0-9-_]+)/, // Alternative format
+      ];
+      
+      for (const pattern of patterns) {
+        const match = csvUrl.match(pattern);
         if (match) {
           spreadsheetId = match[1];
+          break;
         }
       }
       
       if (spreadsheetId) {
-        // Use the correct published CSV format
-        correctedUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=0`;
-        console.log('Corrected URL to:', correctedUrl);
+        // Extract gid if present
+        let gid = '0'; // Default to first sheet
+        const gidMatch = csvUrl.match(/[?&]gid=([0-9]+)/);
+        if (gidMatch) {
+          gid = gidMatch[1];
+        }
+        
+        // Use the correct export format for Google Sheets
+        correctedUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+        console.log('Corrected URL:', correctedUrl);
       } else {
         console.log('Could not extract spreadsheet ID from URL');
+        throw new Error(`Invalid Google Sheets URL format. Expected format: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/...`);
       }
     }
     
