@@ -400,13 +400,19 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
   }
   
-  // Generate content with retry logic
-  let bodyContent = '';
+  // Generate enhanced AI content with all features from generate-content function
+  let aiContent;
   try {
-    bodyContent = await generateContentWithRetry(row);
+    aiContent = await generateContentWithAI(row);
   } catch (error) {
-    logStep("Content generation failed, using fallback", { rowIndex, error: error.message });
-    bodyContent = generateMockContent(row);
+    logStep("Enhanced AI generation failed, using fallback", { rowIndex, error: error.message });
+    const mockContent = generateMockContent(row);
+    aiContent = {
+      content: mockContent,
+      metaDescription: `${row.title} - Complete gids met praktische tips en strategieën.`,
+      faq: [],
+      cta: { heading: 'Neem Contact Op', subtext: 'Start vandaag nog' }
+    };
   }
   
   const blogPost = {
@@ -415,20 +421,20 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     slug: generateUniqueSlug(row.title || row.Title || 'untitled', supabase),
     status: row.status || 'draft',
     publish_date: validateAndFormatDate(row.publish_date) || new Date().toISOString().split('T')[0],
-    summary: row.summary || '',
+    summary: row.summary || aiContent.content.substring(0, 300) + '...',
     meta_title: row.meta_title || row.title || row.Title,
-    meta_description: row.meta_description || truncateText(bodyContent, 160),
+    meta_description: row.meta_description || aiContent.metaDescription,
     canonical_url: row.canonical_url || '',
-    hero_image_url: row.hero_image_url || '',
-    hero_image_alt: row.hero_image_alt || '',
-    body_markdown: bodyContent,
-    faq_json: parseFAQ(row.faq_json),
-    cta_heading: row.cta_heading || '',
-    cta_subtext: row.cta_subtext || '',
-    tags: parseTagsFromString(row.tags),
-    author: row.author || 'AI Author',
-    city: row.city || '',
-    word_count: calculateWordCount(bodyContent)
+    hero_image_url: row.hero_image_url || aiContent.heroImageUrl || '',
+    hero_image_alt: row.hero_image_alt || aiContent.heroImageAlt || '',
+    body_markdown: aiContent.content,
+    faq_json: aiContent.faq.length > 0 ? aiContent.faq : parseFAQ(row.faq_json),
+    cta_heading: row.cta_heading || aiContent.cta.heading,
+    cta_subtext: row.cta_subtext || aiContent.cta.subtext,
+    tags: parseTagsFromString(row.tags) || [row.title?.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim() || 'seo'],
+    author: row.author || 'AutoblogifyAI',
+    city: row.city || 'Nederland',
+    word_count: calculateWordCount(aiContent.content)
   };
 
   logStep("Inserting blog post", { rowIndex, title: blogPost.title, slug: blogPost.slug });
@@ -464,40 +470,286 @@ async function generateContentWithRetry(row: any, maxRetries: number = 2): Promi
   throw new Error('All content generation attempts failed');
 }
 
-async function generateContent(row: any): Promise<string> {
+// Enhanced content generation that matches the Knowledge Base blog generator
+async function generateContentWithAI(row: any): Promise<{
+  content: string;
+  metaDescription: string;
+  faq: any[];
+  cta: { heading: string; subtext: string };
+  heroImageUrl?: string;
+  heroImageAlt?: string;
+}> {
   if (!openAIApiKey) {
-    return generateMockContent(row);
+    const mockContent = generateMockContent(row);
+    return {
+      content: mockContent,
+      metaDescription: `${row.title} - Complete gids met praktische tips en strategieën.`,
+      faq: [],
+      cta: { heading: 'Neem Contact Op', subtext: 'Start vandaag nog' }
+    };
   }
 
+  const title = row.title || row.Title || 'Algemeen onderwerp';
+  const targetKeyword = title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim();
+  const city = row.city || 'Nederland';
+  const wordCount = parseInt(row.word_count_target) || 1200;
+  const language = 'nl';
+
+  // Enhanced system prompt with neuromarketing - EXACT copy from generate-content
+  const basePrompt = `Je bent een expert SEO content writer die hoogkwalitatieve, professionele artikelen schrijft van ${wordCount} woorden.
+
+KWALITEITSEISEN:
+- Schrijf CONSISTENTE, hoogkwalitatieve artikelen van exact ${wordCount} woorden
+- Gebruik moderne SEO-technieken (2024/2025)
+- Gebruik perfecte Nederlandse markdown opmaak
+- Maak de tekst informatief en boeiend
+- Gebruik headers (H2, H3), lijsten, tabellen waar relevant
+- Voeg praktische tips en concrete voorbeelden toe
+- Optimaliseer voor zoekintentie en gebruikerservaring
+
+MARKDOWN OPMAAK VEREISTEN:
+- Gebruik ## voor hoofdstukken (H2)
+- Gebruik ### voor subsecties (H3) 
+- Gebruik **vetgedrukte tekst** voor belangrijke punten
+- Gebruik bullet points (- ) en genummerde lijsten (1. )
+- Voeg tabellen toe met | syntax waar relevant
+- Gebruik > voor belangrijke quotes/tips
+
+MODERNE SEO TECHNIEKEN:
+- Focus op zoekintentie en gebruikerservaring
+- Gebruik LSI keywords en semantische varianten
+- Optimaliseer voor featured snippets
+- Gebruik interne linking concepten
+- Focus op E-A-T (Expertise, Authority, Trust)
+
+NEUROMARKETING TECHNIEKEN:
+- Gebruik emotionele triggers (angst, verlangen, urgentie)
+- Voeg sociale bewijskracht toe (testimonials, cijfers)
+- Gebruik machtsproblemen en oplossingsgerichte taal
+- Creëer urgentie en schaarste waar relevant
+- Gebruik specifieke, concrete taal in plaats van vaag
+- Voeg vertrouwenssignalen toe
+- Gebruik actieve, overtuigende taal
+
+Taal: ${language}`;
+
+  // Enhanced user prompt for consistent, high-quality content - EXACT copy from generate-content
+  const userPrompt = `Schrijf een professioneel, hoogkwalitatief artikel van exact ${wordCount} woorden over: "${title}"
+
+ONDERWERP FOCUS: ${title}
+DOELGROEP: ${city} - Nederlandse doelgroep
+TREFWOORDEN: Gebruik "${targetKeyword}" en varianten natuurlijk door de tekst (keyword density 1-2%)
+
+ARTIKEL INHOUD VEREISTEN:
+- Exact ${wordCount} woorden (tel zorgvuldig!)
+- Boeiende inleiding die de waarde direct duidelijk maakt
+- 4-6 goed gestructureerde hoofdstukken
+- Praktische tips en concrete voorbeelden
+- Actuele trends en ontwikkelingen (2024/2025)
+- Lokale relevantie voor ${city} waar mogelijk
+- Actionable insights die direct bruikbaar zijn
+- Professionele, betrouwbare toon
+
+VERPLICHTE STRUCTUUR:
+## Inleiding
+Directe waardepropositie en overview (150-200 woorden)
+
+## [4-6 Hoofdstukken met beschrijvende titels]
+Elk hoofdstuk ${Math.floor(wordCount / 6)}-${Math.floor(wordCount / 4)} woorden met diepgaande, praktische informatie
+
+## Conclusie
+Samenvatting, key takeaways en volgende stappen (100-150 woorden)
+
+KWALITEITSVEREISTEN:
+- Gebruik perfecte markdown opmaak met ##, ###, **vet**, lijsten
+- Voeg concrete voorbeelden en data toe
+- Schrijf in de derde persoon, professioneel
+- Gebruik actieve zinnen
+- Vermijd clichés en vage taal
+- Tel woorden nauwkeurig en kom uit op exact ${wordCount} woorden`;
+
   try {
-    const prompt = `Schrijf een SEO-geoptimaliseerde Nederlandse blogpost over: "${row.title || 'Algemeen onderwerp'}"
-
-Context:
-- Doelgroep: ${row.city || 'Nederland'}
-- Samenvatting: ${row.summary || 'Geen samenvatting'}
-- Doelwoordentelling: ${row.word_count_target || 800} woorden
-
-De post moet:
-- Een duidelijke H1, H2 en H3 structuur hebben
-- SEO-vriendelijk zijn
-- Praktische tips bevatten
-- Een natuurlijke Nederlandse schrijfstijl hebben
-- Relevante keywords bevatten
-
-Schrijf de volledige blogpost in Markdown formaat:`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Generate main content
+    logStep("Generating main content with enhanced AI");
+    const contentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14', // Use same model as generate-content
         messages: [
-          { role: 'system', content: 'Je bent een expert Nederlandse content schrijver gespecialiseerd in SEO-blogposts.' },
-          { role: 'user', content: prompt }
+          { role: 'system', content: basePrompt },
+          { role: 'user', content: userPrompt }
         ],
+        max_tokens: Math.min(16000, Math.max(4000, wordCount * 10)),
+        temperature: 0.7,
+        seed: Math.abs(title.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0))
+      }),
+    });
+
+    if (!contentResponse.ok) {
+      const errorText = await contentResponse.text();
+      throw new Error(`Content generation failed: ${errorText}`);
+    }
+
+    const contentData = await contentResponse.json();
+    const generatedContent = contentData.choices[0].message.content;
+
+    // Generate hero image - EXACT copy from generate-content
+    let heroImageUrl = null;
+    let heroImageAlt = null;
+    
+    try {
+      const imagePrompt = `Create a professional, modern blog header image for an article titled "${title}". Style: Clean, minimalist, professional business design with subtle tech elements. Colors: Modern blue and white palette with subtle gradients. Include relevant icons or symbols related to the topic. No text overlay needed. High quality, 16:9 aspect ratio, suitable for blog headers.`;
+      
+      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: imagePrompt,
+          size: '1792x1024',
+          quality: 'standard',
+          n: 1
+        }),
+      });
+
+      if (imageResponse.ok) {
+        const imageData = await imageResponse.json();
+        heroImageUrl = imageData.data[0].url;
+        heroImageAlt = `Afbeelding voor artikel: ${title}`;
+      }
+    } catch (imageError) {
+      logStep('Image generation failed', { error: imageError.message });
+    }
+
+    // Generate meta description - EXACT copy from generate-content
+    const metaResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-mini-2025-08-07',
+        messages: [
+          { 
+            role: 'system', 
+            content: `Je bent een SEO-expert. Schrijf perfecte meta descriptions die:
+- Maximaal 155 karakters zijn
+- De hoofdkeyword bevatten
+- Een duidelijke waardepropositie hebben
+- Een call-to-action bevatten
+- Zoekintentie matchen
+Taal: ${language}` 
+          },
+          { 
+            role: 'user', 
+            content: `Schrijf een SEO-geoptimaliseerde meta description voor artikel: "${title}" gericht op ${city}. Focus op de belangrijkste voordelen en gebruik een actieve toon.` 
+          }
+        ],
+        max_completion_tokens: 200,
+      }),
+    });
+
+    const metaData = await metaResponse.json();
+    const metaDescription = metaData.choices[0].message.content.replace(/"/g, '');
+
+    // Generate FAQ section - EXACT copy from generate-content
+    let faqJson = [];
+    const faqResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-mini-2025-08-07',
+        messages: [
+          { 
+            role: 'system', 
+            content: `Je bent een SEO content specialist. Maak uitgebreide FAQ secties die:
+- 6-8 relevante vragen bevatten
+- Lange, gedetailleerde antwoorden hebben (100-200 woorden per antwoord)
+- Zoekintentie optimaliseren
+- Featured snippets targeten
+- LSI keywords gebruiken
+Output formaat: JSON array met objecten die "q" en "a" properties hebben.
+Taal: ${language}` 
+          },
+          { 
+            role: 'user', 
+            content: `Maak een uitgebreide FAQ sectie voor artikel over "${title}" in ${city}. Focus op praktische vragen die mensen écht stellen.` 
+          }
+        ],
+        max_completion_tokens: 2000,
+      }),
+    });
+
+    const faqData = await faqResponse.json();
+    try {
+      const faqContent = faqData.choices[0].message.content;
+      const jsonMatch = faqContent.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        faqJson = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      logStep('FAQ parsing failed', { error: e.message });
+    }
+
+    // Generate CTA - EXACT copy from generate-content
+    const ctaPrompt = `Schrijf een overtuigende call-to-action heading en subtext voor "${title}" service. Heading max 8 woorden, subtext max 15 woorden.`;
+
+    const ctaResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-mini-2025-08-07',
+        messages: [
+          { role: 'user', content: ctaPrompt }
+        ],
+        max_completion_tokens: 150,
+      }),
+    });
+
+    const ctaData = await ctaResponse.json();
+    const ctaText = ctaData.choices[0].message.content;
+    const ctaLines = ctaText.split('\n').filter(line => line.trim());
+    const ctaHeading = ctaLines[0]?.replace(/^Heading:\s*/i, '').replace(/"/g, '') || 'Neem Contact Op';
+    const ctaSubtext = ctaLines[1]?.replace(/^Subtext:\s*/i, '').replace(/"/g, '') || 'Start vandaag nog';
+
+    return {
+      content: generatedContent,
+      metaDescription,
+      faq: faqJson,
+      cta: { heading: ctaHeading, subtext: ctaSubtext },
+      heroImageUrl,
+      heroImageAlt
+    };
+
+  } catch (error) {
+    logStep("Enhanced AI generation failed, using fallback", { error: error.message });
+    throw error;
+  }
+}
+
+async function generateContent(row: any): Promise<string> {
+  // This is now a wrapper for backwards compatibility
+  try {
+    const aiResult = await generateContentWithAI(row);
+    return aiResult.content;
+  } catch (error) {
+    return generateMockContent(row);
+  }
+}
         max_completion_tokens: 2000,
       }),
     });
