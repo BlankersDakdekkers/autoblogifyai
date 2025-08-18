@@ -521,12 +521,31 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
     });
   };
 
-  const handleDeleteItem = (id: string) => {
-    setKnowledgeItems(knowledgeItems.filter(item => item.id !== id));
-    toast({
-      title: "Item verwijderd",
-      description: "Het kennisbank item is verwijderd.",
-    });
+  const handleDeleteItem = async (id: string) => {
+    try {
+      // Delete from knowledge_items table
+      const { error } = await supabase
+        .from('knowledge_items')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setKnowledgeItems(prev => prev.filter(item => item.id !== id));
+      
+      toast({
+        title: "Item verwijderd",
+        description: "Het kennisbank item is permanent verwijderd.",
+      });
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast({
+        title: "Fout bij verwijderen",
+        description: "Er is een fout opgetreden bij het verwijderen",
+        variant: "destructive"
+      });
+    }
   };
 
   const getTypeIcon = (type: string) => {
