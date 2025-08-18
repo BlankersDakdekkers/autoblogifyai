@@ -9,7 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, CheckCircle, Clock, CreditCard } from 'lucide-react';
 
-const stripePromise = loadStripe('pk_test_51QmwdKKdDy73xPeaK3d3hKQ4Z00Z9VoZF01N9nwBkpZNLKCf1VfwN4KGNzOqCjxUYUnVdnhJxJMUJKB6K0Cf5YY600QfCLJJ6B');
+// Use your live/test publishable key from Stripe Dashboard
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.DEV 
+  ? 'pk_test_51QmwdKKdDy73xPeaK3d3hKQ4Z00Z9VoZF01N9nwBkpZNLKCf1VfwN4KGNzOqCjxUYUnVdnhJxJMUJKB6K0Cf5YY600QfCLJJ6B' // Test key
+  : 'pk_live_YOUR_LIVE_KEY_HERE'; // Replace with your live key
+
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 interface CheckoutFormProps {
   tier: string;
@@ -280,11 +285,16 @@ export const CustomCheckout = ({ tier, onSuccess, onCancel }: CustomCheckoutProp
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
-          <h2 className="text-xl font-semibold">Checkout voorbereiden...</h2>
-          <p className="text-muted-foreground">Even geduld terwijl we alles klaar maken</p>
-        </div>
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-8 text-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
+            <h2 className="text-xl font-semibold">Checkout voorbereiden...</h2>
+            <p className="text-muted-foreground">Even geduld terwijl we alles klaar maken</p>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div className="bg-primary h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -350,26 +360,28 @@ export const CustomCheckout = ({ tier, onSuccess, onCancel }: CustomCheckoutProp
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Progress Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold shadow-lg">
                   1
                 </div>
-                <div className="w-8 h-1 bg-primary"></div>
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                <div className="w-12 h-1 bg-primary rounded-full"></div>
+                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold shadow-lg">
                   2
                 </div>
-                <div className="w-8 h-1 bg-muted"></div>
-                <div className="w-8 h-8 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-sm">
+                <div className="w-12 h-1 bg-muted rounded-full"></div>
+                <div className="w-10 h-10 bg-muted text-muted-foreground rounded-full flex items-center justify-center">
                   3
                 </div>
               </div>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Laatste stap!</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Laatste stap!
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Voer je betaalgegevens in om je <span className="font-semibold text-foreground">{tier}</span> abonnement te activeren
             </p>
           </div>
@@ -383,6 +395,25 @@ export const CustomCheckout = ({ tier, onSuccess, onCancel }: CustomCheckoutProp
               onSuccess={onSuccess}
             />
           </Elements>
+
+          {/* Additional Trust Signals */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-6 bg-muted/50 rounded-full px-6 py-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Shield className="w-4 h-4 text-green-500" />
+                <span>SSL Beveiligd</span>
+              </div>
+              <div className="w-1 h-4 bg-border"></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>PCI Compliant</span>
+              </div>
+              <div className="w-1 h-4 bg-border"></div>
+              <div className="text-sm text-muted-foreground">
+                Powered by Stripe
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
