@@ -400,6 +400,7 @@ const Dashboard = () => {
       <Route path="/publish" element={<PublishPosts />} />
       <Route path="/settings" element={<DashboardSettings />} />
       <Route path="/analytics" element={<Analytics />} />
+      {/* Website Builder routes handled by WebsiteBuilder component */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

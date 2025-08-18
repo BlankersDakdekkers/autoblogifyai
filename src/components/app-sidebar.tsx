@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { FileText, CheckCircle2, Globe, Settings, Home, BarChart3 } from "lucide-react"
+import { FileText, ChevronDown, ChevronRight } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
+import { navigationSections, isActiveRoute } from "./Navigation"
 
 import {
   Sidebar,
@@ -11,21 +12,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
-
-const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Genereren", url: "/dashboard/generate", icon: FileText },
-  { title: "Valideren", url: "/dashboard/validate", icon: CheckCircle2 },
-  { title: "Publiceren", url: "/dashboard/publish", icon: Globe },
-]
-
-const configItems = [
-  { title: "Instellingen", url: "/dashboard/settings", icon: Settings },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-]
 
 export function AppSidebar() {
   const { state } = useSidebar()
@@ -33,18 +21,34 @@ export function AppSidebar() {
   const location = useLocation()
   const currentPath = location.pathname
 
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + "/")
-  const isMainExpanded = mainItems.some((i) => isActive(i.url))
-  const isConfigExpanded = configItems.some((i) => isActive(i.url))
-  
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-2 ${isActive ? "bg-primary text-primary-foreground font-medium" : "hover:bg-muted/50"}`
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
+    "Dashboard": true,
+    "AutoblogifyAI": true,
+    "Website Builder": true,
+    "Configuratie": true,
+  })
+
+  const toggleSection = (sectionLabel: string) => {
+    if (collapsed) return; // Don't toggle when collapsed
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionLabel]: !prev[sectionLabel]
+    }))
+  }
+
+  const getNavCls = (itemUrl: string) => {
+    const isActive = isActiveRoute(currentPath, itemUrl)
+    return `flex items-center gap-2 w-full ${
+      isActive 
+        ? "bg-primary text-primary-foreground font-medium" 
+        : "hover:bg-muted/50"
+    }`
+  }
 
   return (
-    <Sidebar
-      className={collapsed ? "w-14" : "w-60"}
-    >
+    <Sidebar className={collapsed ? "w-14" : "w-60"}>
       <SidebarContent>
+        {/* Logo/Brand */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -53,47 +57,66 @@ export function AppSidebar() {
             {!collapsed && (
               <div>
                 <h2 className="font-bold text-lg">AutoblogifyAI</h2>
-                <p className="text-xs text-muted-foreground">CSV → SEO Blogs</p>
+                <p className="text-xs text-muted-foreground">Pro Dashboard</p>
               </div>
             )}
           </div>
         </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Workflow</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Navigation Sections */}
+        {navigationSections.map((section) => {
+          const isExpanded = collapsed || expandedSections[section.label]
+          const hasActiveItem = section.items.some(item => isActiveRoute(currentPath, item.url))
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Configuratie</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {configItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          return (
+            <SidebarGroup key={section.label}>
+              {!collapsed && (
+                <SidebarGroupLabel 
+                  className="flex items-center justify-between cursor-pointer hover:bg-muted/50 px-2 py-1 rounded"
+                  onClick={() => toggleSection(section.label)}
+                >
+                  <span>{section.label}</span>
+                  {isExpanded ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )}
+                </SidebarGroupLabel>
+              )}
+              
+              {isExpanded && (
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {section.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <NavLink 
+                            to={item.url} 
+                            end={item.url === "/dashboard"}
+                            className={getNavCls(item.url)}
+                            title={collapsed ? item.title : undefined}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            {!collapsed && (
+                              <div className="flex-1">
+                                <span>{item.title}</span>
+                                {item.description && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              )}
+            </SidebarGroup>
+          )
+        })}
       </SidebarContent>
     </Sidebar>
   )

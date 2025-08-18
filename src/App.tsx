@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import WebsiteBuilder from "./pages/WebsiteBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +49,17 @@ const App = () => (
         <Layout>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/dashboard/*" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/generate" element={<Dashboard />} />
+            <Route path="/dashboard/validate" element={<Dashboard />} />
+            <Route path="/dashboard/publish" element={<Dashboard />} />
+            <Route path="/dashboard/analytics" element={<Dashboard />} />
+            <Route path="/dashboard/settings" element={<Dashboard />} />
+            <Route path="/dashboard/websites" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/templates" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/components" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/integrations" element={<WebsiteBuilder />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
