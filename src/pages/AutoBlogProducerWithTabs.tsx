@@ -490,7 +490,7 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
 
         {/* Keywords Tab */}
         <TabsContent value="keywords" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -504,24 +504,41 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="seed-keyword">Seed Keyword</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Input
                       id="seed-keyword"
                       value={seedKeyword}
                       onChange={(e) => setSeedKeyword(e.target.value)}
                       placeholder="dakdekker, tandarts, restaurant..."
+                      className="flex-1"
                     />
                     <Button 
                       onClick={generateKeywords}
                       disabled={isGeneratingKeywords}
-                      className="min-w-[100px]"
+                      className="min-w-[120px] sm:min-w-[100px]"
                     >
                       {isGeneratingKeywords ? (
                         <RefreshCw className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Search className="h-4 w-4" />
+                        <>
+                          <Search className="h-4 w-4 sm:mr-0 mr-2" />
+                          <span className="sm:hidden">Genereer Keywords</span>
+                        </>
                       )}
                     </Button>
+                  </div>
+                  
+                  {/* Google API Integration Notice */}
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-800">Echte Google Data Beschikbaar</p>
+                        <p className="text-blue-700 mt-1">
+                          Voor live keyword data van Google connecteer je Google Ads API via Supabase Edge Functions.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -532,22 +549,27 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
                   </h4>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {keywordSuggestions.map((kw, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{kw.keyword}</span>
-                            <Badge variant="outline" className="text-xs">
+                      <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <span className="font-medium truncate">{kw.keyword}</span>
+                            <Badge variant="outline" className="text-xs w-fit">
                               {kw.intent}
                             </Badge>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            Vol: {kw.searchVolume} | Diff: {kw.difficulty} | CPC: €{kw.cpc}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            <div className="flex flex-wrap gap-x-3 gap-y-1">
+                              <span>Vol: {kw.searchVolume.toLocaleString()}</span>
+                              <span>Diff: {kw.difficulty}</span>
+                              <span>CPC: €{kw.cpc}</span>
+                            </div>
                           </div>
                         </div>
                         <Button 
                           variant="ghost" 
                           size="sm"
                           onClick={() => copyKeywordToClipboard(kw.keyword)}
+                          className="self-start sm:self-center"
                         >
                           <Copy className="h-3 w-3" />
                         </Button>
@@ -563,7 +585,8 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
                     variant="outline"
                   >
                     <Zap className="mr-2 h-4 w-4" />
-                    Genereer 50+ Posts van Keywords
+                    <span className="hidden sm:inline">Genereer 50+ Posts van Keywords</span>
+                    <span className="sm:hidden">Bulk Generatie (50+ Posts)</span>
                   </Button>
                 )}
               </CardContent>
@@ -582,21 +605,26 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
               <CardContent className="space-y-3">
                 {contentIdeas.map((idea, index) => (
                   <Card key={index} className="p-3">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <h4 className="font-medium text-sm">{idea.title}</h4>
-                        <Badge variant="secondary" className="text-xs">
+                    <div className="space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                        <h4 className="font-medium text-sm leading-snug pr-2">{idea.title}</h4>
+                        <Badge variant="secondary" className="text-xs w-fit">
                           {idea.contentType}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">{idea.angle}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>🎯 {idea.targetKeyword}</span>
-                        <span>📈 ~{idea.estimatedTraffic} bezoeken/maand</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          🎯 <span className="truncate">{idea.targetKeyword}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          📈 ~{idea.estimatedTraffic} bezoeken/maand
+                        </span>
                       </div>
                       <Button size="sm" className="w-full" variant="outline">
                         <FileText className="mr-2 h-3 w-3" />
-                        Genereer Deze Post
+                        <span className="hidden sm:inline">Genereer Deze Post</span>
+                        <span className="sm:hidden">Genereer Post</span>
                       </Button>
                     </div>
                   </Card>
@@ -605,15 +633,16 @@ const AutoBlogProducerWithTabs = ({ initialTab = "generator" }: { initialTab?: s
                 {contentIdeas.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <TrendingUp className="h-8 w-8 mx-auto mb-2" />
-                    <p>Genereer keywords om content ideeën te zien</p>
+                    <p className="text-sm">Genereer keywords om content ideeën te zien</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
+          {/* Mobile-Optimized Keyword Strategy Cards */}
           {keywordSuggestions.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Card className="border-emerald-200 bg-emerald-50">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 text-emerald-700">
