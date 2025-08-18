@@ -40,6 +40,12 @@ export const navigationSections: NavigationSection[] = [
         icon: BarChart3,
         description: "Content prestaties en metrics"
       },
+      { 
+        title: "Abonnement", 
+        url: "/dashboard/pricing", 
+        icon: Zap,
+        description: "Upgrade en beheer je plan"
+      },
     ]
   },
   {

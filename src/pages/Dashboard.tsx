@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import PricingPage from "./PricingPage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -400,6 +401,7 @@ const Dashboard = () => {
       <Route path="/publish" element={<PublishPosts />} />
       <Route path="/settings" element={<DashboardSettings />} />
       <Route path="/analytics" element={<Analytics />} />
+      <Route path="/pricing" element={<PricingPage />} />
       {/* Website Builder routes handled by WebsiteBuilder component */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
