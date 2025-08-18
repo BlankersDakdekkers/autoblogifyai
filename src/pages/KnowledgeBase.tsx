@@ -73,10 +73,14 @@ const KnowledgeBase = () => {
     type: "article" as KnowledgeItem['type'],
     tags: ""
   });
-  const [previewItems, setPreviewItems] = useState<KnowledgeItem[]>([]);
+  const [previewItems, setPreviewItems] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [showProgressSidebar, setShowProgressSidebar] = useState(false);
   const [progressItems, setProgressItems] = useState<any[]>([]);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+  const [approvedItems, setApprovedItems] = useState<Set<string>>(new Set());
+  const [rejectedItems, setRejectedItems] = useState<Set<string>>(new Set());
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const { toast } = useToast();
 
@@ -523,6 +527,98 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
     return categories.find(cat => cat.id === categoryId) || categories[0];
   };
 
+  // Preview navigation functions
+  const handleApproveItem = () => {
+    const currentItem = previewItems[currentPreviewIndex];
+    setApprovedItems(prev => new Set([...prev, currentItem.id]));
+    toast({
+      title: "Artikel Goedgekeurd ✅",
+      description: `"${currentItem.title}" goedgekeurd voor publicatie`
+    });
+    
+    // Move to next item
+    if (currentPreviewIndex < previewItems.length - 1) {
+      setCurrentPreviewIndex(prev => prev + 1);
+    }
+  };
+
+  const handleRejectItem = () => {
+    const currentItem = previewItems[currentPreviewIndex];
+    setRejectedItems(prev => new Set([...prev, currentItem.id]));
+    toast({
+      title: "Artikel Afgekeurd ❌", 
+      description: `"${currentItem.title}" afgekeurd`
+    });
+    
+    // Move to next item  
+    if (currentPreviewIndex < previewItems.length - 1) {
+      setCurrentPreviewIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePublishApproved = async () => {
+    setIsPublishing(true);
+    
+    try {
+      const approvedItemsList = previewItems.filter(item => approvedItems.has(item.id));
+      
+      for (const item of approvedItemsList) {
+        const blogPost = {
+          user_id: user?.id,
+          title: item.title,
+          slug: item.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'),
+          status: 'publish',
+          publish_date: new Date().toISOString().split('T')[0],
+          summary: item.meta_description,
+          meta_title: item.title,
+          meta_description: item.meta_description,
+          hero_image_url: item.hero_image_url,
+          body_markdown: item.content,
+          tags: item.tags,
+          author: item.author,
+          word_count: item.word_count
+        };
+
+        const { error } = await supabase
+          .from('blog_posts')
+          .insert(blogPost);
+
+        if (error) {
+          console.error('Error publishing post:', error);
+          throw error;
+        }
+      }
+
+      toast({
+        title: "Publicatie Succesvol! 🚀",
+        description: `${approvedItemsList.length} artikelen gepubliceerd naar je blog`
+      });
+
+      // Reset preview state
+      setShowPreview(false);
+      setPreviewItems([]);
+      setApprovedItems(new Set());
+      setRejectedItems(new Set());
+      setCurrentPreviewIndex(0);
+      
+      // Refresh knowledge items
+      loadKnowledgeItems();
+
+    } catch (error) {
+      console.error('Publishing error:', error);
+      toast({
+        title: "Publicatie Gefaald",
+        description: "Er is een fout opgetreden bij het publiceren",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const isAllItemsReviewed = previewItems.length > 0 && 
+    (approvedItems.size + rejectedItems.size) === previewItems.length;
+
   const handleConfirmPreview = async () => {
     if (!user) return;
     
@@ -618,58 +714,178 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
         </AlertDescription>
       </Alert>
 
-      {/* Preview Modal */}
-      {showPreview && (
-        <Card>
+      {/* Review Modal - Artikel voor artikel beoordeling */}
+      {showPreview && previewItems.length > 0 && (
+        <Card className="max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Preview van {previewItems.length} items
-            </CardTitle>
-            <CardDescription>
-              Controleer de geïmporteerde content voordat je deze toevoegt aan de kennisbank
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Review Artikel {currentPreviewIndex + 1} van {previewItems.length}
+                </CardTitle>
+                <CardDescription>
+                  Controleer elk artikel voordat je het publiceert
+                </CardDescription>
+              </div>
+              <div className="flex gap-2 text-sm">
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  ✅ {approvedItems.size} Goedgekeurd
+                </Badge>
+                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                  ❌ {rejectedItems.size} Afgekeurd
+                </Badge>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="max-h-96 overflow-y-auto space-y-3">
-              {previewItems.map((item, index) => (
-                <div key={index} className="border rounded-lg p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{item.category}</Badge>
-                    <Badge variant="secondary">{item.type}</Badge>
+          <CardContent className="space-y-6">
+            {previewItems[currentPreviewIndex] && (
+              <div className="space-y-4">
+                {/* Article Header */}
+                <div className="border-b pb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline">{previewItems[currentPreviewIndex].category}</Badge>
+                    <Badge variant="secondary">{previewItems[currentPreviewIndex].type}</Badge>
+                    <Badge variant="outline">
+                      {previewItems[currentPreviewIndex].word_count || 0} woorden
+                    </Badge>
                   </div>
-                  <h4 className="font-medium text-sm">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {item.content.substring(0, 150)}...
-                  </p>
-                  {item.tags.length > 0 && (
-                    <div className="flex gap-1 flex-wrap">
-                      {item.tags.map((tag, tagIndex) => (
-                        <Badge key={tagIndex} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                  <h2 className="text-2xl font-bold mb-2">{previewItems[currentPreviewIndex].title}</h2>
+                  {previewItems[currentPreviewIndex].meta_description && (
+                    <p className="text-muted-foreground">{previewItems[currentPreviewIndex].meta_description}</p>
+                  )}
+                  {previewItems[currentPreviewIndex].hero_image_url && (
+                    <img 
+                      src={previewItems[currentPreviewIndex].hero_image_url} 
+                      alt={previewItems[currentPreviewIndex].title}
+                      className="w-full h-48 object-cover rounded-lg mt-3"
+                    />
                   )}
                 </div>
-              ))}
+
+                {/* Article Content Preview */}
+                <div className="max-h-96 overflow-y-auto prose prose-sm max-w-none">
+                  <div 
+                    dangerouslySetInnerHTML={{ 
+                      __html: previewItems[currentPreviewIndex].content
+                        .replace(/^# /gm, '<h1>')
+                        .replace(/^## /gm, '<h2>')
+                        .replace(/^### /gm, '<h3>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/\n/g, '<br/>')
+                    }}
+                  />
+                </div>
+
+                {/* Tags */}
+                {previewItems[currentPreviewIndex].tags && previewItems[currentPreviewIndex].tags.length > 0 && (
+                  <div className="flex gap-1 flex-wrap pt-4 border-t">
+                    <span className="text-sm font-medium mr-2">Tags:</span>
+                    {previewItems[currentPreviewIndex].tags.map((tag, tagIndex) => (
+                      <Badge key={tagIndex} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Navigation & Actions */}
+            <div className="flex justify-between items-center pt-6 border-t">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
+                  disabled={currentPreviewIndex === 0}
+                >
+                  ← Vorige
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPreviewIndex(Math.min(previewItems.length - 1, currentPreviewIndex + 1))}
+                  disabled={currentPreviewIndex === previewItems.length - 1}
+                >
+                  Volgende →
+                </Button>
+              </div>
+
+              <div className="flex gap-2">
+                {!approvedItems.has(previewItems[currentPreviewIndex]?.id) && 
+                 !rejectedItems.has(previewItems[currentPreviewIndex]?.id) && (
+                  <>
+                    <Button
+                      variant="destructive"
+                      onClick={handleRejectItem}
+                    >
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Afkeuren
+                    </Button>
+                    <Button
+                      onClick={handleApproveItem}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Goedkeuren
+                    </Button>
+                  </>
+                )}
+                
+                {approvedItems.has(previewItems[currentPreviewIndex]?.id) && (
+                  <Badge variant="default" className="bg-green-100 text-green-800 px-4 py-2">
+                    ✅ Goedgekeurd
+                  </Badge>
+                )}
+                
+                {rejectedItems.has(previewItems[currentPreviewIndex]?.id) && (
+                  <Badge variant="secondary" className="bg-red-100 text-red-800 px-4 py-2">
+                    ❌ Afgekeurd
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2 pt-4 border-t">
-              <Button onClick={handleConfirmPreview} className="flex-1">
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Bevestigen & Toevoegen
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowPreview(false);
-                  setPreviewItems([]);
-                }}
-                className="flex-1"
-              >
-                Annuleren
-              </Button>
-            </div>
+
+            {/* Final Actions */}
+            {isAllItemsReviewed && (
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <h3 className="font-medium mb-2">Review Voltooid!</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Je hebt alle artikelen beoordeeld. {approvedItems.size} artikelen zijn goedgekeurd voor publicatie.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handlePublishApproved}
+                    disabled={isPublishing || approvedItems.size === 0}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isPublishing ? (
+                      <>
+                        <Clock className="h-4 w-4 mr-2 animate-spin" />
+                        Publiceren...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Publiceer {approvedItems.size} Artikelen
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowPreview(false);
+                      setPreviewItems([]);
+                      setApprovedItems(new Set());
+                      setRejectedItems(new Set());
+                      setCurrentPreviewIndex(0);
+                    }}
+                  >
+                    Sluiten
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
