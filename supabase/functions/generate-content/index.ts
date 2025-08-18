@@ -25,9 +25,16 @@ serve(async (req) => {
       includeSchema = false
     } = await req.json();
 
+    // Use anon key for auth, service role key for database writes
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
+
+    const supabaseServiceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
     )
 
     const authHeader = req.headers.get('Authorization')!
@@ -199,8 +206,8 @@ Balance honesty with positive tone.`
     const ctaHeading = ctaLines[0]?.replace(/^Heading:\s*/i, '').replace(/"/g, '') || (language === 'nl' ? 'Neem Contact Op' : 'Get In Touch');
     const ctaSubtext = ctaLines[1]?.replace(/^Subtext:\s*/i, '').replace(/"/g, '') || (language === 'nl' ? 'Start vandaag nog' : 'Start today');
 
-    // Save to database
-    const { data: blogPost, error: dbError } = await supabaseClient
+    // Save to database using service role client to bypass RLS
+    const { data: blogPost, error: dbError } = await supabaseServiceClient
       .from('blog_posts')
       .insert({
         user_id: user.id,
