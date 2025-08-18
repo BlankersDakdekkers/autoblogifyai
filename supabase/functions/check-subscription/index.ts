@@ -20,9 +20,14 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Debug environment variables
+    const envKeys = Object.keys(Deno.env.toObject());
+    logStep("Available environment variables", envKeys);
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
+      logStep("Full environment object", Deno.env.toObject());
       throw new Error("STRIPE_SECRET_KEY not configured");
     }
     logStep("Stripe key found");

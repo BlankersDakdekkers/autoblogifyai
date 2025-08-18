@@ -38,10 +38,14 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Debug: Log available environment variables
+    const envKeys = Object.keys(Deno.env.toObject());
+    logStep("Available environment variables", envKeys);
+    
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       logStep("ERROR: STRIPE_SECRET_KEY not found in environment variables");
-      logStep("Available env variables", Object.keys(Deno.env.toObject()));
+      logStep("All environment variables", Deno.env.toObject());
       return new Response(
         JSON.stringify({ error: "Stripe configuratie ontbreekt. Neem contact op met ondersteuning." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
