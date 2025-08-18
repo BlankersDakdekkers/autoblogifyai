@@ -1,5 +1,14 @@
 project_id = "pmhplzqfdmgkkosapkit"
 
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "https://pmhplzqfdmgkkosapkit.supabase.co/auth/v1/callback"
+
+[functions.test-stripe-key]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
