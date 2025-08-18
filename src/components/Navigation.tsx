@@ -16,8 +16,10 @@ import {
   Edit,
   TestTube,
   Calendar,
-  Book
+  Book,
+  Users
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface NavigationItem {
   title: string;
@@ -31,7 +33,10 @@ export interface NavigationSection {
   items: NavigationItem[];
 }
 
-export const navigationSections: NavigationSection[] = [
+export const useNavigationSections = (): NavigationSection[] => {
+  const { userRole } = useAuth();
+  
+  const baseSections: NavigationSection[] = [
   {
     label: "Dashboard",
     items: [
@@ -204,8 +209,28 @@ export const navigationSections: NavigationSection[] = [
   }
 ];
 
-export const getNavigationItemByUrl = (url: string): NavigationItem | undefined => {
-  for (const section of navigationSections) {
+  // Add admin section if user is admin
+  if (userRole === 'admin') {
+    baseSections.splice(3, 0, {
+      label: "Admin",
+      items: [
+        {
+          title: "Klanten Portaal",
+          url: "/dashboard/admin/customers",
+          icon: Users,
+          description: "Beheer alle klanten en abonnementen"
+        }
+      ]
+    });
+  }
+
+  return baseSections;
+};
+
+export const navigationSections: NavigationSection[] = [];
+
+export const getNavigationItemByUrl = (url: string, sections: NavigationSection[]): NavigationItem | undefined => {
+  for (const section of sections) {
     const item = section.items.find(item => item.url === url);
     if (item) return item;
   }

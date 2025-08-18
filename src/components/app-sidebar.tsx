@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { FileText, ChevronDown, ChevronRight } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
-import { navigationSections, isActiveRoute } from "./Navigation"
+import { useNavigationSections, isActiveRoute } from "./Navigation"
 
 import {
   Sidebar,
@@ -20,12 +20,14 @@ export function AppSidebar() {
   const collapsed = state === "collapsed"
   const location = useLocation()
   const currentPath = location.pathname
+  const navigationSections = useNavigationSections()
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     "Dashboard": true,
     "AutoblogifyAI": true,
     "Website Builder": true,
     "Configuratie": true,
+    "Admin": true,
   })
 
   const toggleSection = (sectionLabel: string) => {
