@@ -125,6 +125,45 @@ export type Database = {
         }
         Relationships: []
       }
+      google_integrations: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          google_email: string
+          google_name: string | null
+          id: string
+          refresh_token: string | null
+          scopes: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          google_email: string
+          google_name?: string | null
+          id?: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          google_email?: string
+          google_name?: string | null
+          id?: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
