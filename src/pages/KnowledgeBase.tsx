@@ -26,12 +26,14 @@ import {
   Upload,
   FileSpreadsheet,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AIProgressSidebar } from "@/components/AIProgressSidebar";
 
 interface KnowledgeItem {
   id: string;
@@ -73,6 +75,8 @@ const KnowledgeBase = () => {
   });
   const [previewItems, setPreviewItems] = useState<KnowledgeItem[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [showProgressSidebar, setShowProgressSidebar] = useState(false);
+  const [progressItems, setProgressItems] = useState<any[]>([]);
 
   const { toast } = useToast();
 
@@ -160,6 +164,8 @@ const KnowledgeBase = () => {
     }
 
     setIsUploading(true);
+    setShowProgressSidebar(true);
+    setProgressItems([]);
     
     try {
       const formData = new FormData();
@@ -173,29 +179,43 @@ const KnowledgeBase = () => {
       if (error) throw error;
 
       if (data?.preview && Array.isArray(data.preview)) {
-        toast({
-          title: "Afbeeldingen genereren...",
-          description: "AI genereert automatisch passende afbeeldingen voor elk artikel"
-        });
+        // Initialize progress items
+        const initialProgressItems = data.preview.map((item: any) => ({
+          id: crypto.randomUUID(),
+          title: item.title,
+          status: 'pending',
+          progress: 0,
+          step: 'Wachten op AI verwerking...',
+          timestamp: new Date().toISOString()
+        }));
+        
+        setProgressItems(initialProgressItems);
 
         toast({
-          title: "Content genereren...",
-          description: "AI genereert complete geoptimaliseerde blogposts met neuromarketing technieken"
+          title: "AI Content Generator gestart",
+          description: "AI genereert complete SEO-geoptimaliseerde blogposts met neuromarketing technieken"
         });
 
         // Generate AI-optimized content and images for each item
         const itemsWithAIContent = await Promise.all(
           data.preview.map(async (item: any, index: number) => {
             try {
-              // Show progress
-              if (index % 3 === 0) {
-                toast({
-                  title: `Genereren... ${index + 1}/${data.preview.length}`,
-                  description: `AI werkt aan: ${item.title.substring(0, 50)}...`
-                });
-              }
+              // Update progress
+              setProgressItems(prev => prev.map(p => 
+                p.title === item.title 
+                  ? { ...p, status: 'processing', step: 'Content genereren...', progress: 10 }
+                  : p
+              ));
+
+              // Show progress every few items
 
               // Generate complete AI blog content with neuromarketing
+              setProgressItems(prev => prev.map(p => 
+                p.title === item.title 
+                  ? { ...p, progress: 30, step: 'AI content genereren...' }
+                  : p
+              ));
+
               const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-content', {
                 body: {
                   title: item.title,
@@ -211,6 +231,17 @@ const KnowledgeBase = () => {
 
               if (contentError) {
                 console.error('Content generation error:', contentError);
+                setProgressItems(prev => prev.map(p => 
+                  p.title === item.title 
+                    ? { ...p, status: 'error', step: 'Content generatie gefaald', progress: 100 }
+                    : p
+                ));
+              } else {
+                setProgressItems(prev => prev.map(p => 
+                  p.title === item.title 
+                    ? { ...p, progress: 60, step: 'Afbeelding genereren...' }
+                    : p
+                ));
               }
 
               // Generate AI image
@@ -224,6 +255,17 @@ const KnowledgeBase = () => {
 
               if (imageError) {
                 console.error('Image generation error:', imageError);
+                setProgressItems(prev => prev.map(p => 
+                  p.title === item.title 
+                    ? { ...p, progress: 90, step: 'Affinaliseren zonder afbeelding...' }
+                    : p
+                ));
+              } else {
+                setProgressItems(prev => prev.map(p => 
+                  p.title === item.title 
+                    ? { ...p, progress: 90, step: 'Affinaliseren...' }
+                    : p
+                ));
               }
 
               // Use AI-generated content or fallback to original
@@ -261,7 +303,7 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
 **Wil je hulp bij ${item.title}?** Neem contact met ons op voor professioneel advies en ondersteuning.
               `.trim();
 
-              return {
+              const result = {
                 ...item,
                 id: crypto.randomUUID(),
                 type: 'article' as const,
@@ -278,8 +320,24 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
                 cta: contentData?.cta || `Wil je hulp bij ${item.title}? Neem contact op voor professioneel advies.`,
                 image_url: imageData?.imageUrl || null
               };
+
+              // Mark as completed
+              setProgressItems(prev => prev.map(p => 
+                p.title === item.title 
+                  ? { ...p, status: 'completed', progress: 100, step: 'Voltooid!' }
+                  : p
+              ));
+
+              return result;
             } catch (error) {
               console.error('Failed to generate AI content for item:', item.title, error);
+              
+              setProgressItems(prev => prev.map(p => 
+                p.title === item.title 
+                  ? { ...p, status: 'error', progress: 100, step: 'Fout opgetreden' }
+                  : p
+              ));
+
               // Always return an item, even if generation fails
               return {
                 ...item,
@@ -306,6 +364,11 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           title: "Content gegenereerd! 🎉",
           description: `${itemsWithAIContent.length} complete SEO-geoptimaliseerde artikelen klaar voor preview`
         });
+        
+        // Keep sidebar open for review
+        setTimeout(() => {
+          setShowProgressSidebar(false);
+        }, 5000);
         
         // Reset file input
         event.target.value = '';
@@ -534,6 +597,14 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           <Button onClick={() => setIsEditMode(!isEditMode)}>
             <Plus className="h-4 w-4 mr-2" />
             {isEditMode ? "Annuleren" : "Nieuw Item"}
+          </Button>
+          <Button 
+            onClick={() => setShowProgressSidebar(!showProgressSidebar)}
+            variant="outline"
+            className={showProgressSidebar ? "bg-primary/10" : ""}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            AI Progress
           </Button>
         </div>
       </div>
@@ -892,6 +963,13 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Progress Sidebar */}
+      <AIProgressSidebar 
+        isVisible={showProgressSidebar}
+        items={progressItems}
+        onClose={() => setShowProgressSidebar(false)}
+      />
     </div>
   );
 };
