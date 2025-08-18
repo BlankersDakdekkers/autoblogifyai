@@ -1116,13 +1116,138 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
             </div>
 
             <div>
-              <label className="text-sm font-medium">Content *</label>
-              <Textarea
-                placeholder="Inhoud van het kennisbank item..."
-                rows={6}
-                value={newItem.content}
-                onChange={(e) => setNewItem({...newItem, content: e.target.value})}
-              />
+              <label className="text-sm font-medium mb-2 block">Content *</label>
+              <div className="border rounded-lg overflow-hidden">
+                <Tabs defaultValue="edit" className="w-full">
+                  <TabsList className="w-full grid grid-cols-2 rounded-none border-b">
+                    <TabsTrigger value="edit" className="rounded-none">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editor
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" className="rounded-none">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Voorbeeld
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="edit" className="m-0 p-0">
+                    <Textarea
+                      placeholder="Schrijf je content hier... Je kunt Markdown gebruiken voor opmaak.
+
+Voorbeeld:
+# Hoofdkop
+## Subkop
+**Vetgedrukt** en *cursief*
+- Lijst item 1
+- Lijst item 2
+
+[Link tekst](https://example.com)
+```code```"
+                      className="min-h-[500px] border-0 rounded-none resize-none focus:ring-0 focus:border-0 font-mono text-sm leading-relaxed"
+                      value={newItem.content}
+                      onChange={(e) => setNewItem({...newItem, content: e.target.value})}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="preview" className="m-0 p-4 max-h-[500px] overflow-y-auto">
+                    {newItem.content ? (
+                      <div className="prose prose-sm max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({children}) => (
+                              <h1 className="text-3xl font-bold tracking-tight mb-4 text-foreground border-b pb-2">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({children}) => (
+                              <h2 className="text-2xl font-semibold tracking-tight mb-3 text-foreground">
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({children}) => (
+                              <h3 className="text-xl font-medium tracking-tight mb-2 text-foreground">
+                                {children}
+                              </h3>
+                            ),
+                            p: ({children}) => (
+                              <p className="text-foreground leading-7 mb-4">
+                                {children}
+                              </p>
+                            ),
+                            code: ({children, className}) => {
+                              const isInline = !className;
+                              if (isInline) {
+                                return (
+                                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">
+                                    {children}
+                                  </code>
+                                );
+                              }
+                              return (
+                                <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">
+                                  <code className="text-sm font-mono text-foreground">
+                                    {children}
+                                  </code>
+                                </pre>
+                              );
+                            },
+                            blockquote: ({children}) => (
+                              <blockquote className="border-l-4 border-primary bg-muted/30 p-4 my-4 italic rounded-r-lg">
+                                <div className="text-foreground">
+                                  {children}
+                                </div>
+                              </blockquote>
+                            ),
+                            ul: ({children}) => (
+                              <ul className="list-disc list-inside space-y-1 my-4 text-foreground">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({children}) => (
+                              <ol className="list-decimal list-inside space-y-1 my-4 text-foreground">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({children}) => (
+                              <li className="text-foreground leading-relaxed">
+                                {children}
+                              </li>
+                            ),
+                            a: ({href, children}) => (
+                              <a 
+                                href={href} 
+                                className="text-primary hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {children}
+                              </a>
+                            ),
+                            strong: ({children}) => (
+                              <strong className="font-bold text-foreground">
+                                {children}
+                              </strong>
+                            ),
+                            em: ({children}) => (
+                              <em className="italic text-foreground">
+                                {children}
+                              </em>
+                            )
+                          }}
+                        >
+                          {newItem.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground text-center py-8">
+                        <Edit className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Begin met typen om een voorbeeld te zien...</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
 
             <div className="flex space-x-2">
