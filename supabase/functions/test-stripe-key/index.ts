@@ -11,42 +11,45 @@ serve(async (req) => {
   }
 
   try {
-    // Get environment variables
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    console.log("=== DETAILED STRIPE KEY DEBUG ===");
     
-    console.log("=== ENVIRONMENT CHECK ===");
-    console.log("STRIPE_SECRET_KEY exists:", !!stripeKey);
-    console.log("STRIPE_SECRET_KEY length:", stripeKey?.length || 0);
-    console.log("STRIPE_SECRET_KEY starts with sk_test_:", stripeKey?.startsWith("sk_test_"));
-    console.log("STRIPE_SECRET_KEY starts with sk_live_:", stripeKey?.startsWith("sk_live_"));
-    console.log("STRIPE_SECRET_KEY first 15 chars:", stripeKey?.substring(0, 15) || "none");
-    console.log("SUPABASE_URL exists:", !!supabaseUrl);
-    console.log("SUPABASE_ANON_KEY exists:", !!supabaseAnonKey);
+    // Try multiple ways to get the environment variable
+    const stripeKey1 = Deno.env.get("STRIPE_SECRET_KEY");
+    const stripeKey2 = globalThis.Deno?.env?.get?.("STRIPE_SECRET_KEY");
+    const allEnv = Deno.env.toObject();
     
-    // List all environment variables (without values for security)
-    const allEnvKeys = Object.keys(Deno.env.toObject());
-    console.log("All environment keys:", allEnvKeys);
+    console.log("Method 1 (Deno.env.get):", !!stripeKey1, stripeKey1?.length || 0);
+    console.log("Method 2 (globalThis):", !!stripeKey2, stripeKey2?.length || 0);
+    console.log("Environment keys:", Object.keys(allEnv));
+    console.log("STRIPE_SECRET_KEY in env object:", "STRIPE_SECRET_KEY" in allEnv);
+    console.log("Raw value type:", typeof allEnv.STRIPE_SECRET_KEY);
+    console.log("Raw value length:", allEnv.STRIPE_SECRET_KEY?.length || 0);
+    console.log("Raw value preview:", allEnv.STRIPE_SECRET_KEY?.substring(0, 20) || "none");
+    
+    const finalKey = stripeKey1 || stripeKey2 || allEnv.STRIPE_SECRET_KEY;
     
     return new Response(JSON.stringify({ 
-      stripe_key_exists: !!stripeKey,
-      stripe_key_length: stripeKey?.length || 0,
-      stripe_key_type: stripeKey?.startsWith("sk_test_") ? "test" : 
-                      stripeKey?.startsWith("sk_live_") ? "live" : "unknown",
-      stripe_key_prefix: stripeKey?.substring(0, 15) || "none",
-      environment_keys: allEnvKeys,
-      supabase_configured: !!supabaseUrl && !!supabaseAnonKey
+      method1_exists: !!stripeKey1,
+      method1_length: stripeKey1?.length || 0,
+      method2_exists: !!stripeKey2, 
+      method2_length: stripeKey2?.length || 0,
+      env_object_exists: "STRIPE_SECRET_KEY" in allEnv,
+      env_object_length: allEnv.STRIPE_SECRET_KEY?.length || 0,
+      env_object_type: typeof allEnv.STRIPE_SECRET_KEY,
+      final_key_exists: !!finalKey,
+      final_key_length: finalKey?.length || 0,
+      final_key_starts_with_sk: finalKey?.startsWith("sk_") || false,
+      final_key_preview: finalKey?.substring(0, 20) || "none",
+      all_env_keys: Object.keys(allEnv)
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
     
   } catch (error) {
-    console.error("Error in test function:", error);
+    console.error("Error in stripe debug:", error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      stripe_key_exists: !!Deno.env.get("STRIPE_SECRET_KEY")
+      error: error.message
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
