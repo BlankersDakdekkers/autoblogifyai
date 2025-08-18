@@ -40,10 +40,14 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
-      logStep("ERROR: STRIPE_SECRET_KEY not found in environment");
-      throw new Error("STRIPE_SECRET_KEY not configured");
+      logStep("ERROR: STRIPE_SECRET_KEY not found in environment variables");
+      logStep("Available env variables", Object.keys(Deno.env.toObject()));
+      return new Response(
+        JSON.stringify({ error: "Stripe configuratie ontbreekt. Neem contact op met ondersteuning." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-    logStep("Stripe key found");
+    logStep("Stripe key found and configured");
 
     const stripe = new Stripe(stripeKey, { 
       apiVersion: "2023-10-16" 
@@ -108,9 +112,15 @@ serve(async (req) => {
       }
     };
 
-    logStep("Creating Stripe session", { params: sessionParams });
+    logStep("Creating Stripe session with parameters", { 
+      customerEmail: sessionParams.customer_email,
+      customerId: sessionParams.customer,
+      amount: sessionParams.line_items[0].price_data.unit_amount,
+      currency: sessionParams.line_items[0].price_data.currency
+    });
+    
     const session = await stripe.checkout.sessions.create(sessionParams);
-    logStep("Stripe session created", { sessionId: session.id, url: session.url });
+    logStep("Stripe session created successfully", { sessionId: session.id, url: !!session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -118,8 +128,26 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("CRITICAL ERROR occurred", { 
+      message: errorMessage, 
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error.constructor.name 
+    });
+    
+    // Return a more specific error message
+    let userFriendlyMessage = "Er is een onbekende fout opgetreden";
+    if (errorMessage.includes("STRIPE_SECRET_KEY")) {
+      userFriendlyMessage = "Betalingsconfiguratie ontbreekt";
+    } else if (errorMessage.includes("Invalid")) {
+      userFriendlyMessage = "Ongeldige betalingsgegevens";
+    } else if (errorMessage.includes("authentication") || errorMessage.includes("Unauthorized")) {
+      userFriendlyMessage = "Authenticatie mislukt. Log opnieuw in.";
+    }
+    
+    return new Response(JSON.stringify({ 
+      error: userFriendlyMessage,
+      details: errorMessage // Include technical details for debugging
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
