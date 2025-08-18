@@ -143,7 +143,7 @@ Gebruik perfecte markdown opmaak met headers, lijsten, **vetgedrukte tekst**, ta
           { role: 'user', content: userPrompt }
         ],
         max_completion_tokens: 16000, // Increased for longer content
-        temperature: 0.7,
+        // Note: temperature parameter is not supported for GPT-5 models
       }),
     });
 
