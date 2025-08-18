@@ -132,14 +132,16 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
       
       // Extract spreadsheet ID from various Google Sheets URL formats
       const patterns = [
-        /\/d\/([a-zA-Z0-9-_]+)/, // Standard format
+        /\/d\/([a-zA-Z0-9-_]+)\//, // Standard format with trailing slash
+        /\/d\/e\/([a-zA-Z0-9-_]+)\//, // Published format
         /spreadsheets\/d\/([a-zA-Z0-9-_]+)/, // Alternative format
       ];
       
       for (const pattern of patterns) {
         const match = csvUrl.match(pattern);
         if (match) {
-          spreadsheetId = match[1];
+          // For published sheets, use the second capture group
+          spreadsheetId = match[2] || match[1];
           break;
         }
       }
