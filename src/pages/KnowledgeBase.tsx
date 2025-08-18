@@ -143,10 +143,17 @@ const KnowledgeBase = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.match(/\.(xlsx|xls)$/)) {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+      'text/csv', // .csv
+      'application/csv' // alternative csv mime type
+    ];
+    
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/)) {
       toast({
-        title: "Ongeldig bestand",
-        description: "Upload een Excel bestand (.xlsx of .xls)",
+        title: "Ongeldig bestandstype",
+        description: "Upload Excel (.xlsx, .xls) of CSV bestanden",
         variant: "destructive"
       });
       return;
@@ -157,7 +164,7 @@ const KnowledgeBase = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('category', selectedCategory === 'all' ? 'setup' : selectedCategory);
+      formData.append('category', selectedCategory === 'all' ? 'content' : selectedCategory);
 
       const { data, error } = await supabase.functions.invoke('parse-excel', {
         body: formData
@@ -165,33 +172,68 @@ const KnowledgeBase = () => {
 
       if (error) throw error;
 
-      if (data.success && data.previewItems) {
-        // Show preview instead of directly adding items
-        setPreviewItems(data.previewItems.map((item: any, index: number) => ({
-          id: `preview-${index}`,
-          title: item.title,
-          content: item.content,
-          category: item.category || selectedCategory === 'all' ? 'setup' : selectedCategory,
-          type: 'article' as KnowledgeItem['type'],
-          author: user?.email || 'Onbekend',
-          created_at: new Date().toISOString().split('T')[0],
-          updated_at: new Date().toISOString().split('T')[0],
-          tags: item.tags || [],
-          views: 0,
-          rating: 0,
-          status: 'draft' as const
-        })));
+      if (data?.preview && Array.isArray(data.preview)) {
+        toast({
+          title: "Afbeeldingen genereren...",
+          description: "AI genereert automatisch passende afbeeldingen voor elk artikel"
+        });
+
+        // Generate images for each item
+        const itemsWithImages = await Promise.all(
+          data.preview.map(async (item: any) => {
+            try {
+              const { data: imageData } = await supabase.functions.invoke('generate-blog-images', {
+                body: {
+                  title: item.title,
+                  content: item.content || '',
+                  category: item.category || 'content'
+                }
+              });
+
+              return {
+                ...item,
+                id: crypto.randomUUID(),
+                type: 'article' as const,
+                author: user?.email || 'Onbekend',
+                created_at: new Date().toISOString().split('T')[0],
+                updated_at: new Date().toISOString().split('T')[0],
+                tags: item.tags || [],
+                views: 0,
+                rating: 0,
+                status: 'draft' as const,
+                image_url: imageData?.imageUrl || null
+              };
+            } catch (imageError) {
+              console.error('Failed to generate image for item:', item.title, imageError);
+              return {
+                ...item,
+                id: crypto.randomUUID(),
+                type: 'article' as const,
+                author: user?.email || 'Onbekend',
+                created_at: new Date().toISOString().split('T')[0],
+                updated_at: new Date().toISOString().split('T')[0],
+                tags: item.tags || [],
+                views: 0,
+                rating: 0,
+                status: 'draft' as const,
+                image_url: null
+              };
+            }
+          })
+        );
+
+        setPreviewItems(itemsWithImages);
         setShowPreview(true);
         
         toast({
-          title: "Preview gereed",
-          description: `${data.previewItems.length} items gevonden. Controleer de preview.`
+          title: "Bestand verwerkt! 🎉",
+          description: `${itemsWithImages.length} items gevonden met AI-gegenereerde afbeeldingen`
         });
         
         // Reset file input
         event.target.value = '';
       } else {
-        throw new Error(data.error);
+        throw new Error(data?.error || 'Ongeldig bestandsformaat');
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -393,7 +435,7 @@ const KnowledgeBase = () => {
           <div className="relative">
             <input
               type="file"
-              accept=".xlsx,.xls"
+              accept=".xlsx,.xls,.csv"
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               disabled={isUploading}
@@ -407,7 +449,7 @@ const KnowledgeBase = () => {
               ) : (
                 <>
                   <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Excel Upload
+                  Excel/CSV Upload
                 </>
               )}
             </Button>
@@ -423,8 +465,8 @@ const KnowledgeBase = () => {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>Excel Upload:</strong> Upload een Excel bestand met kolommen 'Title' en 'Content' (of Nederlandse equivalent). 
-          Tags kunnen in een aparte kolom staan. Je krijgt eerst een preview voordat items worden toegevoegd.
+          <strong>Excel/CSV Upload:</strong> Upload Excel (.xlsx, .xls) of CSV bestanden met kolommen 'Title' en 'Content'. 
+          AI genereert automatisch passende afbeeldingen voor elk artikel. Je krijgt eerst een preview voordat items worden toegevoegd.
         </AlertDescription>
       </Alert>
 

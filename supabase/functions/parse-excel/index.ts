@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const logStep = (step: string, details?: any) => {
-  console.log(`[PARSE-EXCEL] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
+  console.log(`[PARSE-FILE] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
 serve(async (req) => {
@@ -16,7 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    logStep("Starting Excel parsing");
+    logStep("Starting file parsing");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -41,28 +41,70 @@ serve(async (req) => {
     
     if (!file) throw new Error("No file uploaded");
     
-    logStep("File received", { fileName: file.name, size: file.size });
+    logStep("File received", { fileName: file.name, size: file.size, type: file.type });
 
-    // Read file content
-    const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
+    let jsonData: any[][] = [];
+    let headers: string[] = [];
+
+    // Handle CSV files
+    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+      logStep("Processing CSV file");
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        throw new Error("CSV file must have at least a header and one data row");
+      }
+
+      // Parse CSV manually to handle quoted values
+      const parseCSVLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+
+      headers = parseCSVLine(lines[0]);
+      jsonData = [headers, ...lines.slice(1).map(parseCSVLine)];
+      
+      logStep("CSV parsed", { rows: jsonData.length, headers });
+    } 
+    // Handle Excel files
+    else {
+      logStep("Processing Excel file");
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Import xlsx dynamically
+      const XLSX = await import("https://esm.sh/xlsx@0.18.5");
+      
+      // Parse Excel file
+      const workbook = XLSX.read(uint8Array, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert to JSON
+      jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      headers = jsonData[0] as string[];
+      logStep("Excel parsed", { rows: jsonData.length });
+    }
+
+    if (!jsonData.length) throw new Error("File is empty");
     
-    // Import xlsx dynamically
-    const XLSX = await import("https://esm.sh/xlsx@0.18.5");
-    
-    // Parse Excel file
-    const workbook = XLSX.read(uint8Array, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    
-    // Convert to JSON
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-    logStep("Excel parsed", { rows: jsonData.length });
-    
-    if (!jsonData.length) throw new Error("Excel file is empty");
-    
-    // Process the data - assume first row is headers
-    const headers = jsonData[0] as string[];
+    // Process the data - first row is headers
     const rows = jsonData.slice(1) as any[][];
     
     logStep("Processing rows", { headerCount: headers.length, dataRows: rows.length });
@@ -87,7 +129,7 @@ serve(async (req) => {
     );
     
     if (titleIndex === -1 || contentIndex === -1) {
-      throw new Error("Excel must contain 'title' and 'content' columns");
+      throw new Error("File must contain 'title' and 'content' columns (or Dutch equivalents)");
     }
     
     logStep("Column mapping", { titleIndex, contentIndex, tagsIndex });
@@ -132,8 +174,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
+      preview: previewItems,
       message: `${previewItems.length} items gevonden voor preview`,
-      previewItems,
       total: rows.length,
       fileName
     }), {
