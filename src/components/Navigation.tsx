@@ -204,6 +204,12 @@ export const useNavigationSections = (): NavigationSection[] => {
       label: "Admin",
       items: [
         {
+          title: "Gebruikersbeheer",
+          url: "/dashboard/admin/users",
+          icon: Users,
+          description: "Beheer alle gebruikers en rollen"
+        },
+        {
           title: "Klanten Portaal",
           url: "/dashboard/admin/customers",
           icon: Users,
