@@ -23,9 +23,15 @@ import {
   Tag,
   Filter,
   Download,
-  Upload
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface KnowledgeItem {
   id: string;
@@ -51,11 +57,13 @@ interface Category {
 }
 
 const KnowledgeBase = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingItem, setEditingItem] = useState<KnowledgeItem | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [newItem, setNewItem] = useState({
     title: "",
     content: "",
@@ -76,78 +84,106 @@ const KnowledgeBase = () => {
     { id: "advanced", name: "Geavanceerd", description: "Power user features", color: "bg-indigo-100 text-indigo-800", icon: "🚀" }
   ]);
 
-  const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([
-    {
-      id: "1",
-      title: "Aan de slag met AutoblogifyAI",
-      content: "Een complete gids om te starten met AutoblogifyAI. Leer hoe je je eerste CSV configureert en blogposts genereert.",
-      category: "setup",
-      type: "guide",
-      author: "AutoblogifyAI Team",
-      created_at: "2024-01-15",
-      updated_at: "2024-01-20",
-      tags: ["beginners", "setup", "csv"],
-      views: 1250,
-      rating: 4.8,
-      status: "published"
-    },
-    {
-      id: "2", 
-      title: "CSV Schema Referentie",
-      content: "Volledige documentatie van alle ondersteunde CSV kolommen en hun functies.",
-      category: "csv",
-      type: "article",
-      author: "Tech Team",
-      created_at: "2024-01-10",
-      updated_at: "2024-01-18",
-      tags: ["csv", "schema", "reference"],
-      views: 890,
-      rating: 4.9,
-      status: "published"
-    },
-    {
-      id: "3",
-      title: "Custom Templates Maken",
-      content: "Leer hoe je je eigen Nunjucks templates maakt en configureert voor AutoblogifyAI.",
-      category: "templates",
-      type: "video",
-      author: "Design Team",
-      created_at: "2024-01-12",
-      updated_at: "2024-01-22",
-      tags: ["templates", "nunjucks", "customization"],
-      views: 675,
-      rating: 4.7,
-      status: "published"
-    },
-    {
-      id: "4",
-      title: "API Endpoint Documentatie",
-      content: "Volledige API documentatie met voorbeelden voor alle beschikbare endpoints.",
-      category: "api",
-      type: "code",
-      author: "API Team",
-      created_at: "2024-01-08",
-      updated_at: "2024-01-25",
-      tags: ["api", "documentation", "endpoints"],
-      views: 445,
-      rating: 4.6,
-      status: "published"
-    },
-    {
-      id: "5",
-      title: "Veelvoorkomende CSV Fouten",
-      content: "Lijst van de meest voorkomende CSV validatie fouten en hoe deze op te lossen.",
-      category: "troubleshooting",
-      type: "faq",
-      author: "Support Team",
-      created_at: "2024-01-14",
-      updated_at: "2024-01-21",
-      tags: ["troubleshooting", "csv", "errors"],
-      views: 1120,
-      rating: 4.5,
-      status: "published"
+  const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
+
+  // Load knowledge items from database
+  useEffect(() => {
+    if (user) {
+      loadKnowledgeItems();
     }
-  ]);
+  }, [user]);
+
+  const loadKnowledgeItems = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('knowledge_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Transform database format to component format
+      const transformedItems: KnowledgeItem[] = data?.map(item => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        category: item.category,
+        type: item.type as KnowledgeItem['type'],
+        author: item.author || 'Onbekend',
+        created_at: item.created_at.split('T')[0],
+        updated_at: item.updated_at.split('T')[0],
+        tags: item.tags || [],
+        views: item.views || 0,
+        rating: item.rating || 0,
+        status: item.status as 'draft' | 'published' | 'archived'
+      })) || [];
+
+      setKnowledgeItems(transformedItems);
+    } catch (error) {
+      console.error('Error loading knowledge items:', error);
+      toast({
+        title: "Fout",
+        description: "Kon kennisbank items niet laden",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.match(/\.(xlsx|xls)$/)) {
+      toast({
+        title: "Ongeldig bestand",
+        description: "Upload een Excel bestand (.xlsx of .xls)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', selectedCategory === 'all' ? 'setup' : selectedCategory);
+
+      const { data, error } = await supabase.functions.invoke('parse-excel', {
+        body: formData
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Upload succesvol",
+          description: data.message
+        });
+        
+        // Reload knowledge items
+        await loadKnowledgeItems();
+        
+        // Reset file input
+        event.target.value = '';
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload mislukt",
+        description: error instanceof Error ? error.message : "Onbekende fout",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const filteredItems = knowledgeItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,7 +196,7 @@ const KnowledgeBase = () => {
     return matchesSearch && matchesCategory && matchesType && item.status === "published";
   });
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!newItem.title || !newItem.content || !newItem.category) {
       toast({
         title: "Velden ontbreken",
@@ -170,29 +206,49 @@ const KnowledgeBase = () => {
       return;
     }
 
-    const item: KnowledgeItem = {
-      id: Date.now().toString(),
-      title: newItem.title,
-      content: newItem.content,
-      category: newItem.category,
-      type: newItem.type,
-      author: "Huidige gebruiker",
-      created_at: new Date().toISOString().split('T')[0],
-      updated_at: new Date().toISOString().split('T')[0],
-      tags: newItem.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      views: 0,
-      rating: 0,
-      status: "published"
-    };
+    if (!user) {
+      toast({
+        title: "Niet ingelogd",
+        description: "Je moet ingelogd zijn om items toe te voegen.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    setKnowledgeItems([...knowledgeItems, item]);
-    setNewItem({ title: "", content: "", category: "", type: "article", tags: "" });
-    setIsEditMode(false);
+    try {
+      const tags = newItem.tags.split(',').map(tag => tag.trim()).filter(Boolean);
+      
+      const { error } = await supabase
+        .from('knowledge_items')
+        .insert({
+          user_id: user.id,
+          title: newItem.title,
+          content: newItem.content,
+          category: newItem.category,
+          type: newItem.type,
+          author: user.email || 'Onbekend',
+          tags,
+          status: 'published'
+        });
 
-    toast({
-      title: "Item toegevoegd",
-      description: "Het kennisbank item is succesvol toegevoegd.",
-    });
+      if (error) throw error;
+
+      setNewItem({ title: "", content: "", category: "", type: "article", tags: "" });
+      setIsEditMode(false);
+      await loadKnowledgeItems();
+
+      toast({
+        title: "Item toegevoegd",
+        description: "Het kennisbank item is succesvol toegevoegd.",
+      });
+    } catch (error) {
+      console.error('Error adding item:', error);
+      toast({
+        title: "Fout",
+        description: "Kon item niet toevoegen",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditItem = (item: KnowledgeItem) => {
@@ -271,14 +327,47 @@ const KnowledgeBase = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Kennisbank</h2>
           <p className="text-muted-foreground">
-            Doorzoek onze uitgebreide kennisbank en voeg nieuwe content toe
+            Doorzoek onze uitgebreide kennisbank en voeg nieuwe content toe via Excel upload
           </p>
         </div>
-        <Button onClick={() => setIsEditMode(!isEditMode)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {isEditMode ? "Annuleren" : "Nieuw Item"}
-        </Button>
+        <div className="flex gap-2">
+          <div className="relative">
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isUploading}
+            />
+            <Button disabled={isUploading} variant="outline">
+              {isUploading ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Uploaden...
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Excel Upload
+                </>
+              )}
+            </Button>
+          </div>
+          <Button onClick={() => setIsEditMode(!isEditMode)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {isEditMode ? "Annuleren" : "Nieuw Item"}
+          </Button>
+        </div>
       </div>
+
+      {/* Excel Upload Info */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Excel Upload:</strong> Upload een Excel bestand met kolommen 'Title' en 'Content' (of Nederlandse equivalent). 
+          Tags kunnen in een aparte kolom staan. Alle rijen worden automatisch als kennisbank items toegevoegd.
+        </AlertDescription>
+      </Alert>
 
       {/* Add/Edit Form */}
       {isEditMode && (

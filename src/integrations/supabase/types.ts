@@ -164,6 +164,57 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_items: {
+        Row: {
+          author: string | null
+          category: string
+          content: string
+          created_at: string
+          id: string
+          rating: number | null
+          source_file: string | null
+          status: string | null
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          author?: string | null
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          source_file?: string | null
+          status?: string | null
+          tags?: string[] | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          source_file?: string | null
+          status?: string | null
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
