@@ -314,7 +314,8 @@ const Index = () => {
                   <div className="flex items-center justify-center w-full">
                     <Rocket className="mr-2 h-4 w-4 group-hover:animate-bounce flex-shrink-0" />
                     <span className="text-center leading-tight font-bold">
-                      Start GRATIS<br />14 Dagen Trial
+                      <span className="block md:hidden">Start GRATIS Trial</span>
+                      <span className="hidden md:block">Start GRATIS 14 Dagen Trial</span>
                     </span>
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                   </div>
