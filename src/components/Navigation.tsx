@@ -115,6 +115,12 @@ export const navigationSections: NavigationSection[] = [
         icon: Database,
         description: "API's en externe services"
       },
+      { 
+        title: "Affiliate", 
+        url: "/dashboard/affiliate", 
+        icon: Database,
+        description: "Partner programma en commissies"
+      },
     ]
   }
 ];

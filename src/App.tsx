@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import WebsiteBuilder from "./pages/WebsiteBuilder";
+import AffiliatePage from "./pages/AffiliatePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/dashboard/components/*" element={<WebsiteBuilder />} />
             <Route path="/dashboard/deployment/*" element={<WebsiteBuilder />} />
             <Route path="/dashboard/integrations/*" element={<WebsiteBuilder />} />
+            <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

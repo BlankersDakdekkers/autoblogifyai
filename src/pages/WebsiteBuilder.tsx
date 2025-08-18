@@ -300,11 +300,22 @@ const Deployment = () => {
 
 // Integrations Component  
 const Integrations = () => {
+  const { toast } = useToast();
+
+  const handleConnectIntegration = (name: string) => {
+    toast({
+      title: `${name} Integratie`,
+      description: "Configuratie wizard geopend"
+    });
+  };
+
   const integrations = [
     { name: "Google Sheets", status: "Connected", description: "CSV data voor AutoblogifyAI" },
     { name: "Netlify", status: "Connected", description: "Website hosting en deployment" },
     { name: "GitHub", status: "Disconnected", description: "Code repository en version control" },
     { name: "Google Analytics", status: "Connected", description: "Website analytics en tracking" },
+    { name: "Google Search Console", status: "Disconnected", description: "SEO prestaties en indexatie monitoring" },
+    { name: "Bing Webmaster Tools", status: "Disconnected", description: "Bing zoekresultaten en crawling data" },
   ];
 
   return (
@@ -333,7 +344,11 @@ const Integrations = () => {
                 <Badge variant={integration.status === "Connected" ? "default" : "secondary"}>
                   {integration.status}
                 </Badge>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleConnectIntegration(integration.name)}
+                >
                   {integration.status === "Connected" ? "Configureer" : "Verbind"}
                 </Button>
               </div>
