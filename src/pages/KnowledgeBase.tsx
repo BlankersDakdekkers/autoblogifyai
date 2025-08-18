@@ -250,20 +250,37 @@ const KnowledgeBase = () => {
 
                console.log('Generate-content response:', { contentData, contentError });
 
-               if (contentError) {
-                 console.error('Content generation error:', contentError);
+                if (contentError) {
+                  console.error('Content generation error:', contentError);
+                  setProgressItems(prev => prev.map(p => 
+                    p.title === item.title 
+                      ? { ...p, status: 'error', step: `Content fout: ${contentError.message || 'Onbekende fout'}`, progress: 100 }
+                     : p
+                 ));
+                 return {
+                   ...item,
+                   id: crypto.randomUUID(),
+                   type: 'article' as const,
+                   author: "Beheerder",
+                   created_at: new Date().toISOString().split('T')[0],
+                   updated_at: new Date().toISOString().split('T')[0],
+                   tags: item.tags || [item.category || 'SEO'],
+                   views: 0,
+                   rating: 0,
+                   status: 'draft' as const,
+                   content: `# ${item.title}\n\nEr is een fout opgetreden bij het genereren van content. Probeer het opnieuw.`,
+                   meta_description: `${item.title} - Er is een fout opgetreden`,
+                   faq: '',
+                   cta: 'Neem contact op voor hulp',
+                   image_url: null
+                 };
+               } else {
                  setProgressItems(prev => prev.map(p => 
                    p.title === item.title 
-                     ? { ...p, status: 'error', step: `Content fout: ${contentError.message}`, progress: 100 }
-                    : p
-                ));
-              } else {
-                setProgressItems(prev => prev.map(p => 
-                  p.title === item.title 
-                    ? { ...p, progress: 60, step: 'Afbeelding genereren...' }
-                    : p
-                ));
-              }
+                     ? { ...p, progress: 60, step: 'Afbeelding genereren...' }
+                     : p
+                 ));
+               }
 
               // Generate AI image
               const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-blog-images', {
@@ -289,8 +306,8 @@ const KnowledgeBase = () => {
                 ));
               }
 
-              // Use AI-generated content or fallback to original
-              const finalContent = contentData?.content || item.content || `
+               // Use AI-generated content or fallback to original
+               const finalContent = contentData?.content || item.content || `
 # ${item.title}
 
 ## Introductie
