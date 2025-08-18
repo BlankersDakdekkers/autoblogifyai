@@ -8,11 +8,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('=== GENERATE CONTENT FUNCTION STARTED ===');
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    console.log('Parsing request body...');
     const { 
       title, 
       targetKeyword, 
@@ -29,6 +32,9 @@ serve(async (req) => {
       useNeuromarketing = true        // Added from frontend
     } = await req.json();
 
+    console.log('Request data:', { title, targetKeyword, city, contentType, wordCount });
+
+    console.log('Initializing Supabase clients...');
     // Use anon key for auth, service role key for database writes
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -41,24 +47,31 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
+    console.log('Authenticating user...');
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabaseClient.auth.getUser(token)
 
     if (!user) {
+      console.error('User authentication failed');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('User authenticated successfully:', user.email);
+
+    console.log('Checking OpenAI API key...');
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
+      console.error('OpenAI API key is missing');
       return new Response(
         JSON.stringify({ error: 'OpenAI API key niet geconfigureerd' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    console.log('OpenAI API key found');
 
     // Enhanced system prompt with neuromarketing and consistent quality
     const basePrompt = `Je bent een expert SEO content writer die hoogkwalitatieve, professionele artikelen schrijft van ${wordCount} woorden.
@@ -137,6 +150,7 @@ KWALITEITSVEREISTEN:
 - Vermijd clichés en vage taal
 - Tel woorden nauwkeurig en kom uit op exact ${wordCount} woorden`;
     // Generate main content with enhanced parameters
+    console.log('Starting content generation with OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -156,9 +170,10 @@ KWALITEITSVEREISTEN:
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('OpenAI API error - Status:', response.status, 'Response:', errorText);
       return new Response(
         JSON.stringify({ error: 'Fout bij content generatie: ' + errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -357,8 +372,9 @@ Taal: ${language}`
 
   } catch (error) {
     console.error('Error in content generation:', error);
+    console.error('Error stack:', error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: `Server fout: ${error.message}` }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
