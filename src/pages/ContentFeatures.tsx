@@ -100,51 +100,302 @@ const ContentFeatures = () => {
 
   const templates: ContentTemplate[] = [
     {
-      id: "1",
-      name: "SEO Blog Post Template",
-      description: "Optimaal gestructureerde blogpost voor SEO",
+      id: "seo-blog-nl",
+      name: "SEO Blog Post - Nederland",
+      description: "Geoptimaliseerd voor Nederlandse markt met lokale SEO focus",
       category: "blog",
-      tags: ["seo", "blog", "marketing"],
-      content: "# {{title}}\n\n## Inleiding\n{{intro}}\n\n## Hoofdinhoud\n{{content}}\n\n## Conclusie\n{{conclusion}}",
-      createdAt: "2024-01-10",
-      usageCount: 156,
-      author: "AutoblogifyAI",
+      tags: ["seo", "nederland", "lokaal", "blog"],
+      content: `# {{title}} - {{city}}
+
+## Inleiding
+Zoekt u naar {{service}} in {{city}}? In deze uitgebreide gids vindt u alles wat u moet weten over {{keyword}} in {{location}}. Van kosten tot kwaliteit, wij helpen u de beste keuze te maken.
+
+## Waarom {{service}} belangrijk is
+{{keyword}} speelt een cruciale rol in {{context}}. Hier zijn de belangrijkste voordelen:
+
+- **Kosteneffectief**: Bespaar tot 30% op {{costs}}
+- **Kwaliteit**: Ervaren professionals in {{city}}
+- **Service**: 24/7 ondersteuning en garantie
+- **Lokaal**: Bekend met {{city}} regelgeving
+
+## Top {{number}} {{service}} in {{city}}
+
+### 1. {{company_name}}
+Gespecialiseerd in {{specialization}} met meer dan {{years}} jaar ervaring.
+
+## Kosten voor {{service}} in {{city}}
+De gemiddelde kosten voor {{keyword}} in {{city}} variëren tussen €{{min_price}} en €{{max_price}}, afhankelijk van {{factors}}.
+
+## Veelgestelde vragen
+
+**Wat kost {{service}} in {{city}}?**
+De kosten variëren van €{{range}}. Een gratis offerte kunt u aanvragen via ons contactformulier.
+
+**Hoe lang duurt {{service}}?**
+Gemiddeld duurt {{keyword}} {{duration}}, afhankelijk van {{variables}}.
+
+## Conclusie
+Voor betrouwbare {{service}} in {{city}} bent u bij ons aan het juiste adres. Neem vandaag nog contact op voor een vrijblijvende offerte.`,
+      createdAt: "2025-01-18",
+      usageCount: 1247,
+      author: "SEO Expert",
       isPremium: false
     },
     {
-      id: "2", 
-      name: "Product Review Template",
-      description: "Template voor product reviews en vergelijkingen",
-      category: "blog",
-      tags: ["review", "product", "comparison"],
-      content: "# {{product_name}} Review\n\n## Specificaties\n{{specs}}\n\n## Voor- en Nadelen\n{{pros_cons}}\n\n## Conclusie\n{{conclusion}}",
-      createdAt: "2024-01-12",
-      usageCount: 89,
-      author: "Marketing Team",
+      id: "service-landing-page",
+      name: "Service Landing Page",
+      description: "Conversie-geoptimaliseerde landingspagina voor lokale diensten",
+      category: "landing",
+      tags: ["conversie", "landing", "service", "lokaal"],
+      content: `# {{headline}} - {{city}}
+
+## Het Probleem
+Heeft u last van {{problem}}? U bent niet de enige. In {{city}} worstelen veel mensen met {{issue}}.
+
+## De Oplossing: {{service}}
+Onze {{service}} lost {{problem}} definitief op. Met meer dan {{years}} jaar ervaring en {{satisfied_customers}}+ tevreden klanten.
+
+### Waarom Kiezen Voor Ons?
+✅ **{{years}}+ Jaar Ervaring** - Bewezen track record
+✅ **Lokaal in {{city}}** - Snelle service, persoonlijk contact  
+✅ **{{guarantee}} Garantie** - 100% tevredenheidsgarantie
+✅ **Transparante Prijzen** - Geen verborgen kosten
+
+## Wat Onze Klanten Zeggen
+*"{{testimonial}}"* - {{customer_name}}, {{city}}
+
+## Uw Voordelen
+- **Besparing**: Tot {{percentage}}% goedkoper dan de concurrentie
+- **Snelheid**: Service binnen {{timeframe}}
+- **Kwaliteit**: {{quality_measures}}
+
+## Actie Vereist!
+**Beperkte tijd:** {{offer}} voor de eerste {{number}} klanten uit {{city}}.
+
+### Bel Nu: {{phone}}
+Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
+      createdAt: "2025-01-18",
+      usageCount: 892,
+      author: "Conversion Expert",
       isPremium: true
     },
     {
-      id: "3",
-      name: "How-To Guide Template", 
-      description: "Stap-voor-stap handleiding template",
+      id: "product-review-deep",
+      name: "Diepgaande Product Review",
+      description: "Uitgebreide product review met voor/nadelen en vergelijkingen",
       category: "blog",
-      tags: ["tutorial", "howto", "guide"],
-      content: "# Hoe {{action}}\n\n## Wat je nodig hebt\n{{requirements}}\n\n## Stappen\n{{steps}}\n\n## Tips\n{{tips}}",
-      createdAt: "2024-01-15",
-      usageCount: 203,
-      author: "Content Team",
+      tags: ["review", "product", "vergelijking", "test"],
+      content: `# {{product_name}} Review 2025: {{verdict}}
+
+## Eerste Indruk
+Na {{test_period}} testen van {{product_name}} kunnen we zeggen: {{initial_verdict}}.
+
+## Technische Specificaties
+- **Model**: {{model}}
+- **Afmetingen**: {{dimensions}}
+- **Gewicht**: {{weight}}
+- **Kenmerken**: {{features}}
+- **Prijs**: {{price}}
+
+## Verpakking en Design
+{{product_name}} komt verpakt in {{packaging}}. Het design is {{design_verdict}} met {{design_features}}.
+
+## Performance Test
+### {{test_category_1}}
+{{performance_results_1}}
+
+### {{test_category_2}}  
+{{performance_results_2}}
+
+## Voor- en Nadelen
+
+### ✅ Voordelen
+- {{pro_1}}
+- {{pro_2}}
+- {{pro_3}}
+- {{pro_4}}
+
+### ❌ Nadelen
+- {{con_1}}
+- {{con_2}}
+- {{con_3}}
+
+## Vergelijking met Concurrenten
+| Feature | {{product_name}} | {{competitor_1}} | {{competitor_2}} |
+|---------|------------------|------------------|------------------|
+| Prijs | {{price}} | {{comp1_price}} | {{comp2_price}} |
+| {{feature_1}} | {{score_1}} | {{comp1_score1}} | {{comp2_score1}} |
+| {{feature_2}} | {{score_2}} | {{comp1_score2}} | {{comp2_score2}} |
+
+## Prijs-Kwaliteit Verhouding
+Voor {{price}} krijg je {{value_proposition}}. Vergeleken met {{competitors}} is dit {{price_verdict}}.
+
+## Voor Wie is {{product_name}} Geschikt?
+✅ **Ideaal voor**: {{target_audience_1}}
+✅ **Ook goed voor**: {{target_audience_2}}
+❌ **Minder geschikt voor**: {{not_target_audience}}
+
+## Eindconclusie
+{{product_name}} scoort een {{rating}}/10. {{final_verdict}} 
+
+**Aanbeveling**: {{recommendation}}`,
+      createdAt: "2025-01-18",
+      usageCount: 634,
+      author: "Product Reviewer",
       isPremium: false
     },
     {
-      id: "4",
-      name: "Landing Page Template",
-      description: "Conversie-geoptimaliseerde landing page",
-      category: "landing",
-      tags: ["landing", "conversion", "sales"],
-      content: "# {{headline}}\n\n## Probleem\n{{problem}}\n\n## Oplossing\n{{solution}}\n\n## CTA\n{{cta}}",
-      createdAt: "2024-01-18",
-      usageCount: 67,
-      author: "Sales Team",
+      id: "how-to-guide-expert",
+      name: "Expert How-To Gids",
+      description: "Stap-voor-stap handleiding met professionele tips",
+      category: "blog",
+      tags: ["tutorial", "howto", "gids", "stappen"],
+      content: `# Hoe {{action}} in {{steps}} Stappen (2025 Gids)
+
+## Waarom {{action}}?
+{{reason}} is essentieel omdat {{importance}}. In deze gids leer je {{learning_outcome}}.
+
+## Wat Heb Je Nodig?
+### Materialen
+- {{material_1}}
+- {{material_2}}
+- {{material_3}}
+
+### Tools
+- {{tool_1}}
+- {{tool_2}}
+- {{tool_3}}
+
+### Geschatte Tijd
+⏱️ **{{total_time}}** ({{beginner_time}} voor beginners)
+
+## Stap-voor-Stap Handleiding
+
+### Stap 1: {{step_1_title}}
+{{step_1_description}}
+
+**💡 Pro Tip**: {{step_1_tip}}
+
+**⚠️ Let Op**: {{step_1_warning}}
+
+### Stap 2: {{step_2_title}}
+{{step_2_description}}
+
+**💡 Pro Tip**: {{step_2_tip}}
+
+### Stap 3: {{step_3_title}}
+{{step_3_description}}
+
+**💡 Pro Tip**: {{step_3_tip}}
+
+### Stap 4: {{step_4_title}}
+{{step_4_description}}
+
+**💡 Pro Tip**: {{step_4_tip}}
+
+## Veelgemaakte Fouten
+❌ **Fout 1**: {{mistake_1}}
+✅ **Oplossing**: {{solution_1}}
+
+❌ **Fout 2**: {{mistake_2}}
+✅ **Oplossing**: {{solution_2}}
+
+## Expert Tips
+🔥 **Geheim 1**: {{expert_tip_1}}
+🔥 **Geheim 2**: {{expert_tip_2}}
+🔥 **Geheim 3**: {{expert_tip_3}}
+
+## Troubleshooting
+**Probleem**: {{problem_1}}
+**Oplossing**: {{fix_1}}
+
+**Probleem**: {{problem_2}}
+**Oplossing**: {{fix_2}}
+
+## Veelgestelde Vragen
+
+**{{faq_1_q}}**
+{{faq_1_a}}
+
+**{{faq_2_q}}**
+{{faq_2_a}}
+
+## Conclusie
+{{action}} is {{difficulty_level}} als je deze stappen volgt. Het belangrijkste is {{key_takeaway}}.
+
+**Volgende Stappen**: {{next_steps}}`,
+      createdAt: "2025-01-18",
+      usageCount: 1156,
+      author: "Tutorial Expert",
+      isPremium: false
+    },
+    {
+      id: "competitor-analysis",
+      name: "Concurrentie Analyse Template",
+      description: "Complete analyse van concurrenten en marktpositie",
+      category: "blog",
+      tags: ["analyse", "concurrenten", "markt", "strategie"],
+      content: `# {{industry}} Concurrentie Analyse 2025: {{company}} vs {{competitors}}
+
+## Markt Overzicht
+De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}. Met een marktwaarde van {{market_value}} en groei van {{growth_rate}}% is dit een dynamische sector.
+
+## Hoofdconcurrenten
+
+### 1. {{competitor_1}}
+- **Marktaandeel**: {{market_share_1}}%
+- **Sterke Punten**: {{strengths_1}}
+- **Zwakke Punten**: {{weaknesses_1}}
+- **Prijsstrategie**: {{pricing_1}}
+
+### 2. {{competitor_2}}
+- **Marktaandeel**: {{market_share_2}}%
+- **Sterke Punten**: {{strengths_2}}
+- **Zwakke Punten**: {{weaknesses_2}}
+- **Prijsstrategie**: {{pricing_2}}
+
+### 3. {{competitor_3}}
+- **Marktaandeel**: {{market_share_3}}%
+- **Sterke Punten**: {{strengths_3}}
+- **Zwakke Punten**: {{weaknesses_3}}
+- **Prijsstrategie**: {{pricing_3}}
+
+## Feature Vergelijking
+| Feature | {{company}} | {{comp_1}} | {{comp_2}} | {{comp_3}} |
+|---------|-------------|------------|------------|------------|
+| {{feature_1}} | {{our_score_1}} | {{comp1_score_1}} | {{comp2_score_1}} | {{comp3_score_1}} |
+| {{feature_2}} | {{our_score_2}} | {{comp1_score_2}} | {{comp2_score_2}} | {{comp3_score_2}} |
+| {{feature_3}} | {{our_score_3}} | {{comp1_score_3}} | {{comp2_score_3}} | {{comp3_score_3}} |
+
+## SWOT Analyse
+
+### {{company}}
+**Strengths**: {{our_strengths}}
+**Weaknesses**: {{our_weaknesses}}
+**Opportunities**: {{opportunities}}
+**Threats**: {{threats}}
+
+## Marktpositionering
+{{positioning_analysis}}
+
+## Prijsstrategie Vergelijking
+{{pricing_comparison}}
+
+## Klanttevredenheid
+- **{{company}}**: {{our_satisfaction}}/10
+- **{{competitor_1}}**: {{comp1_satisfaction}}/10  
+- **{{competitor_2}}**: {{comp2_satisfaction}}/10
+
+## Aanbevelingen
+1. {{recommendation_1}}
+2. {{recommendation_2}}
+3. {{recommendation_3}}
+
+## Conclusie
+{{market_conclusion}}`,
+      createdAt: "2025-01-18",
+      usageCount: 445,
+      author: "Market Analyst",
       isPremium: true
     }
   ];

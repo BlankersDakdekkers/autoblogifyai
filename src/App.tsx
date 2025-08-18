@@ -1,30 +1,34 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { useLocation } from "react-router-dom";
+import Navigation from "@/components/Navigation";
+import { AppSidebar } from "@/components/app-sidebar";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
-import Dashboard from "./pages/Dashboard";
-import WebsiteBuilder from "./pages/WebsiteBuilder";
-import AffiliatePage from "./pages/AffiliatePage";
-import AIWebsiteGenerator from "./pages/AIWebsiteGenerator";
-import AutoBlogProducerWithTabs from "./pages/AutoBlogProducerWithTabs";
-import CoursePage from "./pages/CoursePage";
-import NotFound from "./pages/NotFound";
-import MediaPortal from "./pages/MediaPortal";
 import SalesPage from "./pages/SalesPage";
-import IntegrationsPage from "./pages/IntegrationsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import AutoBlogProducer from "./pages/AutoBlogProducer";
+import AIWebsiteGenerator from "./pages/AIWebsiteGenerator";
+import WebsiteBuilder from "./pages/WebsiteBuilder";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import IntegrationsPage from "./pages/IntegrationsPage";
 import NotificationSystem from "./pages/NotificationSystem";
+import MediaPortal from "./pages/MediaPortal";
 import HelpSupport from "./pages/HelpSupport";
 import AchievementsPage from "./pages/AchievementsPage";
+import CoursePage from "./pages/CoursePage";
+import AffiliatePage from "./pages/AffiliatePage";
+import PricingPage from "./pages/PricingPage";
 import ContentFeatures from "./pages/ContentFeatures";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -40,16 +44,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="ml-4" />
-            <div className="ml-4">
-              <h1 className="font-semibold">AutoblogifyAI Dashboard</h1>
-            </div>
-          </header>
-          <div className="flex-1">
-            {children}
-          </div>
+        <main className="flex-1 overflow-hidden">
+          {children}
         </main>
       </div>
     </SidebarProvider>
@@ -57,52 +53,39 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+  <LanguageProvider>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/sales" element={<SalesPage />} />
-            <Route path="/onboarding" element={
-              <ProtectedRoute>
-                <OnboardingPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/*" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Routes>
-                    <Route index element={<Dashboard />} />
-                    <Route path="websites" element={<WebsiteBuilder />} />
-                    <Route path="deployment" element={<WebsiteBuilder />} />
-                    <Route path="ai-generator" element={<AIWebsiteGenerator />} />
-                    <Route path="integrations" element={<IntegrationsPage />} />
-                    <Route path="analytics" element={<AnalyticsPage />} />
-                    <Route path="achievements" element={<AchievementsPage />} />
-                    <Route path="content-features" element={<ContentFeatures />} />
-                    <Route path="notifications" element={<NotificationSystem />} />
-                    <Route path="help" element={<HelpSupport />} />
-                    <Route path="keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
-                    <Route path="voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
-                    <Route path="autoblog" element={<AutoBlogProducerWithTabs />} />
-                    <Route path="media" element={<MediaPortal />} />
-                    <Route path="affiliate" element={<AffiliatePage />} />
-                    <Route path="academy" element={<CoursePage />} />
-                  </Routes>
-                </Layout>
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<><Navigation /><Index /></>} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/sales" element={<><Navigation /><SalesPage /></>} />
+              <Route path="/pricing" element={<><Navigation /><PricingPage /></>} />
+              <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/generate" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/ai-generator" element={<ProtectedRoute><Layout><AIWebsiteGenerator /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/website-builder" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/analytics" element={<ProtectedRoute><Layout><AnalyticsPage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/integrations" element={<ProtectedRoute><Layout><IntegrationsPage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/notifications" element={<ProtectedRoute><Layout><NotificationSystem /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/media" element={<ProtectedRoute><Layout><MediaPortal /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/help" element={<ProtectedRoute><Layout><HelpSupport /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/achievements" element={<ProtectedRoute><Layout><AchievementsPage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/course" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/affiliate" element={<ProtectedRoute><Layout><AffiliatePage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/content-features" element={<ProtectedRoute><Layout><ContentFeatures /></Layout></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </LanguageProvider>
 );
 
 export default App;

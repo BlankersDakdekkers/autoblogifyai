@@ -32,8 +32,10 @@ import {
   Copy,
   RefreshCw,
   Hash,
-  Eye
+  Eye,
+  Languages
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface BlogPost {
@@ -127,33 +129,33 @@ const AutoBlogProducer = () => {
       title: "Dakdekker Amsterdam - Complete Gids 2025",
       slug: "dakdekker-amsterdam-gids-2025",
       status: "published",
-      publishDate: "2024-01-15",
+      publishDate: "2025-01-15",
       wordCount: 1250,
       tags: ["dakdekker", "amsterdam", "renovatie"],
       metaDescription: "Zoek je een betrouwbare dakdekker in Amsterdam? Lees onze complete gids met tips, prijzen en aanbevelingen.",
-      generatedAt: "2024-01-14T10:30:00Z"
+      generatedAt: "2025-01-14T10:30:00Z"
     },
     {
       id: "2", 
       title: "Dakisolatie Kosten 2025 - Volledige Prijsoverzicht",
       slug: "dakisolatie-kosten-2025-prijsoverzicht",
       status: "scheduled",
-      publishDate: "2024-01-20",
+      publishDate: "2025-01-20",
       wordCount: 980,
       tags: ["isolatie", "kosten", "energiebesparing"],
       metaDescription: "Wat kost dakisolatie in 2025? Bekijk ons complete prijsoverzicht en bereken je besparingen.",
-      generatedAt: "2024-01-14T11:15:00Z"
+      generatedAt: "2025-01-14T11:15:00Z"
     },
     {
       id: "3",
       title: "Plat Dak Reparatie - Wanneer en Hoe?",
       slug: "plat-dak-reparatie-wanneer-hoe",
       status: "draft", 
-      publishDate: "2024-01-25",
+      publishDate: "2025-01-25",
       wordCount: 750,
       tags: ["plat dak", "reparatie", "onderhoud"],
       metaDescription: "Plat dak reparatie nodig? Leer wanneer je moet handelen en hoe je de beste dakdekker vindt.",
-      generatedAt: "2024-01-14T12:00:00Z"
+      generatedAt: "2025-01-14T12:00:00Z"
     }
   ];
 
@@ -200,84 +202,78 @@ const AutoBlogProducer = () => {
 
     setIsGeneratingKeywords(true);
     
-    // Simuleer keyword research
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const mockKeywords: KeywordSuggestion[] = [
-      {
-        keyword: `${seedKeyword} Amsterdam`,
-        searchVolume: 1200,
-        difficulty: 35,
-        cpc: 2.80,
-        intent: 'commercial',
-        relatedTerms: [`beste ${seedKeyword}`, `${seedKeyword} kosten`, `${seedKeyword} prijzen`]
-      },
-      {
-        keyword: `${seedKeyword} kosten`,
-        searchVolume: 890,
-        difficulty: 28,
-        cpc: 3.20,
-        intent: 'informational',
-        relatedTerms: [`${seedKeyword} prijzen`, `${seedKeyword} tarief`, `${seedKeyword} offerte`]
-      },
-      {
-        keyword: `beste ${seedKeyword}`,
-        searchVolume: 650,
-        difficulty: 42,
-        cpc: 4.10,
-        intent: 'commercial',
-        relatedTerms: [`${seedKeyword} vergelijken`, `top ${seedKeyword}`, `${seedKeyword} reviews`]
-      },
-      {
-        keyword: `${seedKeyword} tips`,
-        searchVolume: 520,
-        difficulty: 25,
-        cpc: 1.50,
-        intent: 'informational',
-        relatedTerms: [`${seedKeyword} gids`, `${seedKeyword} advies`, `${seedKeyword} handleiding`]
-      },
-      {
-        keyword: `${seedKeyword} Nederland`,
-        searchVolume: 430,
-        difficulty: 30,
-        cpc: 2.90,
-        intent: 'commercial',
-        relatedTerms: [`${seedKeyword} landelijk`, `${seedKeyword} bedrijf`, `${seedKeyword} service`]
-      }
-    ];
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-keywords', {
+        body: { keyword: seedKeyword, language: 'nl', count: 10 }
+      });
 
-    const mockContentIdeas: ContentIdea[] = [
-      {
-        title: `Complete ${seedKeyword} Gids Nederland 2025`,
-        angle: "Uitgebreide handleiding",
-        targetKeyword: `${seedKeyword} gids`,
-        estimatedTraffic: 850,
-        contentType: "Pillar Content"
-      },
-      {
-        title: `${seedKeyword} Kosten: Wat Betaal Je in 2025?`,
-        angle: "Prijsvergelijking",
-        targetKeyword: `${seedKeyword} kosten`,
-        estimatedTraffic: 690,
-        contentType: "Commercial"
-      },
-      {
-        title: `Top 10 ${seedKeyword} Bedrijven in Amsterdam`,
-        angle: "Lokale directory",
-        targetKeyword: `${seedKeyword} Amsterdam`,
-        estimatedTraffic: 520,
-        contentType: "Local SEO"
-      }
-    ];
+      if (error) throw error;
 
-    setKeywordSuggestions(mockKeywords);
-    setContentIdeas(mockContentIdeas);
-    setIsGeneratingKeywords(false);
-    
-    toast({
-      title: "Keywords Gegenereerd! 🎯",
-      description: `${mockKeywords.length} keywords en ${mockContentIdeas.length} content ideeën gevonden`
-    });
+      setKeywordSuggestions(data.keywords || []);
+      setContentIdeas(data.contentIdeas || []);
+      
+      toast({
+        title: "Keywords Gegenereerd! 🎯",
+        description: `${data.keywords?.length || 0} keywords en ${data.contentIdeas?.length || 0} content ideeën gevonden`
+      });
+    } catch (error) {
+      console.error('Keyword generation error:', error);
+      
+      // Fallback to mock data if API fails
+      const mockKeywords: KeywordSuggestion[] = [
+        {
+          keyword: `${seedKeyword} Amsterdam`,
+          searchVolume: 1200,
+          difficulty: 35,
+          cpc: 2.80,
+          intent: 'commercial',
+          relatedTerms: [`beste ${seedKeyword}`, `${seedKeyword} kosten`, `${seedKeyword} prijzen`]
+        },
+        {
+          keyword: `${seedKeyword} kosten`,
+          searchVolume: 890,
+          difficulty: 28,
+          cpc: 3.20,
+          intent: 'informational',
+          relatedTerms: [`${seedKeyword} prijzen`, `${seedKeyword} tarief`, `${seedKeyword} offerte`]
+        },
+        {
+          keyword: `beste ${seedKeyword}`,
+          searchVolume: 650,
+          difficulty: 42,
+          cpc: 4.10,
+          intent: 'commercial',
+          relatedTerms: [`${seedKeyword} vergelijken`, `top ${seedKeyword}`, `${seedKeyword} reviews`]
+        }
+      ];
+
+      const mockContentIdeas: ContentIdea[] = [
+        {
+          title: `Complete ${seedKeyword} Gids Nederland 2025`,
+          angle: "Uitgebreide handleiding",
+          targetKeyword: `${seedKeyword} gids`,
+          estimatedTraffic: 850,
+          contentType: "Pillar Content"
+        },
+        {
+          title: `${seedKeyword} Kosten: Wat Betaal Je in 2025?`,
+          angle: "Prijsvergelijking",
+          targetKeyword: `${seedKeyword} kosten`,
+          estimatedTraffic: 690,
+          contentType: "Commercial"
+        }
+      ];
+
+      setKeywordSuggestions(mockKeywords);
+      setContentIdeas(mockContentIdeas);
+      
+      toast({
+        title: "Keywords Gegenereerd (Demo)",
+        description: "API niet beschikbaar, demo data gebruikt"
+      });
+    } finally {
+      setIsGeneratingKeywords(false);
+    }
   };
 
   // Voice Functions

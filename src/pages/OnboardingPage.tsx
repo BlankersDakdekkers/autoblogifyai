@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { CheckCircle, ArrowLeft, ArrowRight, User, FileText, Target } from 'luci
 
 const OnboardingPage = () => {
   const { profile, updateProfile } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -79,9 +81,9 @@ const OnboardingPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
       <div className="w-full max-w-2xl space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Welkom bij AutoblogifyAI</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('onboarding.welcome', 'Welkom bij AutoblogifyAI')}</h1>
           <p className="text-muted-foreground mt-2">
-            Laten we je account instellen om de beste ervaring te bieden
+            {t('onboarding.setup', 'Laten we je account instellen om de beste ervaring te bieden')}
           </p>
         </div>
 
