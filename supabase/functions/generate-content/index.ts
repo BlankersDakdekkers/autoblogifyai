@@ -306,7 +306,7 @@ KWALITEITSVEREISTEN:
     
     console.log('Generated content length:', generatedContent?.length || 0);
 
-    // Generate hero image using the correct OpenAI model
+    // Generate hero image using the correct OpenAI model and save to storage
     let heroImageUrl = null;
     let heroImageAlt = null;
     
@@ -331,9 +331,42 @@ KWALITEITSVEREISTEN:
 
       if (imageResponse.ok) {
         const imageData = await imageResponse.json();
-        heroImageUrl = imageData.data[0].url;
-        heroImageAlt = `Afbeelding voor artikel: ${title}`;
-        console.log('Hero image generated successfully');
+        const tempImageUrl = imageData.data[0].url;
+        
+        // Download the image and upload to Supabase storage
+        console.log('Downloading and storing image...');
+        const imageDownloadResponse = await fetch(tempImageUrl);
+        
+        if (imageDownloadResponse.ok) {
+          const imageBuffer = await imageDownloadResponse.arrayBuffer();
+          const fileName = `hero-${Date.now()}-${title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50)}.png`;
+          
+          // Upload to Supabase storage
+          const { data: uploadData, error: uploadError } = await supabaseServiceClient.storage
+            .from('blog-images')
+            .upload(fileName, imageBuffer, {
+              contentType: 'image/png',
+              upsert: false
+            });
+            
+          if (!uploadError && uploadData) {
+            // Get the public URL
+            const { data: urlData } = supabaseServiceClient.storage
+              .from('blog-images')
+              .getPublicUrl(uploadData.path);
+            
+            heroImageUrl = urlData.publicUrl;
+            heroImageAlt = `Afbeelding voor artikel: ${title}`;
+            console.log('Hero image stored successfully:', heroImageUrl);
+          } else {
+            console.error('Failed to upload image to storage:', uploadError);
+            // Fallback to temporary URL
+            heroImageUrl = tempImageUrl;
+            heroImageAlt = `Afbeelding voor artikel: ${title}`;
+          }
+        } else {
+          console.error('Failed to download generated image');
+        }
       } else {
         const errorData = await imageResponse.text();
         console.log('Image generation failed:', errorData);
