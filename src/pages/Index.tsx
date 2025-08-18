@@ -65,35 +65,35 @@ const Index = () => {
               #1 AI Content Platform Nederland - 450+ bedrijven vertrouwen ons
             </Badge>
 
-            {/* Power Headline */}
-            <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight">
-              Van Excel naar
-              <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+            {/* Power Headline - Improved Contrast */}
+            <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight drop-shadow-xl">
+              <span className="text-white drop-shadow-lg">Van Excel naar</span>
+              <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent drop-shadow-lg">
                 1000+ SEO Blogposts
               </span>
-              <span className="block text-4xl md:text-5xl mt-4 text-white/90">in 24 uur</span>
+              <span className="block text-4xl md:text-5xl mt-4 text-white drop-shadow-lg">in 24 uur</span>
             </h1>
 
-            {/* Emotional Benefit */}
-            <p className="text-xl md:text-2xl mb-8 text-white/90 font-medium max-w-3xl mx-auto leading-relaxed">
+            {/* Emotional Benefit - Improved Readability */}
+            <p className="text-xl md:text-2xl mb-8 text-white font-medium max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
               Stop met weken besteden aan het schrijven van content. Onze AI schrijft 
-              <span className="text-yellow-300 font-semibold"> professionele, SEO-geoptimaliseerde blogposts</span> 
+              <span className="text-yellow-300 font-semibold drop-shadow-md"> professionele, SEO-geoptimaliseerde blogposts</span> 
               die hoger ranken dan handgeschreven content - voor een fractie van de kosten.
             </p>
 
-            {/* Urgency + Value Stack */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-white/80">
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+            {/* Urgency + Value Stack - Better Contrast */}
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/30 shadow-xl">
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-white font-medium">
+                <div className="flex items-center drop-shadow-md">
+                  <CheckCircle className="h-4 w-4 text-green-400 mr-2 drop-shadow-sm" />
                   95% sneller dan handmatig schrijven
                 </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                <div className="flex items-center drop-shadow-md">
+                  <CheckCircle className="h-4 w-4 text-green-400 mr-2 drop-shadow-sm" />
                   €500+ besparing per artikel
                 </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                <div className="flex items-center drop-shadow-md">
+                  <CheckCircle className="h-4 w-4 text-green-400 mr-2 drop-shadow-sm" />
                   Bewezen conversie-resultaten
                 </div>
               </div>
@@ -101,7 +101,7 @@ const Index = () => {
 
             {/* CTA Stack */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/auth">
+              <Link to="/pricing">
                 <Button size="lg" className="text-lg px-8 py-4 bg-white text-primary hover:bg-white/90 shadow-xl pulse-glow font-semibold group">
                   <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
                   Start GRATIS 14 dagen
@@ -114,8 +114,8 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Trust Indicators */}
-            <p className="mt-6 text-white/70 text-sm">
+            {/* Trust Indicators - Better Visibility */}
+            <p className="mt-6 text-white text-sm drop-shadow-md font-medium">
               💳 Geen creditcard vereist • 🚀 Setup in 2 minuten • 💯 30 dagen geld terug garantie
             </p>
           </div>
@@ -327,7 +327,7 @@ const Index = () => {
             </div>
 
             <div className="space-y-4">
-              <Link to="/auth">
+              <Link to="/pricing">
                 <Button size="lg" className="text-lg px-8 py-4 pulse-glow">
                   <Rocket className="mr-2 h-5 w-5" />
                   Start Gratis - 14 Dagen Proberen
@@ -352,7 +352,7 @@ const Index = () => {
             <p className="text-xl mb-6 text-white/90">
               Word de volgende successtory. 450+ bedrijven gingen je voor.
             </p>
-            <Link to="/auth">
+            <Link to="/pricing">
               <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
                 Ja, ik wil 95% tijd besparen
                 <ArrowRight className="ml-2 h-5 w-5" />

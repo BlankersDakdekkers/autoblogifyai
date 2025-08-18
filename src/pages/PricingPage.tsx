@@ -76,14 +76,18 @@ const PricingPage = () => {
       name: "Starter",
       price: "€49",
       period: "/maand",
+      originalPrice: "€99",
+      trialPeriod: "14 dagen GRATIS",
       description: "Perfect voor kleine bedrijven",
       icon: Rocket,
       popular: false,
       features: [
+        "14 dagen gratis trial",
         "Tot 50 AI blogposts per maand",
         "5 premium templates",
         "Basis SEO optimalisatie", 
-        "Email ondersteuning"
+        "Email ondersteuning",
+        "Automatische verlenging na trial"
       ]
     },
     {
@@ -91,15 +95,19 @@ const PricingPage = () => {
       name: "Professional",
       price: "€99",
       period: "/maand",
+      originalPrice: "€199",
+      trialPeriod: "14 dagen GRATIS",
       description: "Voor groeiende bedrijven",
       icon: Zap,
       popular: true,
       features: [
+        "14 dagen gratis trial",
         "Onbeperkte AI blogposts",
         "15+ premium templates",
         "Geavanceerde lokale SEO",
         "Priority support",
-        "Alle integraties"
+        "Alle integraties",
+        "Automatische verlenging na trial"
       ]
     },
     {
@@ -107,15 +115,19 @@ const PricingPage = () => {
       name: "Enterprise", 
       price: "€199",
       period: "/maand",
+      originalPrice: "€399",
+      trialPeriod: "14 dagen GRATIS",
       description: "Voor grote organisaties",
       icon: Crown,
       popular: false,
       features: [
+        "14 dagen gratis trial",
         "Alles van Professional",
         "White-label oplossing",
         "Dedicated account manager",
         "Custom AI training",
-        "API toegang"
+        "API toegang",
+        "Automatische verlenging na trial"
       ]
     }
   ];
@@ -124,11 +136,15 @@ const PricingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
+          <Badge className="mb-4 bg-green-100 text-green-800 border-green-200">
+            <Star className="h-4 w-4 mr-2" />
+            14 Dagen Gratis Trial - Automatische Verlenging
+          </Badge>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Premium <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">AutoblogifyAI</span> Abonnementen
           </h1>
           <p className="text-xl text-muted-foreground">
-            Professionele AI content generatie voor premium resultaten
+            Start vandaag gratis en ervaar professionele AI content generatie
           </p>
         </div>
 
@@ -147,9 +163,19 @@ const PricingPage = () => {
                   <IconComponent className="h-12 w-12 mx-auto mb-4 text-primary" />
                   <CardTitle>{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
+                  
+                  {/* Trial Badge */}
+                  <Badge className="bg-green-100 text-green-800 mb-2">
+                    {plan.trialPeriod}
+                  </Badge>
+                  
                   <div className="mt-4">
-                    <span className="text-4xl font-bold">{plan.price}</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-2xl text-muted-foreground line-through">{plan.originalPrice}</span>
+                      <span className="text-4xl font-bold text-primary">{plan.price}</span>
+                    </div>
                     <span className="text-muted-foreground">{plan.period}</span>
+                    <p className="text-xs text-green-600 mt-1 font-medium">Na gratis trial</p>
                   </div>
                 </CardHeader>
 
@@ -169,8 +195,12 @@ const PricingPage = () => {
                     onClick={() => handleSubscribe(plan.id)}
                     disabled={isLoading}
                   >
-                    {isLoading && selectedPlan === plan.id ? "Verwerken..." : "Start nu"}
+                    {isLoading && selectedPlan === plan.id ? "Verwerken..." : "Start 14 dagen GRATIS"}
                   </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Geen creditcard vereist • Automatische verlenging
+                  </p>
                 </CardContent>
               </Card>
             );
