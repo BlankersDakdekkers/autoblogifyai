@@ -10,7 +10,8 @@ import {
   Code,
   Database,
   Zap,
-  Image
+  Image,
+  Trophy
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -40,6 +41,12 @@ export const navigationSections: NavigationSection[] = [
         url: "/dashboard/analytics", 
         icon: BarChart3,
         description: "Content prestaties en metrics"
+      },
+      { 
+        title: "Achievements", 
+        url: "/dashboard/achievements", 
+        icon: Trophy,
+        description: "Trofeeën en rankings systeem"
       },
       { 
         title: "Abonnement", 
