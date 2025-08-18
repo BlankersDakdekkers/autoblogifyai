@@ -18,7 +18,8 @@ import {
   Database,
   Loader2,
   Clock,
-  BarChart3
+  BarChart3,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
