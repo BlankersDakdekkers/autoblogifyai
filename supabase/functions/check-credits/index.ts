@@ -35,12 +35,12 @@ serve(async (req) => {
       )
     }
 
-    // Get user credits
+    // Get user credits - handle case where user doesn't have a record yet
     const { data: credits, error } = await supabaseServiceClient
       .from('user_credits')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 rows
 
     if (error) {
       console.error('Error fetching credits:', error);
@@ -50,10 +50,40 @@ serve(async (req) => {
       );
     }
 
+    // If no credits record exists, create one with default values
+    if (!credits) {
+      console.log('No credits record found for user, creating one with default values');
+      const { data: newCredits, error: insertError } = await supabaseServiceClient
+        .from('user_credits')
+        .insert({
+          user_id: user.id,
+          credits_remaining: 5, // Default free credits
+          total_credits_used: 0
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error creating credits record:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create credits record' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          credits_remaining: newCredits.credits_remaining,
+          total_credits_used: newCredits.total_credits_used
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ 
-        credits_remaining: credits?.credits_remaining || 0,
-        total_credits_used: credits?.total_credits_used || 0
+        credits_remaining: credits.credits_remaining || 0,
+        total_credits_used: credits.total_credits_used || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

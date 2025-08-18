@@ -52,8 +52,14 @@ serve(async (req) => {
         description = "50 Credits Pakket";
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    // Initialize Stripe with proper error handling
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("STRIPE_SECRET_KEY environment variable is not set");
+    }
+    
+    console.log("Initializing Stripe with key:", stripeKey.substring(0, 7) + "...");
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 

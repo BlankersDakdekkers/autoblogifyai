@@ -103,8 +103,36 @@ const DashboardOverview = () => {
 
 // Main Dashboard Component
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, refreshCredits } = useAuth();
+  const { toast } = useToast();
   const [hasBlogPosts, setHasBlogPosts] = useState<boolean | null>(null);
+
+  // Check for URL parameters on load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const creditsPurchased = urlParams.get('credits_purchased');
+    const paymentCancelled = urlParams.get('payment_cancelled');
+
+    if (creditsPurchased) {
+      toast({
+        title: "Credits Gekocht! 🎉",
+        description: `Je hebt ${creditsPurchased} credits toegevoegd aan je account`,
+      });
+      refreshCredits();
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+
+    if (paymentCancelled) {
+      toast({
+        title: "Betaling Geannuleerd",
+        description: "Je betaling is geannuleerd. Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+      // Clean URL  
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [toast, refreshCredits]);
 
   // Check if user has any blog posts
   useEffect(() => {
