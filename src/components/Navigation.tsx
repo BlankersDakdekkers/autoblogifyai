@@ -147,6 +147,18 @@ export const useNavigationSections = (): NavigationSection[] => {
     label: "Configuratie",
     items: [
       { 
+        title: "Projecten", 
+        url: "/dashboard/projects", 
+        icon: Folder,
+        description: "Overzicht van al je projecten"
+      },
+      { 
+        title: "Resources", 
+        url: "/dashboard/resources", 
+        icon: Book,
+        description: "Tutorials, templates en tools"
+      },
+      { 
         title: "Instellingen", 
         url: "/dashboard/settings", 
         icon: Settings,

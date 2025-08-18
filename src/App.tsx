@@ -39,6 +39,9 @@ import AdminSetup from "./pages/AdminSetup";
 import AdminCustomerPortal from "./pages/AdminCustomerPortal";
 import SystemMonitoringPage from "./pages/SystemMonitoringPage";
 import NotFound from "./pages/NotFound";
+import SettingsPage from "./pages/SettingsPage";
+import ProjectsOverview from "./pages/ProjectsOverview";
+import ResourceCenter from "./pages/ResourceCenter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -129,6 +132,9 @@ const App = () => (
               <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><AdminUsersPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
