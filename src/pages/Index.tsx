@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   FileText, 
   Zap, 
@@ -22,6 +23,8 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const features = [
     {
       icon: Search,
@@ -105,12 +108,10 @@ const Index = () => {
               <span className="text-xl font-bold">AutoblogifyAI</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/dashboard">
-                <Button>
-                  Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <Button onClick={() => navigate(user ? '/dashboard' : '/auth')}>
+                {user ? 'Dashboard' : 'Inloggen'}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -138,18 +139,23 @@ const Index = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-8 py-6">
-                <Play className="mr-2 h-5 w-5" />
-                Gratis Proberen
-              </Button>
-            </Link>
-            <Link to="/dashboard/keywords">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                <Search className="mr-2 h-5 w-5" />
-                Keyword Research
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate(user ? '/dashboard' : '/auth')}
+            >
+              <Play className="mr-2 h-5 w-5" />
+              {user ? 'Ga naar Dashboard' : 'Gratis Proberen'}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate(user ? '/dashboard/autoblog' : '/auth')}
+            >
+              <Search className="mr-2 h-5 w-5" />
+              Keyword Research
+            </Button>
           </div>
 
           {/* Demo Video Placeholder */}

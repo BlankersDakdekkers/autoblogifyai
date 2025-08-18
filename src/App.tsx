@@ -5,7 +5,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import AuthPage from "./pages/AuthPage";
+import OnboardingPage from "./pages/OnboardingPage";
 import Dashboard from "./pages/Dashboard";
 import WebsiteBuilder from "./pages/WebsiteBuilder";
 import AffiliatePage from "./pages/AffiliatePage";
@@ -54,35 +58,50 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/sales" element={<SalesPage />} />
-            <Route path="/dashboard/*" element={<Dashboard />} />
-            <Route path="/dashboard/websites" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/deployment" element={<WebsiteBuilder />} />
-            <Route path="/dashboard/ai-generator" element={<AIWebsiteGenerator />} />
-            <Route path="/dashboard/integrations" element={<IntegrationsPage />} />
-            <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-            <Route path="/dashboard/achievements" element={<AchievementsPage />} />
-            <Route path="/dashboard/content-features" element={<ContentFeatures />} />
-            <Route path="/dashboard/notifications" element={<NotificationSystem />} />
-            <Route path="/dashboard/help" element={<HelpSupport />} />
-            <Route path="/dashboard/keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
-            <Route path="/dashboard/voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
-            <Route path="/dashboard/media" element={<MediaPortal />} />
-            <Route path="/dashboard/affiliate" element={<AffiliatePage />} />
-            <Route path="/dashboard/academy" element={<CoursePage />} />
+            <Route path="/onboarding" element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/*" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route index element={<Dashboard />} />
+                    <Route path="websites" element={<WebsiteBuilder />} />
+                    <Route path="deployment" element={<WebsiteBuilder />} />
+                    <Route path="ai-generator" element={<AIWebsiteGenerator />} />
+                    <Route path="integrations" element={<IntegrationsPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="achievements" element={<AchievementsPage />} />
+                    <Route path="content-features" element={<ContentFeatures />} />
+                    <Route path="notifications" element={<NotificationSystem />} />
+                    <Route path="help" element={<HelpSupport />} />
+                    <Route path="keywords" element={<AutoBlogProducerWithTabs initialTab="keywords" />} />
+                    <Route path="voice" element={<AutoBlogProducerWithTabs initialTab="voice" />} />
+                    <Route path="autoblog" element={<AutoBlogProducerWithTabs />} />
+                    <Route path="media" element={<MediaPortal />} />
+                    <Route path="affiliate" element={<AffiliatePage />} />
+                    <Route path="academy" element={<CoursePage />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
