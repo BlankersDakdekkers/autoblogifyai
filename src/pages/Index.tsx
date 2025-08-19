@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
+import OptimizedHomeSections from "@/components/OptimizedHomeSections";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";

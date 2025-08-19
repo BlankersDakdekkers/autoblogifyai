@@ -1,15 +1,18 @@
+import React, { memo } from 'react';
 import { cn } from "@/lib/utils"
 
-function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+const Skeleton = memo(({ 
+  className, 
+  ...props 
+}: React.HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      className={cn("skeleton loading-shimmer", className)}
       {...props}
     />
   )
-}
+});
 
-export { Skeleton }
+Skeleton.displayName = "Skeleton";
+
+export { Skeleton };
