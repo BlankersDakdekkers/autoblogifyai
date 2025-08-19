@@ -800,7 +800,7 @@ const CSVProcessor = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => window.open('/dashboard/autoblog-producer', '_blank')}
+                    onClick={() => window.open('/dashboard/blogs', '_blank')}
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     Bekijk Gegenereerde Posts
