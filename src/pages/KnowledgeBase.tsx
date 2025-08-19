@@ -115,6 +115,7 @@ const KnowledgeBase = () => {
     if (!user) return;
     
     try {
+      console.log('Loading knowledge items for user:', user.id);
       const { data, error } = await supabase
         .from('knowledge_items')
         .select('*')
@@ -122,7 +123,12 @@ const KnowledgeBase = () => {
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Raw data from database:', data);
       
       // Transform database format to component format
       const transformedItems: KnowledgeItem[] = data?.map(item => ({
@@ -140,6 +146,7 @@ const KnowledgeBase = () => {
         status: item.status as 'draft' | 'published' | 'archived'
       })) || [];
 
+      console.log('Transformed items:', transformedItems);
       setKnowledgeItems(transformedItems);
     } catch (error) {
       console.error('Error loading knowledge items:', error);
