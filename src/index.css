@@ -220,7 +220,7 @@
   
   .card-glass {
     @apply bg-background/80 backdrop-blur-md border border-border/30;
-    @apply shadow-soft;
+    box-shadow: var(--shadow-soft);
   }
 
   /* Enhanced Buttons */
