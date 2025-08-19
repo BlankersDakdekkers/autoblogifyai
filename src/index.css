@@ -225,8 +225,9 @@
 
   /* Enhanced Buttons */
   .btn-premium {
-    @apply bg-gradient-to-r from-primary to-primary-glow text-primary-foreground;
-    @apply shadow-elegant hover:shadow-glow;
+    background: var(--gradient-primary);
+    @apply text-primary-foreground;
+    box-shadow: var(--shadow-elegant);
     @apply transform hover:scale-105 transition-all duration-300;
   }
   
