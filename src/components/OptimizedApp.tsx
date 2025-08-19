@@ -18,6 +18,7 @@ const OnboardingPage = lazy(() => import("../pages/OnboardingPage"));
 const SalesPage = lazy(() => import("../pages/SalesPage"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const AutoBlogProducer = lazy(() => import("../pages/AutoBlogProducer"));
+const AutoBlogProducerWithTabs = lazy(() => import("../pages/AutoBlogProducerWithTabs"));
 const AIWebsiteGenerator = lazy(() => import("../pages/AIWebsiteGenerator"));
 const WebsiteBuilder = lazy(() => import("../pages/WebsiteBuilder"));
 const AnalyticsPage = lazy(() => import("../pages/AnalyticsPage"));
@@ -33,6 +34,20 @@ const KnowledgeBase = lazy(() => import("../pages/KnowledgeBase"));
 const HelpSupport = lazy(() => import("../pages/HelpSupport"));
 const BlogManagement = lazy(() => import("../pages/BlogManagement"));
 const ResourceCenter = lazy(() => import("../pages/ResourceCenter"));
+const MediaPortal = lazy(() => import("../pages/MediaPortal"));
+const ContentFeatures = lazy(() => import("../pages/ContentFeatures"));
+const CategoryManager = lazy(() => import("../pages/CategoryManager"));
+const TemplateEditor = lazy(() => import("../pages/TemplateEditor"));
+const CSVProcessor = lazy(() => import("../pages/CSVProcessor"));
+const WebhookIntegration = lazy(() => import("../pages/WebhookIntegration"));
+const AchievementsPage = lazy(() => import("../pages/AchievementsPage"));
+const AffiliatePage = lazy(() => import("../pages/AffiliatePage"));
+const CoursePage = lazy(() => import("../pages/CoursePage"));
+const NotificationSystem = lazy(() => import("../pages/NotificationSystem"));
+const ProjectsOverview = lazy(() => import("../pages/ProjectsOverview"));
+const AdminUsersPage = lazy(() => import("../pages/AdminUsersPage"));
+const AdminCustomerPortal = lazy(() => import("../pages/AdminCustomerPortal"));
+const SystemMonitoringPage = lazy(() => import("../pages/SystemMonitoringPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // Optimized Query Client with better performance settings
@@ -100,17 +115,43 @@ const routes = [
   // Protected routes
   { path: "/onboarding", element: OnboardingPage, layout: "none" as const, protected: true },
   { path: "/dashboard", element: Dashboard, layout: "dashboard" as const, protected: true },
+  
+  // AutoblogifyAI routes
   { path: "/dashboard/keywords", element: AutoBlogProducer, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/generate", element: AutoBlogProducer, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/ai-generator", element: AIWebsiteGenerator, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/website-builder", element: WebsiteBuilder, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/analytics", element: AnalyticsPage, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/integrations", element: IntegrationsPage, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/settings", element: SettingsPage, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/knowledge-base", element: KnowledgeBase, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/help", element: HelpSupport, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/generate", element: AutoBlogProducerWithTabs, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/media", element: MediaPortal, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/content-features", element: ContentFeatures, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/category-manager", element: CategoryManager, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/template-editor", element: TemplateEditor, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/csv-processor", element: CSVProcessor, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/blogs", element: BlogManagement, layout: "dashboard" as const, protected: true },
+  
+  // Website Builder routes
+  { path: "/dashboard/websites", element: WebsiteBuilder, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/deployment", element: WebsiteBuilder, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/ai-generator", element: AIWebsiteGenerator, layout: "dashboard" as const, protected: true },
+  
+  // Configuration routes
+  { path: "/dashboard/projects", element: ProjectsOverview, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/resources", element: ResourceCenter, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/settings", element: SettingsPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/integrations", element: IntegrationsPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/webhooks", element: WebhookIntegration, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/affiliate", element: AffiliatePage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/academy", element: CoursePage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/notifications", element: NotificationSystem, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/help", element: HelpSupport, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/knowledge-base", element: KnowledgeBase, layout: "dashboard" as const, protected: true },
+  
+  // Dashboard routes
+  { path: "/dashboard/analytics", element: AnalyticsPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/achievements", element: AchievementsPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/pricing", element: PricingPage, layout: "dashboard" as const, protected: true },
+  
+  // Admin routes
+  { path: "/dashboard/admin/users", element: AdminUsersPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/admin/customers", element: AdminCustomerPortal, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/admin/monitoring", element: SystemMonitoringPage, layout: "dashboard" as const, protected: true },
 ];
 
 export const OptimizedApp = memo(() => {
