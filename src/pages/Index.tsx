@@ -8,6 +8,7 @@ import {
   ChevronRight, Play, Sparkles, FileText, Crown, Shield, CheckCircle2, CreditCard, Loader2
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
