@@ -42,6 +42,11 @@ import NotFound from "./pages/NotFound";
 import SettingsPage from "./pages/SettingsPage";
 import ProjectsOverview from "./pages/ProjectsOverview";
 import ResourceCenter from "./pages/ResourceCenter";
+import CustomerCases from "./pages/CustomerCases";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ContactPage from "./pages/ContactPage";
+import AboutPage from "./pages/AboutPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,6 +107,11 @@ const App = () => (
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
               <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
+              <Route path="/customer-cases" element={<><SimpleHeader /><CustomerCases /></>} />
+              <Route path="/about" element={<><SimpleHeader /><AboutPage /></>} />
+              <Route path="/contact" element={<><SimpleHeader /><ContactPage /></>} />
+              <Route path="/terms" element={<><SimpleHeader /><TermsOfService /></>} />
+              <Route path="/privacy" element={<><SimpleHeader /><PrivacyPolicy /></>} />
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/admin-setup" element={<ProtectedRoute><AdminSetup /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
