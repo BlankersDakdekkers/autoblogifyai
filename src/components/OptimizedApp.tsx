@@ -29,6 +29,10 @@ const ContactPage = lazy(() => import("../pages/ContactPage"));
 const TermsOfService = lazy(() => import("../pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("../pages/PrivacyPolicy"));
 const SettingsPage = lazy(() => import("../pages/SettingsPage"));
+const KnowledgeBase = lazy(() => import("../pages/KnowledgeBase"));
+const HelpSupport = lazy(() => import("../pages/HelpSupport"));
+const BlogManagement = lazy(() => import("../pages/BlogManagement"));
+const ResourceCenter = lazy(() => import("../pages/ResourceCenter"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // Optimized Query Client with better performance settings
@@ -103,6 +107,10 @@ const routes = [
   { path: "/dashboard/analytics", element: AnalyticsPage, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/integrations", element: IntegrationsPage, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/settings", element: SettingsPage, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/knowledge-base", element: KnowledgeBase, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/help", element: HelpSupport, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/blogs", element: BlogManagement, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/resources", element: ResourceCenter, layout: "dashboard" as const, protected: true },
 ];
 
 export const OptimizedApp = memo(() => {
