@@ -13,7 +13,7 @@ import {
   Heart
 } from 'lucide-react';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
