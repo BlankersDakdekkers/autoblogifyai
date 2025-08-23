@@ -41,7 +41,7 @@ interface Template {
   id: string;
   name: string;
   description: string;
-  category: "blog" | "landing" | "email" | "social";
+  category: "blog" | "service" | "landing" | "email" | "social";
   content: string;
   variables: string[];
   tags: string[];
@@ -249,6 +249,161 @@ Met vriendelijke groet,
       createdAt: "2025-01-18"
     },
     {
+      id: "service-page-pro",
+      name: "Dienstenpagina Pro - Lokale Dienstverlener",
+      description: "Complete servicepagina template met prijzen, werkgebied, FAQ en contactgegevens",
+      category: "service",
+      content: `# {{service_title}} in {{city}} | {{company_name}}
+
+## ⭐ {{years_experience}} Jaar Ervaring | {{customer_count}}+ Tevreden Klanten
+
+---
+
+## 🎯 Onze {{service_type}} Diensten
+
+### Wat Wij Doen
+{{service_description}}
+
+### Onze Specialisaties:
+✅ {{specialization_1}}
+✅ {{specialization_2}}  
+✅ {{specialization_3}}
+✅ {{specialization_4}}
+
+---
+
+## 🌍 Werkgebied
+
+**Wij werken in {{city}} en omgeving:**
+- {{area_1}}
+- {{area_2}}
+- {{area_3}}
+- {{area_4}}
+
+*Twijfelt u of wij bij u in de buurt werken? Bel {{phone}} voor informatie.*
+
+---
+
+## 💰 Transparante Prijzen
+
+| Service | Prijs vanaf | Duur |
+|---------|-------------|------|
+| {{service_1}} | €{{price_1}} | {{duration_1}} |
+| {{service_2}} | €{{price_2}} | {{duration_2}} |
+| {{service_3}} | €{{price_3}} | {{duration_3}} |
+
+> **💡 Gratis offerte:** Exacte prijs krijgt u na onze gratis inspectie
+
+---
+
+## 🏆 Waarom Kiezen Voor {{company_name}}?
+
+### ⚡ {{benefit_1}}
+{{benefit_1_description}}
+
+### 🛡️ {{benefit_2}}  
+{{benefit_2_description}}
+
+### 👨‍🔧 {{benefit_3}}
+{{benefit_3_description}}
+
+### 📞 {{benefit_4}}
+{{benefit_4_description}}
+
+---
+
+## 📝 Hoe Wij Werken
+
+**1️⃣ Contact & Afspraak**  
+{{step_1_description}}
+
+**2️⃣ Gratis Inspectie**  
+{{step_2_description}}
+
+**3️⃣ Offerte & Planning**  
+{{step_3_description}}
+
+**4️⃣ Professionele Uitvoering**  
+{{step_4_description}}
+
+**5️⃣ Nazorg & Garantie**  
+{{step_5_description}}
+
+---
+
+## 💬 Wat Onze Klanten Zeggen
+
+### ⭐⭐⭐⭐⭐ {{rating}}/5 Sterren
+
+> *"{{testimonial_1}}"*  
+> **- {{customer_1}}, {{location_1}}**
+
+> *"{{testimonial_2}}"*  
+> **- {{customer_2}}, {{location_2}}**
+
+[Lees alle {{review_count}} reviews →](#reviews)
+
+---
+
+## ❓ Veelgestelde Vragen
+
+### {{faq_question_1}}
+{{faq_answer_1}}
+
+### {{faq_question_2}}
+{{faq_answer_2}}
+
+### {{faq_question_3}}
+{{faq_answer_3}}
+
+### {{faq_question_4}}
+{{faq_answer_4}}
+
+---
+
+## 🚨 Spoeddienst Beschikbaar
+
+**Noodsituatie? Wij zijn er voor u!**
+
+📞 **Spoed telefoon:** {{emergency_phone}}  
+⏰ **24/7 bereikbaar** voor noodgevallen  
+🚗 **Binnen {{response_time}} ter plaatse**
+
+---
+
+## 📞 Contact & Offerte
+
+### Direct Contact
+**Telefoon:** [{{phone}}](tel:{{phone}})  
+**WhatsApp:** [{{whatsapp}}](https://wa.me/{{whatsapp}})  
+**Email:** [{{email}}](mailto:{{email}})
+
+### Bezoekadres  
+{{address}}  
+{{postal_code}} {{city}}
+
+### Openingstijden
+{{opening_hours}}
+
+---
+
+## 🎁 Actie: {{special_offer}}
+
+**{{cta_text}}**
+
+[📞 Bel Direct](tel:{{phone}}) | [💬 WhatsApp](https://wa.me/{{whatsapp}}) | [✉️ Mail Ons](mailto:{{email}})
+
+*Reactie gegarandeerd binnen {{response_guarantee}}*`,
+      variables: ["service_title", "city", "company_name", "years_experience", "customer_count", "service_type", "service_description", "specialization_1", "specialization_2", "specialization_3", "specialization_4", "phone", "email"],
+      tags: ["diensten", "lokaal", "business", "contact"],
+      isPublic: true,
+      isPremium: true,
+      usageCount: 892,
+      rating: 4.9,
+      author: "Business Expert",
+      createdAt: "2025-01-18"
+    },
+    {
       id: "service-landing-page",
       name: "Service Landing Page",
       description: "Conversie-geoptimaliseerde landingspagina voor lokale diensten",
@@ -355,7 +510,7 @@ Met vriendelijke groet,
     });
   };
 
-  // Uitgebreide sample data voor professionele preview
+  // Uitgebreide sample data voor professionele preview inclusief service pagina
   const sampleData = {
     // Basis informatie
     title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden & Renovatie",
@@ -366,6 +521,50 @@ Met vriendelijke groet,
     email: "info@dakpro-amsterdam.nl",
     website: "www.dakpro-amsterdam.nl",
     
+    // Service pagina specifiek
+    service_title: "Professionele Dakdekkersdiensten",
+    service_type: "dakdekker",
+    service_description: "Van kleine reparaties tot complete dakrenovaties - wij zorgen voor een waterdicht en duurzaam resultaat. Onze gecertificeerde vakmannen werken uitsluitend met A-merk materialen en bieden 15 jaar garantie.",
+    
+    // Specialisaties
+    specialization_1: "Daklekkage reparatie & noodhulp",
+    specialization_2: "Complete dakbedekking (pannen, bitumen, EPDM)",
+    specialization_3: "Dakisolatie & energiezuinige oplossingen", 
+    specialization_4: "Dakgoot installatie & onderhoud",
+    
+    // Werkgebied
+    area_1: "Amsterdam Centrum & Zuid",
+    area_2: "Amstelveen & Uithoorn",
+    area_3: "Diemen & Duivendrecht",
+    area_4: "Ouderkerk & Abcoude",
+    
+    // Prijzen & diensten
+    service_1: "Daklekkage reparatie",
+    price_1: "125",
+    duration_1: "1-2 uur",
+    service_2: "Dakbedekking vernieuwen",
+    price_2: "85/m²", 
+    duration_2: "2-5 dagen",
+    service_3: "Dakisolatie plaatsing",
+    price_3: "45/m²",
+    duration_3: "1-2 dagen",
+    
+    // Werkwijze stappen
+    step_1_description: "Binnen 2 uur teruggebeld, afspraak binnen 24 uur mogelijk",
+    step_2_description: "Grondige inspectie van uw dak met meetrapport en foto's",
+    step_3_description: "Gedetailleerde offerte met materialen en arbeidskosten",
+    step_4_description: "Vakkundige uitvoering door gecertificeerde specialisten",
+    step_5_description: "15 jaar garantie + jaarlijkse controle op afspraak",
+    
+    // Contact & locatie
+    address: "Herengracht 123",
+    postal_code: "1015 BE",
+    opening_hours: "Ma-Vr: 07:00-18:00 | Za: 08:00-16:00",
+    whatsapp: "31201234567",
+    emergency_phone: "06-12345678",
+    response_time: "2 uur",
+    response_guarantee: "2 uur",
+    
     // Landing page specifiek
     headline: "🏠 Daklek? Wij Lossen Het Vandaag Nog Op!",
     problem_description: "Heeft u last van een lekkend dak, losliggende dakpannen of verouderde dakbedekking? Dit kan leiden tot kostbare waterschade, schimmel en structurele problemen aan uw woning.",
@@ -374,10 +573,33 @@ Met vriendelijke groet,
     // Verbeterde benefits
     benefit_1: "24/7 Spoeddienst - Ook in weekenden",
     benefit_1_explanation: "Dakproblemen wachten niet op kantooruren. Onze nooddienst is 24/7 bereikbaar voor urgente reparaties.",
+    benefit_1_description: "Onze spoeddienst is 24 uur per dag bereikbaar voor noodgevallen. Weekend, avond of feestdag - wij staan altijd voor u klaar.",
     benefit_2: "15 jaar garantie op alle werkzaamheden", 
     benefit_2_explanation: "Wij staan achter ons werk met de langste garantieperiode in Amsterdam - 15 jaar volledige dekking.",
+    benefit_2_description: "Als enige in Amsterdam bieden wij 15 jaar volledige garantie op materiaal én vakmanschap. Uw zekerheid is onze trots.",
     benefit_3: "Gratis inspectie & offerte binnen 2 uur",
     benefit_3_explanation: "Onze experts komen langs voor een grondige dakinsectie en uitgebreide offerte, volledig kosteloos.",
+    benefit_3_description: "Binnen 2 uur na uw telefoontje staat onze specialist bij u op de stoep voor een gratis, vrijblijvende inspectie.",
+    benefit_4: "Ervaren vakmanschap sinds 1998",
+    benefit_4_description: "Met 25 jaar ervaring en meer dan 5.000 tevreden klanten bent u verzekerd van vakkundig en betrouwbaar werk.",
+    
+    // Testimonials uitgebreid
+    testimonial_1: "Binnen 3 uur was mijn daklek verholpen. Professioneel, snel en netjes opgeruimd. Absolute aanrader!",
+    customer_1: "Maria van der Berg",
+    location_1: "Amsterdam Zuid",
+    testimonial_2: "Complete dakvernieuwing volgens planning en budget. Team werkt zeer netjes en communiceert uitstekend.",
+    customer_2: "Johan Vermeer", 
+    location_2: "Amstelveen",
+    
+    // FAQ uitgebreid  
+    faq_question_1: "Hoe snel kunnen jullie langskomen bij een noodgeval?",
+    faq_answer_1: "Bij spoedgevallen komen we binnen 2-4 uur ter plaatse, ook 's avonds en in weekenden. Voor normale werkzaamheden plannen we binnen 48 uur een afspraak.",
+    faq_question_2: "Welke garantie krijg ik op de werkzaamheden?", 
+    faq_answer_2: "Wij geven 15 jaar garantie op alle dakwerkzaamheden. Dit is de langste garantieperiode in Amsterdam en toont ons vertrouwen in de kwaliteit.",
+    faq_question_3: "Werken jullie ook met verzekeringen?",
+    faq_answer_3: "Ja, wij hebben ervaring met alle grote verzekeraars en helpen u graag bij het afhandelen van schadeformulieren en declaraties.",
+    faq_question_4: "Kan ik een kostenloze offerte krijgen?",
+    faq_answer_4: "Absoluut! Elke inspectie en offerte is volledig gratis en vrijblijvend. U betaalt alleen als u ons de opdracht geeft.",
     
     // Gevolgen en resultaten
     negative_consequence_1: "Waterschade kan oplopen tot €25.000+",
@@ -410,12 +632,6 @@ Met vriendelijke groet,
     speed_reason: "Gemiddelde responstijd van 2,5 uur binnen Amsterdam", 
     expertise_reason: "Gespecialiseerd in monumentale panden én moderne woningen",
     conclusion_text: "Wacht niet tot een klein probleem een grote reparatie wordt.",
-    
-    // FAQ
-    faq_question_1: "Hoe snel kunnen jullie langskomen bij een noodgeval?",
-    faq_answer_1: "Bij spoedgevallen komen we binnen 2-4 uur ter plaatse, ook 's avonds en in weekenden. Voor normale werkzaamheden plannen we binnen 48 uur een afspraak.",
-    faq_question_2: "Welke garantie krijg ik op de werkzaamheden?", 
-    faq_answer_2: "Wij geven 15 jaar garantie op alle dakwerkzaamheden. Dit is de langste garantieperiode in Amsterdam en toont ons vertrouwen in de kwaliteit.",
     
     // Email specifiek
     subject: "Uw dakprobleem opgelost binnen 24 uur - Gratis inspectie",
@@ -574,7 +790,7 @@ Met vriendelijke groet,
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-8">
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {Object.entries(templateStarters).map(([category, content]) => (
                     <Card 
                       key={category} 
@@ -585,16 +801,19 @@ Met vriendelijke groet,
                       <CardContent className="p-6 text-center relative z-10">
                         <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
                           {category === 'blog' ? '📝' :
+                           category === 'service' ? '🏢' :
                            category === 'landing' ? '🎯' :
                            category === 'email' ? '📧' : '📱'}
                         </div>
                         <h4 className="font-bold text-lg mb-3 text-foreground">
                           {category === 'blog' ? 'Blog Post Pro' :
+                           category === 'service' ? 'Dienstenpagina Expert' :
                            category === 'landing' ? 'Landing Page Expert' :
                            category === 'email' ? 'Email Marketing' : 'Social Media Boost'}
                         </h4>
                         <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                           {category === 'blog' ? 'SEO-geoptimaliseerde artikelen die ranking verzekeren' :
+                           category === 'service' ? 'Complete servicepagina met prijzen, FAQ en contactgegevens' :
                            category === 'landing' ? 'High-converting paginas met bewezen CTA structuur' :
                            category === 'email' ? 'Professionele templates met hoge open rates' : 'Virale content templates met trending hashtags'}
                         </p>
@@ -670,8 +889,9 @@ Met vriendelijke groet,
                     <SelectValue placeholder="Filter categorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">🎯 Alle categorieën</SelectItem>
+                  <SelectItem value="all">🎯 Alle categorieën</SelectItem>
                     <SelectItem value="blog">📝 Blog Posts</SelectItem>
+                    <SelectItem value="service">🏢 Dienstenpagina's</SelectItem>
                     <SelectItem value="landing">🎯 Landing Pages</SelectItem>
                     <SelectItem value="email">📧 Email</SelectItem>
                     <SelectItem value="social">📱 Social Media</SelectItem>
