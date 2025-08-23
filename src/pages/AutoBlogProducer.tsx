@@ -489,7 +489,7 @@ const AutoBlogProducer = () => {
             <div>
               <h4 className="font-medium text-emerald-800">System Geoptimaliseerd ✨</h4>
               <p className="text-sm text-emerald-700">
-                Gebruik de kennisbank voor CSV uploads en content management. Deze tool richt zich op keyword research, voice input en content analyse.
+                Gebruik de CSV Processor voor bulk content uploads en management. Deze tool richt zich op keyword research, voice input en content analyse.
               </p>
             </div>
           </div>
