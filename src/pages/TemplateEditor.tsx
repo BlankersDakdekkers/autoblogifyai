@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { 
   FileText, 
@@ -28,12 +27,15 @@ import {
   HelpCircle,
   Lightbulb,
   CheckCircle,
-  AlertTriangle,
-  ArrowRight,
+  Target,
   ArrowLeft,
+  ArrowRight,
   Zap,
   Palette,
-  Target
+  Layers,
+  Search,
+  Filter,
+  Maximize2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -57,40 +59,16 @@ const TemplateEditor = () => {
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({});
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showHelp, setShowHelp] = useState(false);
+  const [activeTab, setActiveTab] = useState("browse");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Wizard steps for better UX
-  const steps = [
-    { id: 1, title: "Template Info", description: "Basisinformatie", icon: FileText },
-    { id: 2, title: "Content", description: "Template inhoud", icon: Edit },
-    { id: 3, title: "Variabelen", description: "Dynamische velden", icon: Zap },
-    { id: 4, title: "Instellingen", description: "Configuratie", icon: Settings },
-    { id: 5, title: "Preview", description: "Voorbeeld", icon: Eye }
-  ];
-
-  // Predefined variable suggestions
-  const variableSuggestions = [
-    { name: "title", description: "Hoofdtitel van de content", example: "{{title}}" },
-    { name: "city", description: "Stad of locatie", example: "{{city}}" },
-    { name: "service", description: "Service of product", example: "{{service}}" },
-    { name: "phone", description: "Telefoonnummer", example: "{{phone}}" },
-    { name: "company_name", description: "Bedrijfsnaam", example: "{{company_name}}" },
-    { name: "price", description: "Prijs informatie", example: "{{price}}" },
-    { name: "date", description: "Datum", example: "{{date}}" },
-    { name: "author", description: "Auteur naam", example: "{{author}}" }
-  ];
-
-  // Template starters for different categories
+  // Template starters
   const templateStarters = {
     blog: `# {{title}} | {{city}} - Professionele {{service}}
-
-> **💡 Tip:** Dit artikel helpt u {{problem_description}} op te lossen
 
 ## Inleiding
 Bent u op zoek naar {{service}} in {{city}}? Dan bent u bij ons aan het juiste adres. Met meer dan {{years_experience}} jaar ervaring weten wij precies hoe we u het beste kunnen helpen.
@@ -99,31 +77,43 @@ Bent u op zoek naar {{service}} in {{city}}? Dan bent u bij ons aan het juiste a
 
 {{main_content}}
 
-### Waarom is dit Belangrijk?
-- **Kwaliteit:** {{quality_reason}}
-- **Snelheid:** {{speed_reason}}  
-- **Expertise:** {{expertise_reason}}
+## Conclusie
+Voor meer informatie over {{service}}, neem contact met ons op via {{phone}}.`,
 
-## Veelgestelde Vragen
+    service: `# {{service_name}} {{city}} | {{company_name}}
 
-**Q: {{faq_question_1}}**
-A: {{faq_answer_1}}
+**{{service_name}} {{city}}**? {{opening_line}}
 
-**Q: {{faq_question_2}}**  
-A: {{faq_answer_2}}
+{{intro_paragraph}}
 
-## Klaar voor Actie?
+**{{experience_statement}}**
 
-{{conclusion_text}} Neem vandaag nog contact met ons op voor een **gratis offerte** zonder verplichtingen.
+[{{phone}}](tel:{{phone}})
 
-**📞 Direct bereikbaar:** {{phone}}
-**✉️ Of mail naar:** {{email}}
+## **{{service_name}}** {{city}}
 
-*{{company_name}} - Uw betrouwbare partner sinds {{founded_year}}*`,
+{{service_description_detailed}}
+
+### Onze **beloften**
+
+✅ {{promise_1_title}} - {{promise_1_description}}
+✅ {{promise_2_title}} - {{promise_2_description}}  
+✅ {{promise_3_title}} - {{promise_3_description}}
+
+### Werkwijze **{{company_name}}**
+
+**1. {{step_1_title}}**  
+{{step_1_description}}
+
+**2. {{step_2_title}}**  
+{{step_2_description}}
+
+**3. {{step_3_title}}**  
+{{step_3_description}}
+
+[{{phone}}](tel:{{phone}})`,
     
     landing: `# 🎯 {{headline}}
-
----
 
 ## 😰 Herkenbaar? Dit Probleem Heeft Iedereen...
 
@@ -134,8 +124,6 @@ A: {{faq_answer_2}}
 - ❌ {{negative_consequence_2}}  
 - ❌ {{negative_consequence_3}}
 
----
-
 ## ✨ Wij Hebben DE Oplossing!
 
 {{solution_description}}
@@ -145,38 +133,10 @@ A: {{faq_answer_2}}
 - ✅ {{positive_result_2}}
 - ✅ {{positive_result_3}}
 
----
-
-## 🏆 Waarom {{customer_count}}+ Klanten Voor Ons Kiezen
-
-### ⭐ {{benefit_1}}
-{{benefit_1_explanation}}
-
-### ⭐ {{benefit_2}}  
-{{benefit_2_explanation}}
-
-### ⭐ {{benefit_3}}
-{{benefit_3_explanation}}
-
----
-
-## 💬 Wat Onze Klanten Zeggen
-
-> *"{{testimonial_quote}}"*  
-> **- {{testimonial_name}}, {{testimonial_location}}**
-
-⭐⭐⭐⭐⭐ **{{rating}}/5 sterren** (gebaseerd op {{review_count}} reviews)
-
----
-
 ## 🚀 {{cta_text}}
 
-### 🎁 **BEPERKTE TIJD:** {{special_offer}}
-
 **📞 Bel direct:** [{{phone}}](tel:{{phone}})  
-**✉️ Of mail:** [{{email}}](mailto:{{email}})
-
-*Reactie binnen 2 uur gegarandeerd • {{guarantee_text}}*`,
+**✉️ Of mail:** [{{email}}](mailto:{{email}})`,
 
     email: `Onderwerp: {{subject}} | {{company_name}}
 
@@ -195,23 +155,10 @@ Beste {{first_name}},
 ✅ {{benefit_2}}
 ✅ {{benefit_3}}
 
-## Volgende stap
-{{next_step_instruction}}
-
-**Direct actie ondernemen?**
-📞 Bel: {{phone}}
-✉️ Mail: {{email}}
-🌐 Website: {{website}}
-
----
-
 Met vriendelijke groet,
 
 **{{sender_name}}**  
-{{job_title}}  
-{{company_name}}  
-
-*P.S. {{ps_message}}*`,
+{{company_name}}`,
 
     social: `🔥 {{headline}}
 
@@ -220,16 +167,10 @@ Met vriendelijke groet,
 💡 **Waarom dit belangrijk is:**
 {{why_important}}
 
-🎯 **Resultaat:**  
-{{expected_result}}
-
 👆 **Actie vereist:**
 {{call_to_action}}
 
-💬 Reageer met "{{response_keyword}}" voor meer info!
-
-#{{hashtag1}} #{{hashtag2}} #{{hashtag3}}
-#{{location_hashtag}} #{{industry_hashtag}}`
+#{{hashtag1}} #{{hashtag2}} #{{hashtag3}}`
   };
 
   const templates: Template[] = [
@@ -239,7 +180,7 @@ Met vriendelijke groet,
       description: "Geoptimaliseerd voor Nederlandse markt met lokale SEO focus",
       category: "blog",
       content: templateStarters.blog,
-      variables: ["title", "city", "topic", "service", "main_content", "phone"],
+      variables: ["title", "city", "service", "main_content", "phone"],
       tags: ["seo", "nederland", "lokaal", "blog"],
       isPublic: true,
       isPremium: false,
@@ -252,150 +193,9 @@ Met vriendelijke groet,
       id: "service-page-pro",
       name: "Dienstenpagina Pro - Lokale Dienstverlener",
       description: "Complete servicepagina template met prijzen, werkgebied, FAQ en contactgegevens",
-      category: "service" as const,
-    content: `# {{service_name}} {{city}} | {{company_name}}
-
-**{{service_name}} {{city}}**? {{opening_line}}
-
-{{intro_paragraph}}
-
-**{{experience_statement}}**
-
-[{{phone}}](tel:{{phone}})
-
----
-
-## **{{service_name}}** {{city}}
-
-{{service_description_detailed}}
-
-{{problem_statement}}
-
-{{solution_statement}}
-
-{{process_description}}
-
-{{result_statement}}
-
-{{risk_statement}}
-
-{{closing_cta_line}}
-
-[{{phone}}](tel:{{phone}})
-
----
-
-### Onze **beloften**
-
-#### {{promise_1_title}}
-{{promise_1_description}}
-
-#### {{promise_2_title}}
-{{promise_2_description}}
-
-#### {{promise_3_title}}
-{{promise_3_description}}
-
-#### {{promise_4_title}}
-{{promise_4_description}}
-
-#### {{promise_5_title}}
-{{promise_5_description}}
-
-#### {{promise_6_title}}
-{{promise_6_description}}
-
----
-
-![{{service_name}} {{city}}]({{hero_image_url}})
-
-### Onze Services
-
-- {{service_1}}
-- {{service_2}}
-- {{service_3}}
-- {{service_4}}
-- {{service_5}}
-- {{service_6}}
-
----
-
-### Gratis {{inspection_type}}
-
-[{{phone}}](tel:{{phone}})
-
-**Klantbeoordelingen:**
-
-⭐⭐⭐⭐⭐
-
-*{{review_1_text}}*
-
-**{{review_1_name}}**
-
-⭐⭐⭐⭐⭐
-
-*{{review_2_text}}*
-
-**{{review_2_name}}**
-
-⭐⭐⭐⭐⭐
-
-*{{review_3_text}}*
-
-**{{review_3_name}}**
-
----
-
-## Werkwijze **{{company_name}}**
-
-**1. {{step_1_title}}**  
-{{step_1_description}}
-
-**2. {{step_2_title}}**  
-{{step_2_description}}
-
-**3. {{step_3_title}}**  
-{{step_3_description}}
-
----
-
-## Bent u op zoek **naar een {{professional_title}}?**
-
-{{contact_invitation}}
-
-[Bel {{phone}}](tel:{{phone}})
-
----
-
-## {{service_name}} **laten uitvoeren**
-
-{{detailed_service_description}}
-
-{{safety_statement}}
-
-{{expertise_statement}}
-
-{{long_term_benefits}}
-
-{{consequences_warning}}
-
-Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op met {{company_name}} via [{{phone}}](tel:{{phone}}) om een afspraak te maken.
-
-[{{phone}}](tel:{{phone}})
-
----
-
-**Waarom kiezen voor {{company_name}}?**
-
-✅ {{years_experience}}+ jaar ervaring  
-✅ {{guarantee_years}} jaar garantie  
-✅ Gratis {{inspection_type}}  
-✅ Geen voorrijkosten  
-✅ 24/7 spoedservice  
-✅ {{customers_served}}+ tevreden klanten  
-
-**Direct contact:** [{{phone}}](tel:{{phone}})**`,
-      variables: ["service_title", "city", "company_name", "years_experience", "customer_count", "service_type", "service_description", "specialization_1", "specialization_2", "specialization_3", "specialization_4", "phone", "email"],
+      category: "service",
+      content: templateStarters.service,
+      variables: ["service_name", "city", "company_name", "phone", "email"],
       tags: ["diensten", "lokaal", "business", "contact"],
       isPublic: true,
       isPremium: true,
@@ -410,7 +210,7 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
       description: "Conversie-geoptimaliseerde landingspagina voor lokale diensten",
       category: "landing",
       content: templateStarters.landing,
-      variables: ["headline", "problem_description", "solution_description", "benefit_1", "benefit_2", "benefit_3", "cta_text", "phone", "email"],
+      variables: ["headline", "problem_description", "solution_description", "phone", "email"],
       tags: ["conversie", "landing", "service", "lokaal"],
       isPublic: true,
       isPremium: true,
@@ -431,12 +231,57 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
     return matchesSearch && matchesCategory;
   });
 
-  // Debug logging
-  console.log('Templates available:', templates.length);
-  console.log('Filtered templates:', filteredTemplates.length);
-  console.log('IsEditing:', isEditing);
-  console.log('Selected template:', selectedTemplate?.name);
-  console.log('Current step:', currentStep);
+  // Sample data voor preview
+  const sampleData = {
+    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden & Renovatie",
+    city: "Amsterdam", 
+    service: "dakdekker diensten",
+    company_name: "DakPro Amsterdam",
+    phone: "020-1234567",
+    email: "info@dakpro-amsterdam.nl",
+    service_name: "Dakrenovatie",
+    opening_line: "Is uw dak in Amsterdam toe aan een grondige renovatie?",
+    intro_paragraph: "Bij een dakrenovatie wordt uw volledige dak vervangen.",
+    experience_statement: "Met meer dan 30 jaar ervaring hebben we duizenden daken gerenoveerd.",
+    service_description_detailed: "Bij een dakrenovatie starten we met een grondige inspectie van uw huidige dak.",
+    promise_1_title: "Gratis dakinspectie",
+    promise_1_description: "Uitgebreide inspectie zonder kosten",
+    promise_2_title: "24/7 spoedservice", 
+    promise_2_description: "Altijd bereikbaar voor noodgevallen",
+    promise_3_title: "10 jaar garantie",
+    promise_3_description: "Volledige garantie op alle werkzaamheden",
+    step_1_title: "Maak een afspraak",
+    step_1_description: "Bespreek de situatie en maak een afspraak.",
+    step_2_title: "Gratis dakinspectie en vrijblijvende offerte", 
+    step_2_description: "Wij inspecteren uw dak en u ontvangt een vrijblijvende offerte.",
+    step_3_title: "Aan de slag",
+    step_3_description: "Wij voeren de werkzaamheden uit.",
+    headline: "🏠 Daklek? Wij Lossen Het Vandaag Nog Op!",
+    problem_description: "Heeft u last van een lekkend dak, losliggende dakpannen of verouderde dakbedekking?",
+    negative_consequence_1: "Waterschade kan oplopen tot €25.000+",
+    negative_consequence_2: "Schimmelvorming bedreigt uw gezondheid", 
+    negative_consequence_3: "Waardevermindering van uw woning met 10-15%",
+    solution_description: "Onze gecertificeerde dakspecialisten komen binnen 4 uur ter plaatse.",
+    positive_result_1: "100% waterdicht dak met 15 jaar garantie",
+    positive_result_2: "Waardeverhoging woning tot €35.000",
+    positive_result_3: "Energiebesparing tot 40% door isolatie",
+    cta_text: "Bel Nu Voor Gratis Spoedinsectie",
+    subject: "Uw dakprobleem opgelost binnen 24 uur - Gratis inspectie",
+    first_name: "Meneer/Mevrouw",
+    intro_text: "Wij begrijpen dat dakproblemen stress veroorzaken.",
+    reason_for_email: "U heeft recent gezocht naar dakdekkers in Amsterdam.",
+    main_message: "Onze gecertificeerde dakspecialisten staan klaar om uw dakprobleem vandaag nog op te lossen.",
+    benefit_1: "24/7 Spoeddienst - Ook in weekenden",
+    benefit_2: "15 jaar garantie op alle werkzaamheden", 
+    benefit_3: "Gratis inspectie & offerte binnen 2 uur",
+    sender_name: "Piet Janssen",
+    description: "🏠 Daklek in Amsterdam? Onze experts lossen het binnen 4 uur op! ⚡",
+    why_important: "Elke dag uitstel kan duizenden euro's extra schade betekenen",
+    call_to_action: "Bel 020-1234567 voor gratis spoedinsectie",
+    hashtag1: "dakdekkeramsterdam",
+    hashtag2: "daklekreparatie", 
+    hashtag3: "spoeddienst"
+  };
 
   const extractVariables = (content: string): string[] => {
     const matches = content.match(/\{\{([^}]+)\}\}/g);
@@ -445,45 +290,37 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
     return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
   };
 
-  const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        return !!(editingTemplate.name && editingTemplate.category);
-      case 2:
-        return !!(editingTemplate.content && editingTemplate.content.length > 10);
-      case 3:
-        return true; // Variables are optional
-      case 4:
-        return true; // Settings are optional
-      case 5:
-        return true; // Preview is just viewing
-      default:
-        return false;
-    }
-  };
-
-  const getStepStatus = (step: number) => {
-    if (step < currentStep) return 'completed';
-    if (step === currentStep) return 'current';
-    return 'upcoming';
-  };
-
-  const insertVariable = (variable: string) => {
-    const textarea = document.getElementById('template-content') as HTMLTextAreaElement;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const currentContent = editingTemplate.content || '';
-      const newContent = currentContent.substring(0, start) + `{{${variable}}}` + currentContent.substring(end);
+  const renderPreview = (content: string, withSampleData: boolean = false) => {
+    if (!content) return '';
+    
+    let previewContent = content;
+    
+    if (withSampleData) {
+      Object.entries(sampleData).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+        previewContent = previewContent.replace(regex, `<span class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">${value}</span>`);
+      });
       
-      setEditingTemplate(prev => ({ ...prev, content: newContent }));
-      
-      // Set cursor position after inserted variable
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + variable.length + 4, start + variable.length + 4);
-      }, 0);
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed border-orange-300">Ontbreekt: $1</span>');
+    } else {
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md font-mono text-xs">{{$1}}</span>');
     }
+    
+    // Convert markdown-style formatting
+    previewContent = previewContent
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground border-b pb-2">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground mt-6">$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground mt-4">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+      .replace(/^- (.+)$/gm, '<li class="ml-6 mb-1 list-disc">$1</li>')
+      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded"><span class="text-green-600 font-medium">✅</span> <span>$1</span></div>')
+      .replace(/^❌ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-red-50 rounded"><span class="text-red-600 font-medium">❌</span> <span>$1</span></div>')
+      .replace(/👆 (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-blue-50 rounded"><span class="text-blue-600 font-medium">👆</span> <span>$1</span></div>')
+      .replace(/\n\n/g, '<div class="mb-4"></div>')
+      .replace(/\n/g, '<br/>');
+    
+    return previewContent;
   };
 
   const startNewTemplate = (category?: string, withStarter: boolean = false) => {
@@ -499,254 +336,16 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
       isPublic: true,
       isPremium: false
     });
-    setCurrentStep(1);
     setIsEditing(true);
     setIsDialogOpen(false);
+    setActiveTab("editor");
     
     toast({
-      title: "Wizard gestart!",
+      title: "Template wizard gestart!",
       description: withStarter ? 
-        `Template wizard gestart met ${category} starter` : 
-        "Template wizard gestart met leeg template"
+        `Template gestart met ${category} starter` : 
+        "Template gestart met leeg template"
     });
-  };
-
-  // Uitgebreide sample data voor professionele preview inclusief service pagina
-  const sampleData = {
-    // Basis informatie
-    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden & Renovatie",
-    city: "Amsterdam", 
-    service: "dakdekker diensten",
-    company_name: "DakPro Amsterdam",
-    phone: "020-1234567",
-    email: "info@dakpro-amsterdam.nl",
-    website: "www.dakpro-amsterdam.nl",
-    
-    // Service pagina specifiek - gebaseerd op echte voorbeelden
-    service_name: "Dakrenovatie",
-    opening_line: "Is uw dak in Amsterdam toe aan een grondige renovatie? Misschien wilt u uw dak vernieuwen omdat het oud is en vatbaarder wordt voor lekkages en andere problemen. In dat geval is een dakrenovatie de ideale oplossing.",
-    intro_paragraph: "Bij een dakrenovatie wordt uw volledige dak vervangen. Deze renovatieoptie is bij uitstek geschikt voor oudere daken die een verhoogd risico op lekkages en storingen met zich meebrengen. U wilt zich tenslotte veilig voelen onder uw dak, vooral tijdens het slapen.",
-    experience_statement: "Met meer dan 30 jaar ervaring hebben we duizenden daken gerenoveerd. Ons deskundige team staat klaar om uw dak te transformeren.",
-    
-    service_description_detailed: "Bij een dakrenovatie starten we met een grondige inspectie van uw huidige dak. Op basis daarvan stellen we een gedetailleerd plan van aanpak op. Vervolgens verwijderen we de oude dakbedekking en installeren we het nieuwe dak. Tot slot voeren we een nauwkeurige controle uit om de kwaliteit te waarborgen.",
-    problem_statement: "Met een dakrenovatie kunt u weer tientallen jaren zonder zorgen onder uw dak wonen. Uw vernieuwde dak vermindert het risico op scheuren en lekkages aanzienlijk. Bovendien neemt het instortingsgevaar drastisch af.",
-    solution_statement: "Het is belangrijk om te benadrukken dat het negeren van een dakrenovatie ernstige gevolgen kan hebben. Veel mensen die hun dak niet renoveren, worden uiteindelijk geconfronteerd met lekkages, wat kan leiden tot kortsluiting of brand.",
-    process_description: "Tijdens een dakrenovatie wordt uw complete dak vernieuwd. Wij zorgen voor een professionele aanpak van A tot Z.",
-    result_statement: "Bovendien gaat de isolatiewerking van het dakmateriaal aanzienlijk achteruit of gaat volledig verloren.",
-    risk_statement: "Is uw dak verouderd en wilt u het volledig laten vervangen? Kies dan voor een professionele dakrenovatie Amsterdam!",
-    closing_cta_line: "Neem vandaag nog contact op met DakPro Amsterdam om een afspraak te maken.",
-    
-    // Beloften (zoals echte website)
-    promise_1_title: "Gratis dakinspectie",
-    promise_1_description: "Uitgebreide inspectie zonder kosten",
-    promise_2_title: "24/7 spoedservice", 
-    promise_2_description: "Altijd bereikbaar voor noodgevallen",
-    promise_3_title: "10 jaar garantie",
-    promise_3_description: "Volledige garantie op alle werkzaamheden",
-    promise_4_title: "Snel geholpen",
-    promise_4_description: "Snelle reactie en planning",
-    promise_5_title: "Geen voorrijkosten",
-    promise_5_description: "Offerte en inspectie altijd gratis",
-    promise_6_title: "30+ jaar ervaring",
-    promise_6_description: "Decennia aan vakmanschap en expertise",
-    
-    // Services lijst
-    service_1: "Dakdekker Amsterdam",
-    service_2: "Dakbedekking",
-    service_3: "Dakinspectie", 
-    service_4: "Daklekkage",
-    service_5: "Dakrenovatie",
-    service_6: "Dakreparatie",
-    
-    inspection_type: "Dakinspectie",
-    professional_title: "dakdekker",
-    
-    // Echte klantreviews stijl
-    review_1_text: "Ik had te maken met een lekkage in mijn dak. Daarom heb ik contact opgenomen met DakPro Amsterdam. Ze hebben de lekkage snel gevonden en direct gerepareerd. Ik kan dit bedrijf zeker aan iedereen aanbevelen.",
-    review_1_name: "Gerard",
-    review_2_text: "Ik heb het dak van mijn schuur laten vervangen door DakPro Amsterdam. Eerst heb ik een vrijblijvende offerte gekregen. Nadat ik akkoord ging konden ze snel langskomen. Alle afspraken worden nagekomen! Uitstekende service!",
-    review_2_name: "Marianne",
-    review_3_text: "Dik tevreden over de uitgevoerde werkzaamheden aan mijn dak door dit bedrijf! Zeer professioneel en tevens erg klantvriendelijk.",
-    review_3_name: "Mike",
-    
-    // Werkwijze (zoals echte website)
-    step_1_title: "Maak een afspraak",
-    step_1_description: "Bespreek de situatie en maak een afspraak.",
-    step_2_title: "Gratis dakinspectie en vrijblijvende offerte", 
-    step_2_description: "Wij inspecteren uw dak en u ontvangt een vrijblijvende offerte.",
-    step_3_title: "Aan de slag",
-    step_3_description: "Wij voeren de werkzaamheden uit.",
-    
-    contact_invitation: "Neem vrijblijvend contact op voor persoonlijk advies.",
-    
-    detailed_service_description: "Bent u in Amsterdam op zoek naar een remedie voor uw gedateerde dak? Een dakrenovatie is de ideale oplossing als uw huidige dak te kampen heeft met lekkages of andere complicaties. Tijdens een dakrenovatie wordt uw complete dak vernieuwd.",
-    safety_statement: "Misschien voelt uw huis niet meer als de veilige haven die het ooit was. Maar wees gerust, wij staan klaar om u bij te staan! Een dakrenovatie betekent een complete vervanging van uw dakbedekking, wat u de kans geeft om weer jarenlang zorgeloos te leven.",
-    expertise_statement: "Als ervaren dakdekkers hebben wij in Amsterdam een rijke geschiedenis met de renovatie van diverse soorten daken. Onze specialisten hebben meer dan 30 jaar expertise in dakrenovaties en hebben reeds duizenden daken gerevitaliseerd.",
-    long_term_benefits: "Met een nieuwe dakbedekking kunt u decennia lang zorgeloos wonen onder uw dak.",
-    consequences_warning: "Uitstel kan leiden tot kostbare waterschade, schimmelvorming en structurele problemen.",
-    
-    guarantee_years: "10",
-    customers_served: "5000",
-    hero_image_url: "/api/placeholder/800/400",
-    
-    // Specialisaties
-    specialization_1: "Daklekkage reparatie & noodhulp",
-    specialization_2: "Complete dakbedekking (pannen, bitumen, EPDM)",
-    specialization_3: "Dakisolatie & energiezuinige oplossingen", 
-    specialization_4: "Dakgoot installatie & onderhoud",
-    
-    // Werkgebied - verwijderd duplicates
-    // Prijzen & diensten - verwijderd duplicates  
-    // Werkwijze stappen - verwijderd duplicates
-    
-    // Contact & locatie
-    address: "Herengracht 123",
-    postal_code: "1015 BE",
-    opening_hours: "Ma-Vr: 07:00-18:00 | Za: 08:00-16:00",
-    whatsapp: "31201234567",
-    emergency_phone: "06-12345678",
-    response_time: "2 uur",
-    response_guarantee: "2 uur",
-    
-    // Landing page specifiek
-    headline: "🏠 Daklek? Wij Lossen Het Vandaag Nog Op!",
-    problem_description: "Heeft u last van een lekkend dak, losliggende dakpannen of verouderde dakbedekking? Dit kan leiden tot kostbare waterschade, schimmel en structurele problemen aan uw woning.",
-    solution_description: "Onze gecertificeerde dakspecialisten komen binnen 4 uur ter plaatse en bieden directe noodoplossingen. Van kleine reparaties tot complete dakrenovaties - wij zorgen voor een waterdicht resultaat.",
-    
-    // Verbeterde benefits
-    benefit_1: "24/7 Spoeddienst - Ook in weekenden",
-    benefit_1_explanation: "Dakproblemen wachten niet op kantooruren. Onze nooddienst is 24/7 bereikbaar voor urgente reparaties.",
-    benefit_1_description: "Onze spoeddienst is 24 uur per dag bereikbaar voor noodgevallen. Weekend, avond of feestdag - wij staan altijd voor u klaar.",
-    benefit_2: "15 jaar garantie op alle werkzaamheden", 
-    benefit_2_explanation: "Wij staan achter ons werk met de langste garantieperiode in Amsterdam - 15 jaar volledige dekking.",
-    benefit_2_description: "Als enige in Amsterdam bieden wij 15 jaar volledige garantie op materiaal én vakmanschap. Uw zekerheid is onze trots.",
-    benefit_3: "Gratis inspectie & offerte binnen 2 uur",
-    benefit_3_explanation: "Onze experts komen langs voor een grondige dakinsectie en uitgebreide offerte, volledig kosteloos.",
-    benefit_3_description: "Binnen 2 uur na uw telefoontje staat onze specialist bij u op de stoep voor een gratis, vrijblijvende inspectie.",
-    benefit_4: "Ervaren vakmanschap sinds 1998",
-    benefit_4_description: "Met 25 jaar ervaring en meer dan 5.000 tevreden klanten bent u verzekerd van vakkundig en betrouwbaar werk.",
-    
-    // Testimonials uitgebreid
-    testimonial_1: "Binnen 3 uur was mijn daklek verholpen. Professioneel, snel en netjes opgeruimd. Absolute aanrader!",
-    customer_1: "Maria van der Berg",
-    location_1: "Amsterdam Zuid",
-    testimonial_2: "Complete dakvernieuwing volgens planning en budget. Team werkt zeer netjes en communiceert uitstekend.",
-    customer_2: "Johan Vermeer", 
-    location_2: "Amstelveen",
-    
-    // FAQ uitgebreid  
-    faq_question_1: "Hoe snel kunnen jullie langskomen bij een noodgeval?",
-    faq_answer_1: "Bij spoedgevallen komen we binnen 2-4 uur ter plaatse, ook 's avonds en in weekenden. Voor normale werkzaamheden plannen we binnen 48 uur een afspraak.",
-    faq_question_2: "Welke garantie krijg ik op de werkzaamheden?", 
-    faq_answer_2: "Wij geven 15 jaar garantie op alle dakwerkzaamheden. Dit is de langste garantieperiode in Amsterdam en toont ons vertrouwen in de kwaliteit.",
-    faq_question_3: "Werken jullie ook met verzekeringen?",
-    faq_answer_3: "Ja, wij hebben ervaring met alle grote verzekeraars en helpen u graag bij het afhandelen van schadeformulieren en declaraties.",
-    faq_question_4: "Kan ik een kostenloze offerte krijgen?",
-    faq_answer_4: "Absoluut! Elke inspectie en offerte is volledig gratis en vrijblijvend. U betaalt alleen als u ons de opdracht geeft.",
-    
-    // Gevolgen en resultaten
-    negative_consequence_1: "Waterschade kan oplopen tot €25.000+",
-    negative_consequence_2: "Schimmelvorming bedreigt uw gezondheid", 
-    negative_consequence_3: "Waardevermindering van uw woning met 10-15%",
-    positive_result_1: "100% waterdicht dak met 15 jaar garantie",
-    positive_result_2: "Waardeverhoging woning tot €35.000",
-    positive_result_3: "Energiebesparing tot 40% door isolatie",
-    
-    // CTA en aanbiedingen
-    cta_text: "Bel Nu Voor Gratis Spoedinsectie", 
-    special_offer: "Geen voorrijdkosten + 20% korting bij opdracht deze maand",
-    customer_count: "1.200",
-    rating: "4.9",
-    review_count: "347",
-    guarantee_text: "15 jaar garantie & tevredenheidsgarantie",
-    
-    // Testimonial
-    testimonial_quote: "Binnen 3 uur was mijn daklek verholpen. Professioneel, snel en netjes opgeruimd. Absolute aanrader!",
-    testimonial_name: "Maria van der Berg",
-    testimonial_location: "Amsterdam Zuid",
-    
-    // Blog specifiek  
-    topic: "daklekkage repareren",
-    main_topic: "Daklekkage Herkennen & Voorkomen",
-    main_content: "Een lekkend dak is meer dan alleen een ongemak - het kan binnen enkele maanden duizenden euro's schade aanrichten. Vroege signalen zijn: vochtige plekken op het plafond, schimmelgeur, of dakpannen die zijn verschoven na storm. Onze ervaring leert dat 80% van de dakproblemen voorkomen had kunnen worden met tijdig onderhoud.",
-    years_experience: "25",
-    founded_year: "1998",
-    quality_reason: "Alleen A-merk materialen en gecertificeerde monteurs",
-    speed_reason: "Gemiddelde responstijd van 2,5 uur binnen Amsterdam", 
-    expertise_reason: "Gespecialiseerd in monumentale panden én moderne woningen",
-    conclusion_text: "Wacht niet tot een klein probleem een grote reparatie wordt.",
-    
-    // Email specifiek
-    subject: "Uw dakprobleem opgelost binnen 24 uur - Gratis inspectie",
-    first_name: "Meneer/Mevrouw",
-    intro_text: "Wij begrijpen dat dakproblemen stress veroorzaken. Daarom bieden wij u een complete oplossing zonder zorgen.",
-    reason_for_email: "U heeft recent gezocht naar dakdekkers in Amsterdam, en wij willen u helpen met betrouwbare en snelle service.",
-    main_message: "Onze gecertificeerde dakspecialisten staan klaar om uw dakprobleem vandaag nog op te lossen. Van kleine reparaties tot complete renovaties - wij regelen alles van A tot Z.",
-    next_step_instruction: "Bel ons voor een gratis inspectie en ontvang binnen 2 uur een gedetailleerde offerte.",
-    sender_name: "Piet Janssen",
-    job_title: "Senior Dakspecialist",
-    ps_message: "Bij opdracht deze maand: geen voorrijkosten én 15% korting op alle werkzaamheden.",
-    
-    // Social media specifiek
-    description: "🏠 Daklek in Amsterdam? Onze experts lossen het binnen 4 uur op! ⚡",
-    why_important: "Elke dag uitstel kan duizenden euro's extra schade betekenen",
-    expected_result: "Waterdicht dak + 15 jaar garantie + geen stress meer",
-    call_to_action: "Bel 020-1234567 voor gratis spoedinsectie", 
-    response_keyword: "DAKLEK",
-    hashtag1: "dakdekkeramsterdam",
-    hashtag2: "daklekreparatie", 
-    hashtag3: "spoeddienst",
-    location_hashtag: "amsterdam",
-    industry_hashtag: "dakkappellen"
-  };
-
-  const renderPreview = (content: string, withSampleData: boolean = false) => {
-    if (!content) return '';
-    
-    let previewContent = content;
-    
-    if (withSampleData) {
-      // Debug logging
-      console.log('Rendering with sample data:', withSampleData);
-      console.log('Original content:', content.substring(0, 100) + '...');
-      
-      // Replace variables with sample data
-      Object.entries(sampleData).forEach(([key, value]) => {
-        const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
-        const beforeCount = (previewContent.match(regex) || []).length;
-        previewContent = previewContent.replace(regex, `<span class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">${value}</span>`);
-        if (beforeCount > 0) {
-          console.log(`Replaced ${beforeCount} instances of {{${key}}} with "${value}"`);
-        }
-      });
-      
-      // Replace any remaining variables with highlighted placeholders  
-      const remainingVars = previewContent.match(/\{\{([^}]+)\}\}/g);
-      if (remainingVars) {
-        console.log('Remaining unmatched variables:', remainingVars);
-      }
-      
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed border-orange-300">Ontbreekt: $1</span>');
-    } else {
-      // Just highlight variable names
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md font-mono text-xs">{{$1}}</span>');
-    }
-    
-    // Convert markdown-style formatting with better styling
-    previewContent = previewContent
-      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground border-b pb-2">$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground mt-6">$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground mt-4">$1</h3>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-      .replace(/^- (.+)$/gm, '<li class="ml-6 mb-1 list-disc">$1</li>')
-      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded"><span class="text-green-600 font-medium">✅</span> <span>$1</span></div>')
-      .replace(/^👉 (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-blue-50 rounded"><span class="text-blue-600 font-medium">👉</span> <span>$1</span></div>')
-      .replace(/\n\n/g, '<div class="mb-4"></div>')
-      .replace(/\n/g, '<br/>');
-    
-    console.log('Final preview content:', previewContent.substring(0, 200) + '...');
-    return previewContent;
   };
 
   const handleSaveTemplate = () => {
@@ -768,7 +367,7 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
     
     setIsEditing(false);
     setEditingTemplate({});
-    setCurrentStep(1);
+    setActiveTab("browse");
   };
 
   const handleUseTemplate = (template: Template) => {
@@ -781,996 +380,444 @@ Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-secondary/5">
-      <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
-        {/* Hero Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl shadow-lg">
-              <FileText className="h-12 w-12 text-primary" />
+      <div className="container mx-auto p-6 max-w-7xl">
+        {/* Modern Header */}
+        <div className="bg-gradient-to-r from-card via-card/95 to-card/90 backdrop-blur-sm rounded-2xl border border-border/50 p-6 mb-8 shadow-lg">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="p-3 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl">
+                  <Layers className="h-8 w-8 text-primary" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Template Studio
+                </h1>
+                <p className="text-muted-foreground">
+                  Professionele templates voor maximale conversie
+                </p>
+              </div>
             </div>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-4">
-            Template Editor Pro
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Maak professionele, converterende templates met onze geavanceerde wizard. 
-            <br className="hidden md:block" />
-            <span className="font-medium text-primary">Van concept naar conversie in minuten</span>
-          </p>
-          <div className="flex justify-center mt-6">
-            <Badge className="px-6 py-2 text-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200">
-              <Crown className="h-4 w-4 mr-2" />
-              Pro Features Unlocked
-            </Badge>
+
+            <div className="flex items-center gap-3">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nieuw Template
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader className="text-center pb-6">
+                    <DialogTitle className="text-2xl font-bold">
+                      Template Wizard
+                    </DialogTitle>
+                    <DialogDescription>
+                      Kies een professioneel template of begin helemaal opnieuw
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-8">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {Object.entries(templateStarters).map(([category, content]) => (
+                        <Card 
+                          key={category} 
+                          className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
+                          onClick={() => startNewTemplate(category, true)}
+                        >
+                          <CardContent className="p-6 text-center">
+                            <div className="text-4xl mb-3">
+                              {category === 'blog' ? '📝' :
+                               category === 'service' ? '🏢' :
+                               category === 'landing' ? '🎯' :
+                               category === 'email' ? '📧' : '📱'}
+                            </div>
+                            <h4 className="font-semibold mb-2">
+                              {category === 'blog' ? 'Blog Post Pro' :
+                               category === 'service' ? 'Servicepagina' :
+                               category === 'landing' ? 'Landing Page' :
+                               category === 'email' ? 'Email Template' : 'Social Media'}
+                            </h4>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              {category === 'blog' ? 'SEO-geoptimaliseerde artikelen' :
+                               category === 'service' ? 'Complete servicepagina met contact' :
+                               category === 'landing' ? 'High-converting paginas' :
+                               category === 'email' ? 'Professionele email templates' : 'Sociale media content'}
+                            </p>
+                            <Button size="sm" className="w-full" variant="outline">
+                              Gebruik Template
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center border-t pt-6">
+                      <Button 
+                        variant="ghost"
+                        onClick={() => startNewTemplate()}
+                        className="w-full max-w-md"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Start met Leeg Template
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4 mb-12">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                size="lg" 
-                className="px-8 py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => setIsDialogOpen(true)}
-              >
-                <Plus className="h-5 w-5 mr-3" />
-                Nieuw Template Maken
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader className="text-center pb-6">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl">
-                    <Wand2 className="h-8 w-8 text-primary" />
-                  </div>
-                </div>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Template Wizard - Start je Project
-                </DialogTitle>
-                <DialogDescription className="text-base text-muted-foreground">
-                  Kies een professioneel template of begin helemaal opnieuw. Elke optie is geoptimaliseerd voor maximale conversie.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-8">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {Object.entries(templateStarters).map(([category, content]) => (
+        {/* Main Interface with Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-fit">
+            <TabsTrigger value="browse" className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Bladeren
+            </TabsTrigger>
+            <TabsTrigger value="editor" className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Editor
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Browse Templates Tab */}
+          <TabsContent value="browse" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Search & Filter Sidebar */}
+              <div className="lg:col-span-3">
+                <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Filter className="h-5 w-5 text-primary" />
+                      Filters
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <Input
+                        placeholder="🔍 Zoek templates..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="border-2 focus:border-primary/50"
+                      />
+                      
+                      <Select value={filterCategory} onValueChange={setFilterCategory}>
+                        <SelectTrigger className="border-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background/95 backdrop-blur-sm">
+                          <SelectItem value="all">🎯 Alle categorieën</SelectItem>
+                          <SelectItem value="blog">📝 Blog Posts</SelectItem>
+                          <SelectItem value="service">🏢 Dienstenpagina's</SelectItem>
+                          <SelectItem value="landing">🎯 Landing Pages</SelectItem>
+                          <SelectItem value="email">📧 Email</SelectItem>
+                          <SelectItem value="social">📱 Social Media</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Templates Grid */}
+              <div className="lg:col-span-9">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredTemplates.map((template) => (
                     <Card 
-                      key={category} 
-                      className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:border-primary/30 bg-gradient-to-br from-card to-card/50 overflow-hidden relative"
-                      onClick={() => startNewTemplate(category, true)}
+                      key={template.id} 
+                      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-card to-card/80 ${
+                        selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
+                      }`}
+                      onClick={() => {
+                        setSelectedTemplate(template);
+                        setActiveTab("preview");
+                      }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <CardContent className="p-6 text-center relative z-10">
-                        <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
-                          {category === 'blog' ? '📝' :
-                           category === 'service' ? '🏢' :
-                           category === 'landing' ? '🎯' :
-                           category === 'email' ? '📧' : '📱'}
-                        </div>
-                        <h4 className="font-bold text-lg mb-3 text-foreground">
-                          {category === 'blog' ? 'Blog Post Pro' :
-                           category === 'service' ? 'Dienstenpagina Expert' :
-                           category === 'landing' ? 'Landing Page Expert' :
-                           category === 'email' ? 'Email Marketing' : 'Social Media Boost'}
-                        </h4>
-                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen die ranking verzekeren' :
-                           category === 'service' ? 'Complete servicepagina met prijzen, FAQ en contactgegevens' :
-                           category === 'landing' ? 'High-converting paginas met bewezen CTA structuur' :
-                           category === 'email' ? 'Professionele templates met hoge open rates' : 'Virale content templates met trending hashtags'}
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          <div className="flex justify-center gap-1 mb-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            ))}
-                            <span className="text-xs text-muted-foreground ml-1">4.9/5</span>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary group-hover:shadow-lg"
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <Badge 
+                            variant={template.isPremium ? "default" : "secondary"} 
+                            className="text-xs"
                           >
-                            <Target className="h-4 w-4 mr-2" />
-                            Start Template
-                          </Button>
+                            {template.category}
+                            {template.isPremium && <Crown className="h-3 w-3 ml-1" />}
+                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span className="text-xs">{template.rating}</span>
+                          </div>
+                        </div>
+                        
+                        <h4 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                          {template.name}
+                        </h4>
+                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                          {template.description}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{template.usageCount} gebruikt</span>
+                          <div className="flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            {template.variables.length} variabelen
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
-                
-                <div className="text-center border-t pt-6 bg-gradient-to-r from-secondary/5 to-primary/5 rounded-lg p-6">
-                  <div className="mb-4">
-                    <Code className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  </div>
-                  <h4 className="font-semibold text-lg mb-2">Custom Template</h4>
-                  <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-                    Voor gevorderde gebruikers: Begin helemaal opnieuw zonder voorbeeldcontent en bouw je eigen unieke template
-                  </p>
-                  <Button 
-                    variant="outline"
-                    onClick={() => startNewTemplate()}
-                    className="px-8 py-3 border-2 hover:bg-muted/50"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Blank Canvas Maken
-                  </Button>
-                </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+            </div>
+          </TabsContent>
 
-        {/* Main Content Grid - Enhanced Layout */}
-        <div className="grid gap-8 xl:grid-cols-4">
-          {/* Template Library - Enhanced */}
-          <Card className="xl:col-span-1 bg-gradient-to-br from-card to-card/50 shadow-elegant border-0">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3 text-lg">
-                <div className="p-2 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                Template Galerie
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Kies uit professionele templates of maak je eigen
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <Input
-                  placeholder="🔍 Zoek professionele templates..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border-2 focus:border-primary/50"
-                />
-                
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="border-2 focus:border-primary/50">
-                    <SelectValue placeholder="Filter categorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                  <SelectItem value="all">🎯 Alle categorieën</SelectItem>
-                    <SelectItem value="blog">📝 Blog Posts</SelectItem>
-                    <SelectItem value="service">🏢 Dienstenpagina's</SelectItem>
-                    <SelectItem value="landing">🎯 Landing Pages</SelectItem>
-                    <SelectItem value="email">📧 Email</SelectItem>
-                    <SelectItem value="social">📱 Social Media</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                {filteredTemplates.map((template) => (
-                  <Card 
-                    key={template.id} 
-                    className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-background to-muted/20 ${
-                      selectedTemplate?.id === template.id ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : ''
-                    }`}
-                    onClick={() => setSelectedTemplate(template)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Badge 
-                            variant={template.isPremium ? "default" : "outline"} 
-                            className={`text-xs font-medium ${template.isPremium ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : ''}`}
-                          >
-                            {template.category}
-                          </Badge>
-                          {template.isPremium && (
-                            <Crown className="h-4 w-4 text-amber-600" />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="text-sm font-medium">{template.rating}</span>
-                        </div>
-                      </div>
-                      
-                      <h4 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
-                        {template.name}
-                      </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-                        {template.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3 text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Target className="h-3 w-3" />
-                            {template.usageCount}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Zap className="h-3 w-3" />
-                            {template.variables.length}
-                          </span>
-                        </div>
-                        {selectedTemplate?.id === template.id && (
-                          <Badge className="bg-primary/10 text-primary border-primary/20">
-                            Geselecteerd
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                
-                {filteredTemplates.length === 0 && (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                    <p className="text-sm font-medium text-muted-foreground">Geen templates gevonden</p>
-                    <p className="text-xs text-muted-foreground mt-1">Probeer een andere zoekopdracht</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Enhanced Editor/Preview Panel */}
-          <div className="xl:col-span-3">
-            <Card className="h-full bg-gradient-to-br from-card to-card/50 shadow-elegant border-0">
-              <CardHeader className="pb-4">
+          {/* Editor Tab */}
+          <TabsContent value="editor" className="space-y-6">
+            <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
-                      {isEditing ? (
-                        <Edit className="h-5 w-5 text-primary" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-primary" />
-                      )}
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Edit className="h-5 w-5 text-primary" />
+                      Template Editor
+                    </CardTitle>
+                    <CardDescription>
+                      {editingTemplate.name || "Nieuw template maken"}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setActiveTab("preview")}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button onClick={handleSaveTemplate}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Opslaan
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Template Info */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="template-name">Template Naam</Label>
+                      <Input
+                        id="template-name"
+                        value={editingTemplate.name || ""}
+                        onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Bijv. SEO Blog Post - Nederland"
+                      />
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {isEditing ? (selectedTemplate ? 'Template Editor Pro' : 'Nieuw Template Maken') : 'Template Preview'}
-                      </CardTitle>
-                      <CardDescription className="text-sm">
-                        {selectedTemplate?.name || editingTemplate.name || 'Selecteer een template om te beginnen'}
-                      </CardDescription>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="template-description">Beschrijving</Label>
+                      <Textarea
+                        id="template-description"
+                        value={editingTemplate.description || ""}
+                        onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Korte beschrijving van wat dit template doet..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="template-category">Categorie</Label>
+                      <Select value={editingTemplate.category || "blog"} onValueChange={(value) => setEditingTemplate(prev => ({ ...prev, category: value as any }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="blog">📝 Blog Post</SelectItem>
+                          <SelectItem value="service">🏢 Servicepagina</SelectItem>
+                          <SelectItem value="landing">🎯 Landing Page</SelectItem>
+                          <SelectItem value="email">📧 Email</SelectItem>
+                          <SelectItem value="social">📱 Social Media</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="template-tags">Tags (gescheiden door komma's)</Label>
+                      <Input
+                        id="template-tags"
+                        value={editingTemplate.tags?.join(', ') || ""}
+                        onChange={(e) => setEditingTemplate(prev => ({ 
+                          ...prev, 
+                          tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                        }))}
+                        placeholder="seo, lokaal, dienstverlening"
+                      />
                     </div>
                   </div>
-                
-                <div className="flex gap-2">
-                  {!isEditing && selectedTemplate && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPreviewMode(!previewMode)}
-                      >
-                        {previewMode ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUseTemplate(selectedTemplate)}
-                      >
-                        <Copy className="h-4 w-4 mr-1" />
-                        Kopieer
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setEditingTemplate(selectedTemplate);
-                          setCurrentStep(1);
-                          setIsEditing(true);
-                        }}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Bewerk
-                      </Button>
-                    </>
-                  )}
-                  
-                  {isEditing && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditingTemplate({});
-                          setCurrentStep(1);
-                        }}
-                      >
-                        Annuleer
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-6">
-              {isEditing ? (
-                <div className="space-y-6">
-                  {/* Step Progress Indicator */}
-                  <div className="flex items-center justify-between">
-                    {steps.map((step, index) => (
-                      <div key={step.id} className="flex items-center">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
-                          getStepStatus(step.id) === 'completed' 
-                            ? 'bg-primary text-primary-foreground border-primary' 
-                            : getStepStatus(step.id) === 'current'
-                            ? 'bg-primary/10 text-primary border-primary'
-                            : 'bg-background text-muted-foreground border-muted-foreground'
-                        }`}>
-                          {getStepStatus(step.id) === 'completed' ? (
-                            <CheckCircle className="h-5 w-5" />
-                          ) : (
-                            <step.icon className="h-4 w-4" />
-                          )}
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div className={`w-16 h-0.5 ml-2 ${
-                            getStepStatus(step.id) === 'completed' ? 'bg-primary' : 'bg-muted'
-                          }`} />
+
+                  {/* Variables Panel */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Gevonden Variabelen</Label>
+                      <div className="mt-2 p-3 bg-muted/50 rounded-lg min-h-[100px]">
+                        {extractVariables(editingTemplate.content || "").length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {extractVariables(editingTemplate.content || "").map(variable => (
+                              <Badge key={variable} variant="secondary" className="text-xs">
+                                {variable}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            Geen variabelen gevonden. Gebruik {"{{"} {"}"} syntax om variabelen toe te voegen.
+                          </p>
                         )}
                       </div>
-                    ))}
-                  </div>
-                  
-                  {/* Step Titles */}
-                  <div className="text-center space-y-1">
-                    <h3 className="text-xl font-semibold">
-                      {steps[currentStep - 1]?.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {steps[currentStep - 1]?.description}
-                    </p>
-                  </div>
+                    </div>
 
-                  {/* Step Content */}
-                  <div className="min-h-[400px]">
-                    {/* Step 1: Template Info */}
-                    {currentStep === 1 && (
-                      <div className="space-y-6 animate-fade-in">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                          <div className="flex items-start gap-3">
-                            <Lightbulb className="h-5 w-5 text-blue-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-blue-900">Template Starter</h4>
-                              <p className="text-sm text-blue-700 mb-3">
-                                Begin snel met een vooraf gemaakte template structuur
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {Object.entries(templateStarters).map(([category, content]) => (
-                                  <Button
-                                    key={category}
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setEditingTemplate(prev => ({
-                                        ...prev,
-                                        content: content,
-                                        category: category as any
-                                      }));
-                                      setCurrentStep(2);
-                                      toast({
-                                        title: "Template starter geladen!",
-                                        description: `${category} template is toegevoegd aan je content`
-                                      });
-                                    }}
-                                    className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                                  >
-                                    {category === 'blog' ? 'Blog Post' :
-                                     category === 'landing' ? 'Landing Page' :
-                                     category === 'email' ? 'Email' : 'Social Media'}
-                                  </Button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="template-name" className="flex items-center gap-2">
-                              Template Naam
-                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
-                            </Label>
-                            <Input
-                              id="template-name"
-                              value={editingTemplate.name || ""}
-                              onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
-                              placeholder="Bijv. SEO Blog Post Nederland"
-                              className={`${!editingTemplate.name ? 'border-red-200 focus:border-red-500' : 'border-green-200'}`}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Kies een duidelijke naam die het doel van je template beschrijft
-                            </p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="template-category" className="flex items-center gap-2">
-                              Categorie
-                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
-                            </Label>
-                            <Select 
-                              value={editingTemplate.category || ""} 
-                              onValueChange={(value) => setEditingTemplate(prev => ({ ...prev, category: value as any }))}
-                            >
-                              <SelectTrigger className={`${!editingTemplate.category ? 'border-red-200' : 'border-green-200'}`}>
-                                <SelectValue placeholder="Selecteer categorie" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="blog">📝 Blog Post</SelectItem>
-                                <SelectItem value="landing">🎯 Landing Page</SelectItem>
-                                <SelectItem value="email">📧 Email</SelectItem>
-                                <SelectItem value="social">📱 Social Media</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="template-description">Beschrijving</Label>
-                          <Textarea
-                            id="template-description"
-                            value={editingTemplate.description || ""}
-                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder="Korte beschrijving van wat dit template doet en wanneer je het gebruikt"
-                            rows={3}
-                            className="resize-none"
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Leg uit wanneer en hoe dit template gebruikt moet worden
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-900">Variabelen Tips</p>
+                          <p className="text-xs text-blue-700 mt-1">
+                            Gebruik {"{{"} {"}"} om dynamische content toe te voegen. Bijv: {"{{"}title{"}}"}
                           </p>
                         </div>
                       </div>
-                    )}
-
-                    {/* Step 2: Content */}
-                    {currentStep === 2 && (
-                      <div className="space-y-6 animate-fade-in">
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                          <div className="flex items-start gap-3">
-                            <Palette className="h-5 w-5 text-purple-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-purple-900">Template Content Tips</h4>
-                              <ul className="text-sm text-purple-700 space-y-1 mt-1">
-                                <li>• Gebruik <code className="bg-purple-100 px-1 rounded">{"{{variabele}}"}</code> voor dynamische content</li>
-                                <li>• Schrijf in duidelijke, simpele taal</li>
-                                <li>• Gebruik koppen (# ## ###) voor structuur</li>
-                                <li>• Voeg call-to-actions toe waar relevant</li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-4 lg:grid-cols-2">
-                          {/* Content Editor */}
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="template-content" className="text-base font-medium flex items-center gap-2">
-                                Template Content
-                                <Badge variant="destructive" className="text-xs">Verplicht</Badge>
-                              </Label>
-                              <Button
-                                size="sm"
-                                type="button"
-                                variant="outline"
-                                onClick={() => setShowHelp(!showHelp)}
-                              >
-                                <HelpCircle className="h-4 w-4 mr-1" />
-                                Help
-                              </Button>
-                            </div>
-                            
-                            <Textarea
-                              id="template-content"
-                              value={editingTemplate.content || ""}
-                              onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
-                              placeholder="Schrijf hier je template content. Gebruik {{variabele}} voor dynamische velden..."
-                              rows={18}
-                              className={`font-mono text-sm resize-none ${!editingTemplate.content ? 'border-destructive/50 focus:border-destructive' : 'border-success/50'}`}
-                            />
-                            
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>
-                                {editingTemplate.content?.length || 0} karakters
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Zap className="h-3 w-3" />
-                                {extractVariables(editingTemplate.content || "").length} variabelen gevonden
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Live Preview */}
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-base font-medium">Live Preview</Label>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setPreviewMode(!previewMode)}
-                              >
-                                {previewMode ? (
-                                  <>
-                                    <Code className="h-4 w-4 mr-1" />
-                                    Variabelen
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Sample Data
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-
-                            <div className="border rounded-lg p-4 bg-muted/30 min-h-[430px] max-h-[430px] overflow-y-auto">
-                              {editingTemplate.content ? (
-                                <div 
-                                  className="text-sm prose prose-sm max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h2]:text-base [&>h2]:font-semibold [&>h3]:text-sm [&>h3]:font-medium"
-                                  dangerouslySetInnerHTML={{ 
-                                    __html: renderPreview(editingTemplate.content, previewMode) 
-                                  }}
-                                />
-                              ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-center">
-                                  <Eye className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                                  <p className="text-sm text-muted-foreground font-medium">
-                                    Begin met typen om een live preview te zien
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Variabelen worden automatisch gedetecteerd
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="text-xs bg-muted/50 p-3 rounded-lg">
-                              <div className="flex items-start gap-2">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-muted-foreground">Preview Tips:</p>
-                                  <p className="text-muted-foreground mt-1">
-                                    {previewMode ? 
-                                      "✨ Je ziet nu hoe de template eruit ziet met echte sample data" : 
-                                      "🔤 Variabelen worden getoond zoals ze in de template staan"
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {showHelp && (
-                          <div className="bg-muted/50 p-4 rounded-lg space-y-3 animate-fade-in">
-                            <h4 className="font-medium flex items-center gap-2">
-                              <HelpCircle className="h-4 w-4" />
-                              Markdown Syntax Help
-                            </h4>
-                            <div className="grid gap-2 text-sm">
-                              <div><code># Hoofdkop</code> - Grote titel</div>
-                              <div><code>## Subkop</code> - Subtitel</div>
-                              <div><code>**Vet tekst**</code> - Vetgedrukt</div>
-                              <div><code>*Cursief*</code> - Cursieve tekst</div>
-                              <div><code>- Lijst item</code> - Opsommingsteken</div>
-                              <div><code>[Link tekst](url)</code> - Hyperlink</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Step 3: Variables */}
-                    {currentStep === 3 && (
-                      <div className="space-y-6 animate-fade-in">
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                          <div className="flex items-start gap-3">
-                            <Zap className="h-5 w-5 text-green-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-green-900">Variabelen Beheer</h4>
-                              <p className="text-sm text-green-700">
-                                Klik op een variabele om deze in je content toe te voegen
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-6 lg:grid-cols-2">
-                          <div>
-                            <h4 className="font-medium mb-3 flex items-center gap-2">
-                              <Target className="h-4 w-4" />
-                              Gevonden Variabelen
-                            </h4>
-                            {extractVariables(editingTemplate.content || "").length > 0 ? (
-                              <div className="flex flex-wrap gap-2">
-                                {extractVariables(editingTemplate.content || "").map(variable => (
-                                  <Badge key={variable} variant="secondary" className="text-xs py-1">
-                                    {variable}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">
-                                Geen variabelen gevonden. Voeg variabelen toe met {"{{naam}}"} syntax.
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <h4 className="font-medium mb-3 flex items-center gap-2">
-                              <Lightbulb className="h-4 w-4" />
-                              Voorgestelde Variabelen
-                            </h4>
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                              {variableSuggestions.map((suggestion) => (
-                                <div
-                                  key={suggestion.name}
-                                  className="p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                                  onClick={() => insertVariable(suggestion.name)}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <code className="text-xs bg-muted px-1 rounded">{suggestion.example}</code>
-                                    <Plus className="h-3 w-3 text-muted-foreground" />
-                                  </div>
-                                  <p className="text-xs text-muted-foreground mt-1">{suggestion.description}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 4: Settings */}
-                    {currentStep === 4 && (
-                      <div className="space-y-6 animate-fade-in">
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Organisatie</h4>
-                            <div className="space-y-2">
-                              <Label htmlFor="template-tags">Tags (gescheiden door komma's)</Label>
-                              <Input
-                                id="template-tags"
-                                value={editingTemplate.tags?.join(', ') || ""}
-                                onChange={(e) => setEditingTemplate(prev => ({ 
-                                  ...prev, 
-                                  tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-                                }))}
-                                placeholder="seo, lokaal, dienstverlening, marketing"
-                              />
-                              <p className="text-xs text-muted-foreground">
-                                Tags helpen bij het organiseren en zoeken van templates
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Zichtbaarheid</h4>
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id="template-public"
-                                  checked={editingTemplate.isPublic || false}
-                                  onCheckedChange={(checked) => setEditingTemplate(prev => ({ ...prev, isPublic: !!checked }))}
-                                />
-                                <Label htmlFor="template-public" className="flex items-center gap-2">
-                                  Publiek template
-                                  <Badge variant="secondary" className="text-xs">Aanbevolen</Badge>
-                                </Label>
-                              </div>
-                              <p className="text-xs text-muted-foreground ml-6">
-                                Andere gebruikers kunnen dit template gebruiken
-                              </p>
-                              
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id="template-premium"
-                                  checked={editingTemplate.isPremium || false}
-                                  onCheckedChange={(checked) => setEditingTemplate(prev => ({ ...prev, isPremium: !!checked }))}
-                                />
-                                <Label htmlFor="template-premium" className="flex items-center gap-2">
-                                  Premium template
-                                  <Crown className="h-3 w-3 text-yellow-600" />
-                                </Label>
-                              </div>
-                              <p className="text-xs text-muted-foreground ml-6">
-                                Alleen premium gebruikers kunnen dit template gebruiken
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 5: Preview */}
-                    {currentStep === 5 && (
-                      <div className="space-y-6 animate-fade-in">
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
-                          <div className="flex items-start gap-3">
-                            <Eye className="h-5 w-5 text-amber-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-amber-900">Template Voorvertoning</h4>
-                              <p className="text-sm text-amber-700">
-                                Controleer je template voordat je het opslaat
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-6 lg:grid-cols-2">
-                          <div>
-                            <h4 className="font-medium mb-3">Template Samenvatting</h4>
-                            <div className="space-y-3 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Naam:</span>
-                                <span className="font-medium">{editingTemplate.name}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Categorie:</span>
-                                <Badge variant="outline">{editingTemplate.category}</Badge>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Variabelen:</span>
-                                <span>{extractVariables(editingTemplate.content || "").length}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Content lengte:</span>
-                                <span>{editingTemplate.content?.length || 0} karakters</span>
-                              </div>
-                              <Separator />
-                              <div>
-                                <span className="text-muted-foreground block mb-1">Tags:</span>
-                                <div className="flex flex-wrap gap-1">
-                                  {editingTemplate.tags?.map(tag => (
-                                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                                  )) || <span className="text-xs text-muted-foreground">Geen tags</span>}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-medium">Preview</h4>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs">
-                                  {previewMode ? 'Met Sample Data' : 'Variabelen Zichtbaar'}
-                                </Badge>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setPreviewMode(!previewMode)}
-                                >
-                                  {previewMode ? (
-                                    <>
-                                      <Code className="h-3 w-3 mr-1" />
-                                      Variabelen
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Eye className="h-3 w-3 mr-1" />
-                                      Sample Data
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-card border rounded-lg p-4 max-h-80 overflow-y-auto text-sm">
-                              <div 
-                                className="prose prose-sm max-w-none"
-                                dangerouslySetInnerHTML={{ 
-                                  __html: renderPreview(editingTemplate.content || "", previewMode) 
-                                }} 
-                              />
-                            </div>
-                            
-                            <div className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded">
-                              {previewMode ? 
-                                "💡 Dit is hoe je template eruit ziet met echte content data" : 
-                                "💡 Variabelen worden getoond zoals ze in de template staan"
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="flex items-center justify-between pt-6 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : null}
-                      disabled={currentStep === 1}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-1" />
-                      Vorige
-                    </Button>
-
-                    <div className="text-sm text-muted-foreground">
-                      Stap {currentStep} van {steps.length}
-                    </div>
-
-                    <div className="flex gap-2">
-                      {currentStep < steps.length ? (
-                        <Button
-                          onClick={() => {
-                            if (validateStep(currentStep)) {
-                              setCurrentStep(currentStep + 1);
-                            } else {
-                              toast({
-                                title: "Ontbrekende informatie",
-                                description: "Vul alle verplichte velden in voordat je doorgaat.",
-                                variant: "destructive"
-                              });
-                            }
-                          }}
-                          disabled={!validateStep(currentStep)}
-                        >
-                          Volgende
-                          <ArrowRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      ) : (
-                        <Button onClick={handleSaveTemplate}>
-                          <Save className="h-4 w-4 mr-1" />
-                          Template Opslaan
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </div>
-                ) : selectedTemplate ? (
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 mb-4">
-                    <div className="flex items-start gap-3">
-                      <Eye className="h-5 w-5 text-blue-600 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-blue-900">Template Bekijken</h4>
-                        <p className="text-sm text-blue-700">
-                          Bekijk de template details en variabelen. Klik 'Bewerk' om aan te passen.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div>
-                      <Label className="text-sm font-medium">Categorie</Label>
-                      <Badge variant="outline" className="mt-1">
-                        {selectedTemplate.category}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Rating</Label>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm">{selectedTemplate.rating}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Gebruik</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {selectedTemplate.usageCount}x gebruikt
-                      </p>
-                    </div>
+                {/* Content Editor */}
+                <div className="space-y-2">
+                  <Label htmlFor="template-content">Template Content</Label>
+                  <Textarea
+                    id="template-content"
+                    value={editingTemplate.content || ""}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
+                    placeholder="Voer hier je template content in..."
+                    className="min-h-[400px] font-mono text-sm"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Preview Tab */}
+          <TabsContent value="preview" className="space-y-6">
+            <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="h-5 w-5 text-primary" />
+                      Template Preview
+                    </CardTitle>
+                    <CardDescription>
+                      {selectedTemplate?.name || editingTemplate.name || "Selecteer een template"}
+                    </CardDescription>
                   </div>
                   
-                  <div>
-                    <Label className="text-sm font-medium">Variabelen ({selectedTemplate.variables.length})</Label>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedTemplate.variables.map(variable => (
-                        <Badge key={variable} variant="secondary" className="text-xs">
-                          {"{{" + variable + "}}"}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Deze variabelen worden vervangen door echte content bij gebruik
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium">Tags</Label>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedTemplate.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-sm font-medium">Content Preview</Label>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={previewMode ? "default" : "secondary"} className="text-xs">
-                          {previewMode ? 'Preview Mode' : 'Raw Mode'} 
-                        </Badge>
-                        <div className="text-xs text-muted-foreground">
-                          {selectedTemplate.content.length} karakters
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 p-4 bg-card border rounded-lg max-h-80 overflow-y-auto">
-                      <div 
-                        className="text-sm prose prose-sm max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h2]:text-base [&>h2]:font-semibold [&>h3]:text-sm [&>h3]:font-medium"
-                        dangerouslySetInnerHTML={{ 
-                          __html: previewMode ? 
-                            renderPreview(selectedTemplate.content, true) : 
-                            `<pre class="text-xs font-mono whitespace-pre-wrap text-muted-foreground">${selectedTemplate.content}</pre>`
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={previewMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPreviewMode(!previewMode)}
+                    >
+                      {previewMode ? (
+                        <>
+                          <Eye className="h-4 w-4 mr-1" />
+                          Sample Data
+                        </>
+                      ) : (
+                        <>
+                          <Code className="h-4 w-4 mr-1" />
+                          Variabelen
+                        </>
+                      )}
+                    </Button>
+                    
+                    {selectedTemplate && (
+                      <div className="flex gap-1">
                         <Button
-                          size="sm"
                           variant="outline"
-                          onClick={() => setPreviewMode(!previewMode)}
-                        >
-                          {previewMode ? (
-                            <>
-                              <Code className="h-4 w-4 mr-1" />
-                              Raw Code
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-1" />
-                              Preview
-                            </>
-                          )}
-                        </Button>
-                        <Badge variant={previewMode ? "default" : "secondary"} className="text-xs">
-                          {previewMode ? 'Met Sample Data' : 'Raw Template'}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
                           size="sm"
-                          variant="secondary"
                           onClick={() => handleUseTemplate(selectedTemplate)}
                         >
                           <Copy className="h-4 w-4 mr-1" />
-                          Kopieer
+                          Kopiëren
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => {
-                            setEditingTemplate({...selectedTemplate});
+                            setEditingTemplate({ ...selectedTemplate });
                             setIsEditing(true);
-                            setCurrentStep(1);
+                            setActiveTab("editor");
                           }}
                         >
                           <Edit className="h-4 w-4 mr-1" />
-                          Bewerk
+                          Bewerken
                         </Button>
                       </div>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                <div className="border rounded-lg p-6 bg-muted/30 min-h-[500px] max-h-[600px] overflow-y-auto">
+                  {(selectedTemplate?.content || editingTemplate.content) ? (
+                    <div 
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderPreview(selectedTemplate?.content || editingTemplate.content || "", previewMode) 
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center py-20">
+                      <Eye className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                        Geen template geselecteerd
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Selecteer een template uit de bibliotheek of maak een nieuw template
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 text-xs bg-muted/50 p-3 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-muted-foreground">Preview Tips:</p>
+                      <p className="text-muted-foreground mt-1">
+                        {previewMode ? 
+                          "✨ Je ziet nu hoe de template eruit ziet met echte sample data" : 
+                          "🔤 Variabelen worden getoond zoals ze in de template staan"
+                        }
+                      </p>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
-                  <FileText className="h-16 w-16 text-muted-foreground/50" />
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium">Geen template geselecteerd</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Selecteer een template uit de bibliotheek om te bekijken of bewerken, 
-                      of maak een nieuw template met de wizard.
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline"
-                    onClick={() => startNewTemplate()}
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Start Template Wizard
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
