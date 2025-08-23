@@ -233,29 +233,77 @@ Met vriendelijke groet,
 
   // Sample data voor preview
   const sampleData = {
-    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden & Renovatie",
-    city: "Amsterdam", 
-    service: "dakdekker diensten",
-    company_name: "DakPro Amsterdam",
-    phone: "020-1234567",
-    email: "info@dakpro-amsterdam.nl",
+    // Basic info
+    title: "Dakdekker Schiedam - Professionele Dakwerkzaamheden & Renovatie",
+    city: "Schiedam", 
+    service: "dakrenovatie",
+    company_name: "Mr. Dakdekker Schiedam",
+    phone: "010-2345678",
+    email: "info@mrdakdekkerschiedam.nl",
+    business_address: "Wilhelminalaan 12, 3112 AB Schiedam",
+    
+    // Hero section
     service_name: "Dakrenovatie",
-    opening_line: "Is uw dak in Amsterdam toe aan een grondige renovatie?",
-    intro_paragraph: "Bij een dakrenovatie wordt uw volledige dak vervangen.",
-    experience_statement: "Met meer dan 30 jaar ervaring hebben we duizenden daken gerenoveerd.",
-    service_description_detailed: "Bij een dakrenovatie starten we met een grondige inspectie van uw huidige dak.",
-    promise_1_title: "Gratis dakinspectie",
-    promise_1_description: "Uitgebreide inspectie zonder kosten",
-    promise_2_title: "24/7 spoedservice", 
-    promise_2_description: "Altijd bereikbaar voor noodgevallen",
-    promise_3_title: "10 jaar garantie",
-    promise_3_description: "Volledige garantie op alle werkzaamheden",
-    step_1_title: "Maak een afspraak",
-    step_1_description: "Bespreek de situatie en maak een afspraak.",
-    step_2_title: "Gratis dakinspectie en vrijblijvende offerte", 
-    step_2_description: "Wij inspecteren uw dak en u ontvangt een vrijblijvende offerte.",
-    step_3_title: "Aan de slag",
-    step_3_description: "Wij voeren de werkzaamheden uit.",
+    service_name_lower: "dakrenovatie",
+    slogan: "Uw dakspecialist in Schiedam",
+    main_benefit: "Vakkundig, betrouwbaar en altijd scherp geprijsd",
+    opening_question: "Op zoek naar dakrenovatie in Schiedam?",
+    opening_statement: "Dan bent u bij Mr. Dakdekker Schiedam aan het juiste adres!",
+    intro_paragraph: "Wij zijn gespecialiseerd in het volledig renoveren van daken in Schiedam en omstreken. Met jarenlange ervaring en gebruik van hoogwaardige materialen zorgen wij ervoor dat uw dak weer jarenlang meegaat.",
+    experience_statement: "Al meer dan 15 jaar uw betrouwbare dakdekker in Schiedam.",
+    
+    // USPs
+    usp_1_title: "Lokale dakspecialist",
+    usp_1_description: "Geboren en getogen in Schiedam, wij kennen de lokale omstandigheden",
+    usp_2_title: "Altijd vrijblijvende offerte",
+    usp_2_description: "Transparante prijzen zonder verrassingen achteraf",
+    usp_3_title: "Kwaliteitsgarantie",
+    usp_3_description: "10 jaar garantie op alle uitgevoerde werkzaamheden",
+    usp_4_title: "Snelle service",
+    usp_4_description: "Binnen 24 uur ter plaatse voor een inspectie",
+    
+    // Service description
+    detailed_service_description: "Bij een dakrenovatie vervangen wij uw complete dakbedekking, controleren de dakstructuur en zorgen voor optimale isolatie. Wij werken uitsluitend met kwalitatief hoogwaardige materialen en ervaren vakmensen die uw dak vakkundig renoveren volgens de nieuwste normen en technieken.",
+    
+    // Process steps
+    step_1_title: "Gratis dakinspectie en advies",
+    step_1_description: "Wij komen langs voor een uitgebreide inspectie van uw dak en geven deskundig advies over de beste aanpak. Deze inspectie is altijd kosteloos en vrijblijvend.",
+    step_2_title: "Transparante offerte op maat",
+    step_2_description: "Na de inspectie ontvangt u binnen 2 werkdagen een gedetailleerde offerte waarin alle werkzaamheden en materialen duidelijk staan vermeld.",
+    step_3_title: "Vakkundige uitvoering",
+    step_3_description: "Na akkoord voeren onze ervaren vakmensen de dakrenovatie uit volgens planning, waarbij u dagelijks wordt geïnformeerd over de voortgang.",
+    
+    // Reviews
+    review_1_text: "Excellent werk geleverd! Binnen de afgesproken tijd en budget is ons dak perfect gerenoveerd. Zeer tevreden met de kwaliteit en service.",
+    review_1_author: "Familie Van der Berg",
+    review_1_location: "Schiedam Centrum",
+    review_2_text: "Professionele aanpak van begin tot eind. Duidelijke communicatie en vakkundig uitgevoerde dakrenovatie. Zeker een aanrader!",
+    review_2_author: "J. Hendriks",
+    review_2_location: "Schiedam-Noord",
+    review_3_text: "Na jaren zoeken eindelijk een betrouwbare dakdekker gevonden. Keurig werk, nette afwerking en prima prijs-kwaliteitverhouding.",
+    review_3_author: "M. de Vries",
+    review_3_location: "Schiedam-West",
+    
+    // Service areas
+    service_areas: "**Schiedam** (alle wijken), **Rotterdam**, **Delft**, **Den Haag**, **Vlaardingen**, **Maassluis** en omliggende gemeenten",
+    service_radius_statement: "Binnen een straal van 25 km rond Schiedam verzorgen wij al onze dakwerkzaamheden.",
+    
+    // FAQ
+    faq_1_question: "Wat kost een dakrenovatie in Schiedam?",
+    faq_1_answer: "De kosten variëren afhankelijk van de grootte van uw dak, het type dakbedekking en eventuele extra werkzaamheden. Gemiddeld rekent u voor een complete dakrenovatie tussen €8.000 en €25.000. Wij maken graag een kostenloze offerte op maat voor u.",
+    faq_2_question: "Hoe lang duurt een dakrenovatie?",
+    faq_2_answer: "Voor een gemiddelde woning duurt een volledige dakrenovatie 3-7 werkdagen, afhankelijk van de complexiteit en weersomstandigheden. Tijdens de offerte krijgt u een duidelijke planning.",
+    faq_3_question: "Welke garantie krijg ik op de dakrenovatie?",
+    faq_3_answer: "Op alle uitgevoerde werkzaamheden geven wij 10 jaar garantie. Op de gebruikte materialen geldt de fabrieksgarantie, die vaak nog langer is.",
+    faq_4_question: "Kan ik tijdens de renovatie gewoon thuis blijven?",
+    faq_4_answer: "Ja, in de meeste gevallen kunt u gewoon thuis blijven. Wij zorgen ervoor dat uw woning waterdicht blijft en informeren u vooraf over eventuele ongemakken.",
+    
+    // Contact/CTA
+    final_cta_text: "Wilt u meer weten over onze dakrenovatie service of een vrijblijvende offerte aanvragen?",
+    availability_statement: "Bereikbaar van maandag t/m zaterdag van 07:00 tot 18:00 uur",
+    tagline: "Uw dak in vertrouwde handen sinds 2008",
+    
+    // Legacy variables for other templates
     headline: "🏠 Daklek? Wij Lossen Het Vandaag Nog Op!",
     problem_description: "Heeft u last van een lekkend dak, losliggende dakpannen of verouderde dakbedekking?",
     negative_consequence_1: "Waterschade kan oplopen tot €25.000+",
@@ -269,18 +317,21 @@ Met vriendelijke groet,
     subject: "Uw dakprobleem opgelost binnen 24 uur - Gratis inspectie",
     first_name: "Meneer/Mevrouw",
     intro_text: "Wij begrijpen dat dakproblemen stress veroorzaken.",
-    reason_for_email: "U heeft recent gezocht naar dakdekkers in Amsterdam.",
+    reason_for_email: "U heeft recent gezocht naar dakdekkers in Schiedam.",
     main_message: "Onze gecertificeerde dakspecialisten staan klaar om uw dakprobleem vandaag nog op te lossen.",
     benefit_1: "24/7 Spoeddienst - Ook in weekenden",
     benefit_2: "15 jaar garantie op alle werkzaamheden", 
     benefit_3: "Gratis inspectie & offerte binnen 2 uur",
     sender_name: "Piet Janssen",
-    description: "🏠 Daklek in Amsterdam? Onze experts lossen het binnen 4 uur op! ⚡",
+    description: "🏠 Daklek in Schiedam? Onze experts lossen het binnen 4 uur op! ⚡",
     why_important: "Elke dag uitstel kan duizenden euro's extra schade betekenen",
-    call_to_action: "Bel 020-1234567 voor gratis spoedinsectie",
-    hashtag1: "dakdekkeramsterdam",
+    call_to_action: "Bel 010-2345678 voor gratis spoedinsectie",
+    hashtag1: "dakdekkerschiedam",
     hashtag2: "daklekreparatie", 
-    hashtag3: "spoeddienst"
+    hashtag3: "spoeddienst",
+    years_experience: "15",
+    main_topic: "Dakrenovatie Schiedam",
+    main_content: "Een professionele dakrenovatie zorgt ervoor dat uw woning weer jaren vooruit kan en verhoogt de waarde aanzienlijk."
   };
 
   const extractVariables = (content: string): string[] => {
