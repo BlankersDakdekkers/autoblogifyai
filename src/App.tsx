@@ -115,6 +115,7 @@ const App = () => (
               <Route path="/privacy" element={<><SimpleHeader /><PrivacyPolicy /></>} />
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/admin-setup" element={<AdminSetup />} />
+              <Route path="/admin-setup-test" element={<div>Test route works!</div>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
               {/* Dashboard routes */}
