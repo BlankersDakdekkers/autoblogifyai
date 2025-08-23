@@ -34,7 +34,11 @@ import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CSVFileUploader } from "@/components/CSVFileUploader";
+import { EnhancedCSVUploader } from "@/components/EnhancedCSVUploader";
+import { ProcessingProgress } from "@/components/ProcessingProgress";
+import { useCSVProcessor } from "@/hooks/useCSVProcessor";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBlogPosts } from "@/hooks/useOptimizedQueries";
 
 interface CSVJob {
   id: string;
@@ -71,17 +75,59 @@ interface ProcessingStep {
 const CSVProcessor = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [csvUrl, setCsvUrl] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentJob, setCurrentJob] = useState<CSVJob | null>(null);
-  const [jobs, setJobs] = useState<CSVJob[]>([]);
-  const [generatedPosts, setGeneratedPosts] = useState<BlogPost[]>([]);
+  const [activeTab, setActiveTab] = useState("processor");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [showPostViewer, setShowPostViewer] = useState(false);
-  const [activeTab, setActiveTab] = useState("processor");
-  const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
-  const { refreshCredits } = useAuth();
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+
+  // Use the enhanced CSV processor hook
+  const {
+    jobs,
+    isLoadingJobs,
+    progress,
+    isProcessingCSV,
+    currentJob,
+    error: csvError,
+    validationResult,
+    processCSV,
+    cancelProcessing,
+    getProgressPercentage,
+    getCurrentStep
+  } = useCSVProcessor(user?.id || '');
+
+  // Use optimized blog posts query
+  const { data: generatedPosts = [], isLoading: isLoadingPosts, refetch: refetchPosts } = useBlogPosts(user?.id || '');
+
+  // Handle processing completion
+  const handleProcessingComplete = useCallback((jobId: string) => {
+    toast({
+      title: "Verwerking Voltooid! 🎉",
+      description: "CSV is succesvol verwerkt en blog posts zijn gegenereerd"
+    });
+    
+    // Refresh posts after processing
+    setTimeout(() => {
+      refetchPosts();
+    }, 2000);
+  }, [toast, refetchPosts]);
+
+  // CSV schema definition remains the same
+  const csvSchema = [
+    { field: "title", type: "string", required: true, description: "Hoofdtitel van de blogpost" },
+    { field: "slug", type: "string", required: true, description: "URL-vriendelijke identifier" },
+    { field: "status", type: "enum", required: true, description: "publish, draft, scheduled" },
+    { field: "publish_date", type: "date", required: true, description: "YYYY-MM-DD formaat" },
+    { field: "summary", type: "string", required: false, description: "Korte samenvatting" },
+    { field: "tags", type: "string", required: false, description: "Semicolon-separated tags" },
+    { field: "author", type: "string", required: false, description: "Auteur naam" },
+    { field: "meta_title", type: "string", required: false, description: "SEO titel" },
+    { field: "meta_description", type: "string", required: false, description: "SEO beschrijving" },
+    { field: "hero_image_url", type: "string", required: false, description: "Hoofdafbeelding URL" },
+    { field: "body_markdown", type: "text", required: false, description: "Markdown content" },
+    { field: "faq_json", type: "json", required: false, description: "JSON array van FAQ items" },
+    { field: "city", type: "string", required: false, description: "Lokatie voor lokale SEO" },
+    { field: "word_count_target", type: "number", required: false, description: "Gewenst aantal woorden voor content" }
+  ];
   
   const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
     {
