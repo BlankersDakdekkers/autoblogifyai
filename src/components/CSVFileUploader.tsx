@@ -169,63 +169,64 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
   return (
     <div className="space-y-6">
       {/* File Upload Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Bestand Upload
+      <Card className="overflow-hidden border-2 border-gradient-to-r from-primary/20 to-secondary/20">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Upload className="h-6 w-6" />
+            <span className="font-bold">✨ Bestand Upload</span>
           </CardTitle>
-          <CardDescription>
-            Upload een CSV of Excel bestand om content te importeren
+          <CardDescription className="text-base">
+            🚀 Upload een CSV of Excel bestand om content te importeren met AI
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div 
-              className={`relative flex items-center justify-center border-2 border-dashed rounded-xl p-8 transition-all duration-200 ${
+              className={`relative flex items-center justify-center border-4 border-dashed rounded-2xl p-12 transition-all duration-300 ${
                 isDragOver 
-                  ? 'border-primary bg-primary/5 scale-102' 
-                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50'
-              } ${isUploading ? 'pointer-events-none opacity-60' : 'cursor-pointer'}`}
+                  ? 'border-primary bg-primary/10 scale-105 shadow-lg' 
+                  : 'border-primary/30 hover:border-primary hover:bg-primary/5 hover:shadow-md'
+              } ${isUploading ? 'pointer-events-none opacity-60' : 'cursor-pointer'} bg-gradient-to-br from-blue-50 to-purple-50`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => document.getElementById('file-upload')?.click()}
             >
-              <div className="text-center space-y-4">
-                <div className={`mx-auto transition-all duration-200 ${isDragOver ? 'scale-110' : ''}`}>
-                  <FileSpreadsheet className={`mx-auto h-16 w-16 ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className="text-center space-y-6">
+                <div className={`mx-auto transition-all duration-300 ${isDragOver ? 'scale-125 animate-bounce' : ''}`}>
+                  <FileSpreadsheet className={`mx-auto h-20 w-20 ${isDragOver ? 'text-primary animate-pulse' : 'text-primary/70'}`} />
                 </div>
                 
                 {!isUploading ? (
                   <>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold">
-                        {isDragOver ? 'Laat bestand hier vallen' : 'Upload je CSV of Excel bestand'}
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-bold text-primary">
+                        {isDragOver ? '🎯 Laat bestand hier vallen!' : '📁 Upload je CSV of Excel bestand'}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-base text-muted-foreground font-medium">
                         Sleep en laat vallen of klik om te selecteren
                       </p>
                     </div>
                     
                     <Button 
                       type="button" 
-                      className="mt-2"
+                      size="lg"
+                      className="mt-4 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-semibold px-8 py-3"
                       onClick={(e) => {
                         e.stopPropagation();
                         document.getElementById('file-upload')?.click();
                       }}
                     >
-                      <Upload className="h-4 w-4 mr-2" />
+                      <Upload className="h-5 w-5 mr-2" />
                       Selecteer Bestand
                     </Button>
                   </>
                 ) : (
-                  <div className="space-y-3">
-                    <Upload className="mx-auto h-8 w-8 animate-pulse text-primary" />
+                  <div className="space-y-4">
+                    <Upload className="mx-auto h-12 w-12 animate-pulse text-primary" />
                     <div>
-                      <p className="text-lg font-medium">Bestand wordt verwerkt...</p>
-                      <p className="text-sm text-muted-foreground">Even geduld alstublieft</p>
+                      <p className="text-xl font-bold text-primary">⚡ Bestand wordt verwerkt...</p>
+                      <p className="text-base text-muted-foreground">Even geduld alstublieft</p>
                     </div>
                   </div>
                 )}

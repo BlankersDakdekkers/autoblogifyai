@@ -494,10 +494,12 @@ const CSVProcessor = () => {
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <FileSpreadsheet className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
-            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              CSV Processor Pro
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-secondary">
+              <FileSpreadsheet className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-primary via-purple-600 to-secondary bg-clip-text text-transparent font-extrabold">
+              🚀 CSV Processor Pro
             </span>
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
