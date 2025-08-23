@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +9,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Crown, Brain, Globe, Search, Sparkles, Wand2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Crown, Brain, Globe, Search, Sparkles, Wand2, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
+// Form schemas
+const contentGenerationSchema = z.object({
+  topic: z.string().min(3, 'Onderwerp moet minimaal 3 karakters bevatten'),
+  contentType: z.string().min(1, 'Selecteer een content type'),
+  customInstructions: z.string().optional(),
+  persona: z.string().optional(),
+});
+
+const personaSchema = z.object({
+  name: z.string().min(2, 'Naam moet minimaal 2 karakters bevatten'),
+  description: z.string().min(10, 'Beschrijving moet minimaal 10 karakters bevatten'),
+  tone: z.string().min(1, 'Selecteer een schrijfstijl'),
+  expertise: z.string().min(5, 'Voer expertise gebieden in'),
+  examples: z.string().min(20, 'Voer voorbeeldteksten in'),
+});
+
+const keywordResearchSchema = z.object({
+  seedKeyword: z.string().min(2, 'Keyword moet minimaal 2 karakters bevatten'),
+  location: z.string().optional(),
+});
+
+const multilingualSchema = z.object({
+  sourceContent: z.string().min(10, 'Voer minimaal 10 karakters content in'),
+});
+
+// Types
 interface AIPersona {
   id: string;
   name: string;
@@ -21,19 +52,76 @@ interface AIPersona {
   examples: string[];
 }
 
+interface GeneratedContent {
+  primary: {
+    language: string;
+    content: string;
+  };
+  translations: Array<{
+    language: string;
+    content: string;
+  }>;
+}
+
+interface KeywordResult {
+  keyword: string;
+  searchVolume?: number;
+  difficulty?: string;
+  intent?: string;
+}
+
 const AdvancedAIFeatures = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedModel, setSelectedModel] = useState('gpt-5-2025-08-07');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['nl']);
   const [customPersonas, setCustomPersonas] = useState<AIPersona[]>([]);
-  const [keywordResults, setKeywordResults] = useState<any[]>([]);
+  const [keywordResults, setKeywordResults] = useState<KeywordResult[]>([]);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+
+  // Form instances
+  const contentForm = useForm<z.infer<typeof contentGenerationSchema>>({
+    resolver: zodResolver(contentGenerationSchema),
+    defaultValues: {
+      topic: '',
+      contentType: '',
+      customInstructions: '',
+      persona: '',
+    },
+  });
+
+  const personaForm = useForm<z.infer<typeof personaSchema>>({
+    resolver: zodResolver(personaSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      tone: '',
+      expertise: '',
+      examples: '',
+    },
+  });
+
+  const keywordForm = useForm<z.infer<typeof keywordResearchSchema>>({
+    resolver: zodResolver(keywordResearchSchema),
+    defaultValues: {
+      seedKeyword: '',
+      location: '',
+    },
+  });
+
+  const multilingualForm = useForm<z.infer<typeof multilingualSchema>>({
+    resolver: zodResolver(multilingualSchema),
+    defaultValues: {
+      sourceContent: '',
+    },
+  });
 
   // Premium AI Models
   const aiModels = [
-    { id: 'gpt-4o', name: 'GPT-4o', description: 'Meest geavanceerd voor complexe taken' },
-    { id: 'claude-opus', name: 'Claude Opus', description: 'Uitstekend voor creatieve en analytische content' },
-    { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', description: 'Snelle en accurate contentgeneratie' }
+    { id: 'gpt-5-2025-08-07', name: 'GPT-5', description: 'Nieuwste en meest geavanceerde GPT model', badge: 'Nieuw' },
+    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', description: 'Meest intelligente Claude model', badge: 'Premium' },
+    { id: 'gpt-4.1-2025-04-14', name: 'GPT-4.1', description: 'Betrouwbare flagship GPT-4 variant' },
+    { id: 'o3-2025-04-16', name: 'OpenAI o3', description: 'Krachtig reasoning model voor complexe analyses', badge: 'Reasoning' }
   ];
 
   // Supported Languages
@@ -58,24 +146,25 @@ const AdvancedAIFeatures = () => {
     { code: 'fi', name: 'Suomi', flag: '🇫🇮' },
   ];
 
-  const handleAdvancedGeneration = async (formData: any) => {
+  const handleAdvancedGeneration = useCallback(async (formData: z.infer<typeof contentGenerationSchema>) => {
     setIsGenerating(true);
     setGenerationProgress(0);
+    setGeneratedContent(null);
 
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
         setGenerationProgress(prev => Math.min(prev + 10, 90));
-      }, 200);
+      }, 300);
 
       const { data, error } = await supabase.functions.invoke('advanced-ai-generation', {
         body: {
           model: selectedModel,
           languages: selectedLanguages,
-          persona: formData.persona,
+          persona: formData.persona || 'Professional',
           topic: formData.topic,
           contentType: formData.contentType,
-          customInstructions: formData.customInstructions
+          customInstructions: formData.customInstructions || ''
         }
       });
 
@@ -84,27 +173,31 @@ const AdvancedAIFeatures = () => {
 
       if (error) throw error;
 
-      toast.success(`Content gegenereerd met ${selectedModel.toUpperCase()}!`);
-      
-      // Handle the generated content
-      console.log('Generated content:', data);
+      if (data?.success) {
+        setGeneratedContent(data.content);
+        toast.success(`Content succesvol gegenereerd met ${selectedModel}!`);
+      } else {
+        throw new Error(data?.error || 'Onbekende fout');
+      }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Generation error:', error);
-      toast.error('Er ging iets mis bij het genereren van content');
+      toast.error(`Fout bij genereren: ${error.message || 'Onbekende fout'}`);
     } finally {
       setIsGenerating(false);
-      setTimeout(() => setGenerationProgress(0), 1000);
+      setTimeout(() => setGenerationProgress(0), 2000);
     }
-  };
+  }, [selectedModel, selectedLanguages]);
 
-  const handleKeywordResearch = async (seedKeyword: string) => {
+  const handleKeywordResearch = useCallback(async (formData: z.infer<typeof keywordResearchSchema>) => {
     setIsGenerating(true);
+    setKeywordResults([]);
     
     try {
       const { data, error } = await supabase.functions.invoke('ai-keyword-research', {
         body: {
-          seedKeyword,
+          seedKeyword: formData.seedKeyword,
+          location: formData.location || '',
           language: selectedLanguages[0] || 'nl',
           model: selectedModel
         }
@@ -112,36 +205,101 @@ const AdvancedAIFeatures = () => {
 
       if (error) throw error;
 
-      setKeywordResults(data.keywords || []);
-      toast.success(`${data.keywords?.length || 0} keywords gevonden!`);
+      if (data?.success) {
+        setKeywordResults(data.keywords || []);
+        toast.success(`${data.keywords?.length || 0} keywords gevonden!`);
+      } else {
+        throw new Error(data?.error || 'Geen keywords gevonden');
+      }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Keyword research error:', error);
-      toast.error('Er ging iets mis bij keyword research');
+      toast.error(`Fout bij keyword research: ${error.message || 'Onbekende fout'}`);
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [selectedModel, selectedLanguages]);
 
-  const createCustomPersona = async (personaData: Partial<AIPersona>) => {
+  const createCustomPersona = useCallback(async (formData: z.infer<typeof personaSchema>) => {
     try {
-      const newPersona: AIPersona = {
-        id: Date.now().toString(),
-        name: personaData.name || '',
-        description: personaData.description || '',
-        tone: personaData.tone || '',
-        expertise: personaData.expertise || [],
-        examples: personaData.examples || []
-      };
+      const { data, error } = await supabase.functions.invoke('custom-persona-manager', {
+        body: {
+          action: 'create',
+          personaData: {
+            name: formData.name,
+            description: formData.description,
+            tone: formData.tone,
+            expertise: formData.expertise.split(',').map(e => e.trim()),
+            examples: formData.examples.split('\n').filter(e => e.trim())
+          }
+        }
+      });
 
-      setCustomPersonas(prev => [...prev, newPersona]);
-      toast.success('Custom AI persona aangemaakt!');
+      if (error) throw error;
 
-    } catch (error) {
+      if (data?.success) {
+        const newPersona: AIPersona = {
+          id: data.persona.id,
+          name: formData.name,
+          description: formData.description,
+          tone: formData.tone,
+          expertise: formData.expertise.split(',').map(e => e.trim()),
+          examples: formData.examples.split('\n').filter(e => e.trim())
+        };
+
+        setCustomPersonas(prev => [...prev, newPersona]);
+        personaForm.reset();
+        toast.success('Custom AI persona succesvol aangemaakt!');
+      } else {
+        throw new Error(data?.error || 'Persona kon niet worden aangemaakt');
+      }
+
+    } catch (error: any) {
       console.error('Persona creation error:', error);
-      toast.error('Er ging iets mis bij het aanmaken van persona');
+      toast.error(`Fout bij aanmaken persona: ${error.message || 'Onbekende fout'}`);
     }
-  };
+  }, [personaForm]);
+
+  const handleMultilingualTranslation = useCallback(async (formData: z.infer<typeof multilingualSchema>) => {
+    if (selectedLanguages.length <= 1) {
+      toast.error('Selecteer minimaal 2 talen voor vertaling');
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('multilingual-translator', {
+        body: {
+          sourceContent: formData.sourceContent,
+          sourceLanguage: selectedLanguages[0],
+          targetLanguages: selectedLanguages.slice(1),
+          model: selectedModel
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setGeneratedContent({
+          primary: {
+            language: selectedLanguages[0],
+            content: formData.sourceContent
+          },
+          translations: data.translations || []
+        });
+        toast.success(`Content vertaald naar ${selectedLanguages.length - 1} talen!`);
+      } else {
+        throw new Error(data?.error || 'Vertaling mislukt');
+      }
+
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      toast.error(`Fout bij vertalen: ${error.message || 'Onbekende fout'}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [selectedLanguages, selectedModel]);
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -202,51 +360,109 @@ const AdvancedAIFeatures = () => {
               </div>
 
               <div className="space-y-4 pt-4 border-t">
-                <Label>Test Premium AI Generatie</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="topic">Onderwerp</Label>
-                    <Input id="topic" placeholder="Bijv. Duurzame energie oplossingen" />
+              <Form {...contentForm}>
+                <form onSubmit={contentForm.handleSubmit(handleAdvancedGeneration)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={contentForm.control}
+                      name="topic"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Onderwerp</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Bijv. Duurzame energie oplossingen" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={contentForm.control}
+                      name="contentType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Content Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecteer type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="blog">Blog Post</SelectItem>
+                              <SelectItem value="article">Artikel</SelectItem>
+                              <SelectItem value="social">Social Media</SelectItem>
+                              <SelectItem value="newsletter">Newsletter</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contentType">Content Type</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecteer type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="blog">Blog Post</SelectItem>
-                        <SelectItem value="article">Artikel</SelectItem>
-                        <SelectItem value="social">Social Media</SelectItem>
-                        <SelectItem value="newsletter">Newsletter</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <Textarea placeholder="Aangepaste instructies voor de AI..." rows={3} />
-                
-                {isGenerating && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Bezig met genereren...</span>
-                      <span>{generationProgress}%</span>
+                  <FormField
+                    control={contentForm.control}
+                    name="customInstructions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Aangepaste instructies (optioneel)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Aangepaste instructies voor de AI..." rows={3} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {isGenerating && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Bezig met genereren...</span>
+                        <span>{generationProgress}%</span>
+                      </div>
+                      <Progress value={generationProgress} />
                     </div>
-                    <Progress value={generationProgress} />
-                  </div>
-                )}
+                  )}
 
-                <Button 
-                  onClick={() => handleAdvancedGeneration({
-                    topic: 'test',
-                    contentType: 'blog',
-                    customInstructions: 'test'
-                  })}
-                  disabled={isGenerating}
-                  className="w-full"
-                >
-                  <Brain className="h-4 w-4 mr-2" />
-                  Genereer met {selectedModel.toUpperCase()}
-                </Button>
+                  <Button type="submit" disabled={isGenerating} className="w-full">
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Brain className="h-4 w-4 mr-2" />
+                    )}
+                    {isGenerating ? 'Genereren...' : `Genereer met ${selectedModel.toUpperCase()}`}
+                  </Button>
+                </form>
+              </Form>
+
+              {generatedContent && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      Gegenereerde Content
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Badge variant="outline">{generatedContent.primary.language.toUpperCase()}</Badge>
+                        <div className="mt-2 p-3 bg-muted rounded-lg">
+                          <p className="text-sm whitespace-pre-wrap">{generatedContent.primary.content}</p>
+                        </div>
+                      </div>
+                      {generatedContent.translations.map((translation, index) => (
+                        <div key={index}>
+                          <Badge variant="outline">{translation.language.toUpperCase()}</Badge>
+                          <div className="mt-2 p-3 bg-muted rounded-lg">
+                            <p className="text-sm whitespace-pre-wrap">{translation.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               </div>
             </CardContent>
           </Card>
@@ -261,53 +477,111 @@ const AdvancedAIFeatures = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personaName">Persona Naam</Label>
-                  <Input id="personaName" placeholder="Bijv. Marketing Expert" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="personaTone">Schrijfstijl</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecteer toon" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="professional">Professioneel</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                      <SelectItem value="authoritative">Gezaghebbend</SelectItem>
-                      <SelectItem value="friendly">Vriendelijk</SelectItem>
-                      <SelectItem value="technical">Technisch</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="personaDescription">Beschrijving & Expertise</Label>
-                <Textarea 
-                  id="personaDescription" 
-                  placeholder="Beschrijf de expertise en schrijfstijl van deze persona..."
-                  rows={3}
-                />
-              </div>
+              <Form {...personaForm}>
+                <form onSubmit={personaForm.handleSubmit(createCustomPersona)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={personaForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Persona Naam</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Bijv. Marketing Expert" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={personaForm.control}
+                      name="tone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Schrijfstijl</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecteer toon" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="professional">Professioneel</SelectItem>
+                              <SelectItem value="casual">Casual</SelectItem>
+                              <SelectItem value="authoritative">Gezaghebbend</SelectItem>
+                              <SelectItem value="friendly">Vriendelijk</SelectItem>
+                              <SelectItem value="technical">Technisch</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={personaForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Beschrijving & Expertise</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Beschrijf de expertise en schrijfstijl van deze persona..."
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="personaExamples">Voorbeeldteksten</Label>
-                <Textarea 
-                  id="personaExamples" 
-                  placeholder="Voeg voorbeeldteksten toe om de AI te trainen..."
-                  rows={4}
-                />
-              </div>
+                  <FormField
+                    control={personaForm.control}
+                    name="expertise"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expertise gebieden (kommagescheiden)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Bijv. Marketing, SEO, Content Strategy"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <Button onClick={() => createCustomPersona({
-                name: 'Test Persona',
-                description: 'Test description'
-              })}>
-                <Wand2 className="h-4 w-4 mr-2" />
-                Persona Aanmaken
-              </Button>
+                  <FormField
+                    control={personaForm.control}
+                    name="examples"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Voorbeeldteksten</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Voeg voorbeeldteksten toe om de AI te trainen..."
+                            rows={4}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" disabled={isGenerating}>
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Wand2 className="h-4 w-4 mr-2" />
+                    )}
+                    {isGenerating ? 'Aanmaken...' : 'Persona Aanmaken'}
+                  </Button>
+                </form>
+              </Form>
 
               {customPersonas.length > 0 && (
                 <div className="mt-6 space-y-3">
@@ -377,19 +651,36 @@ const AdvancedAIFeatures = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="sourceContent">Bron Content (Nederlands)</Label>
-                <Textarea 
-                  id="sourceContent"
-                  placeholder="Voer je Nederlandse content in om te vertalen..."
-                  rows={5}
-                />
-              </div>
+              <Form {...multilingualForm}>
+                <form onSubmit={multilingualForm.handleSubmit(handleMultilingualTranslation)} className="space-y-4">
+                  <FormField
+                    control={multilingualForm.control}
+                    name="sourceContent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bron Content ({supportedLanguages.find(l => l.code === selectedLanguages[0])?.name || 'Nederlands'})</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Voer je content in om te vertalen..."
+                            rows={5}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <Button className="w-full">
-                <Globe className="h-4 w-4 mr-2" />
-                Vertaal naar {selectedLanguages.length} talen
-              </Button>
+                  <Button type="submit" disabled={isGenerating || selectedLanguages.length <= 1} className="w-full">
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Globe className="h-4 w-4 mr-2" />
+                    )}
+                    {isGenerating ? 'Vertalen...' : `Vertaal naar ${selectedLanguages.length - 1} talen`}
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -403,25 +694,47 @@ const AdvancedAIFeatures = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="seedKeyword">Hoofd Keyword</Label>
-                  <Input id="seedKeyword" placeholder="Bijv. dakdekker" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Locatie (optioneel)</Label>
-                  <Input id="location" placeholder="Bijv. Amsterdam" />
-                </div>
-              </div>
+              <Form {...keywordForm}>
+                <form onSubmit={keywordForm.handleSubmit(handleKeywordResearch)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={keywordForm.control}
+                      name="seedKeyword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hoofd Keyword</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Bijv. dakdekker" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={keywordForm.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Locatie (optioneel)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Bijv. Amsterdam" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <Button 
-                onClick={() => handleKeywordResearch('dakdekker')}
-                disabled={isGenerating}
-                className="w-full"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                {isGenerating ? 'Zoeken...' : 'Start AI Keyword Research'}
-              </Button>
+                  <Button type="submit" disabled={isGenerating} className="w-full">
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4 mr-2" />
+                    )}
+                    {isGenerating ? 'Zoeken...' : 'Start AI Keyword Research'}
+                  </Button>
+                </form>
+              </Form>
 
               {keywordResults.length > 0 && (
                 <div className="mt-6 space-y-3">
@@ -437,7 +750,11 @@ const AdvancedAIFeatures = () => {
                                 Volume: {keyword.searchVolume} | Difficulty: {keyword.difficulty}%
                               </p>
                             </div>
-                            <Badge variant={keyword.difficulty < 30 ? 'default' : 'secondary'}>
+                            <Badge variant={
+                              keyword.difficulty && parseInt(keyword.difficulty) < 30 
+                                ? 'default' 
+                                : 'secondary'
+                            }>
                               {keyword.intent}
                             </Badge>
                           </div>
