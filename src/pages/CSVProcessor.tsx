@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -20,36 +19,21 @@ import {
   Loader2,
   Clock,
   BarChart3,
-  X,
   RefreshCw,
   Settings,
   Zap,
   Eye,
-  ExternalLink,
   Copy,
   AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CSVFileUploader } from "@/components/CSVFileUploader";
-import { EnhancedCSVUploader } from "@/components/EnhancedCSVUploader";
 import { ProcessingProgress } from "@/components/ProcessingProgress";
 import { useCSVProcessor } from "@/hooks/useCSVProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBlogPosts } from "@/hooks/useOptimizedQueries";
-
-interface CSVJob {
-  id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  csv_url: string;
-  total_rows: number;
-  processed_rows: number;
-  error_message?: string;
-  created_at: string;
-  updated_at: string;
-}
 
 interface BlogPost {
   id: string;
@@ -64,14 +48,6 @@ interface BlogPost {
   word_count: number;
 }
 
-interface ProcessingStep {
-  id: string;
-  name: string;
-  description: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
-}
-
 const CSVProcessor = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -79,6 +55,8 @@ const CSVProcessor = () => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [showPostViewer, setShowPostViewer] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [csvUrl, setCsvUrl] = useState("");
+  const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
 
   // Use the enhanced CSV processor hook
   const {
@@ -111,62 +89,7 @@ const CSVProcessor = () => {
     }, 2000);
   }, [toast, refetchPosts]);
 
-  // CSV schema definition remains the same
-  const csvSchema = [
-    { field: "title", type: "string", required: true, description: "Hoofdtitel van de blogpost" },
-    { field: "slug", type: "string", required: true, description: "URL-vriendelijke identifier" },
-    { field: "status", type: "enum", required: true, description: "publish, draft, scheduled" },
-    { field: "publish_date", type: "date", required: true, description: "YYYY-MM-DD formaat" },
-    { field: "summary", type: "string", required: false, description: "Korte samenvatting" },
-    { field: "tags", type: "string", required: false, description: "Semicolon-separated tags" },
-    { field: "author", type: "string", required: false, description: "Auteur naam" },
-    { field: "meta_title", type: "string", required: false, description: "SEO titel" },
-    { field: "meta_description", type: "string", required: false, description: "SEO beschrijving" },
-    { field: "hero_image_url", type: "string", required: false, description: "Hoofdafbeelding URL" },
-    { field: "body_markdown", type: "text", required: false, description: "Markdown content" },
-    { field: "faq_json", type: "json", required: false, description: "JSON array van FAQ items" },
-    { field: "city", type: "string", required: false, description: "Lokatie voor lokale SEO" },
-    { field: "word_count_target", type: "number", required: false, description: "Gewenst aantal woorden voor content" }
-  ];
-  
-  const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
-    {
-      id: "download",
-      name: "CSV Downloaden",
-      description: "Downloaden en valideren van CSV bestand",
-      status: "pending",
-      progress: 0
-    },
-    {
-      id: "validate",
-      name: "Schema Validatie", 
-      description: "Controleren van verplichte kolommen en data types",
-      status: "pending",
-      progress: 0
-    },
-    {
-      id: "parse",
-      name: "Data Parsing",
-      description: "Converteren van CSV data naar interne structuur",
-      status: "pending",
-      progress: 0
-    },
-    {
-      id: "generate",
-      name: "Content Generatie",
-      description: "AI content generatie voor elke rij",
-      status: "pending",
-      progress: 0
-    },
-    {
-      id: "store",
-      name: "Database Opslag",
-      description: "Opslaan van gegenereerde content in database",
-      status: "pending",
-      progress: 0
-    }
-  ]);
-
+  // CSV schema definition
   const csvSchema = [
     { field: "title", type: "string", required: true, description: "Hoofdtitel van de blogpost" },
     { field: "slug", type: "string", required: true, description: "URL-vriendelijke identifier" },
@@ -212,41 +135,7 @@ const CSVProcessor = () => {
     }
   }, []);
 
-  // Debounced URL validation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      validateCsvUrl(csvUrl);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [csvUrl, validateCsvUrl]);
-
-  // Load jobs on mount
-  useEffect(() => {
-    refreshCredits(); // Refresh credits after processing
-  }, []);
-
-  const loadJobs = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('csv_processing_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setJobs((data || []).map(job => ({
-        ...job,
-        status: job.status as 'pending' | 'processing' | 'completed' | 'failed'
-      })));
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-    }
-  };
-
+  // Handle CSV processing with the hook
   const handleStartProcessing = async () => {
     if (!csvUrl.trim()) {
       toast({
@@ -257,211 +146,14 @@ const CSVProcessor = () => {
       return;
     }
 
-    // Validate URL format
     try {
-      new URL(csvUrl);
-    } catch {
+      await processCSV({ csvUrl });
       toast({
-        title: "Ongeldige URL",
-        description: "Voer een geldige URL in voor je CSV bestand",
-        variant: "destructive"
+        title: "Verwerking Gestart! 🚀",
+        description: "CSV wordt nu verwerkt..."
       });
-      return;
-    }
-
-    setIsProcessing(true);
-    
-    try {
-      // Reset processing steps
-      setProcessingSteps(steps => steps.map(step => ({
-        ...step,
-        status: "pending",
-        progress: 0
-      })));
-
-      // Step 1: Download CSV
-      updateProcessingStep("download", "running", 25);
-
-      // Verify user authentication
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.access_token) {
-        throw new Error("Niet ingelogd - probeer opnieuw in te loggen");
-      }
-
-      updateProcessingStep("download", "running", 50);
-
-      // Call the process-csv edge function using Supabase client
-      const { data, error } = await supabase.functions.invoke('process-csv', {
-        body: { csvUrl }
-      });
-
-      console.log('Edge function response:', { data, error });
-
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(`Edge function fout: ${error.message || error.details || 'Onbekende fout'}`);
-      }
-
-      if (!data) {
-        throw new Error('Geen response data ontvangen van edge function');
-      }
-
-      console.log('Checking data.success:', data.success, 'Data object:', data);
-
-      if (data.success !== true) {
-        const errorMsg = data.error || 'Edge function geeft geen success response';
-        console.error('Edge function success check failed:', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      updateProcessingStep("download", "completed", 100);
-      updateProcessingStep("validate", "running", 50);
-
-      // Monitor job progress - use the jobId from the response
-      const jobId = data.jobId;
-      console.log('Starting job monitoring for:', jobId);
-      
-      let pollCount = 0;
-      const maxPolls = 120; // 4 minutes timeout
-      
-      const monitorJob = async (): Promise<CSVJob | null> => {
-        try {
-          const { data: jobData, error: jobError } = await supabase
-            .from('csv_processing_jobs')
-            .select('*')
-            .eq('id', jobId)
-            .maybeSingle();
-            
-          if (jobError) {
-            console.error('Error fetching job:', jobError);
-            return null;
-          }
-            
-          return jobData as CSVJob;
-        } catch (error) {
-          console.error('Error in monitorJob:', error);
-          return null;
-        }
-      };
-      
-      const pollInterval = setInterval(async () => {
-        pollCount++;
-        console.log(`Polling attempt ${pollCount}/${maxPolls}`);
-        
-        const job = await monitorJob();
-        if (job) {
-          setCurrentJob(job);
-          console.log('Job status update:', job.status, `${job.processed_rows}/${job.total_rows}`);
-          
-          const progress = job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0;
-          
-          // Update processing steps based on job status
-          if (job.status === 'processing' || job.status === 'completed') {
-            updateProcessingStep("validate", "completed", 100);
-            updateProcessingStep("parse", "completed", 100);
-            updateProcessingStep("generate", job.status === 'completed' ? "completed" : "running", Math.round(progress));
-            
-            if (job.status === 'completed') {
-              updateProcessingStep("store", "completed", 100);
-            }
-          }
-          
-          if (job.status === 'completed') {
-            clearInterval(pollInterval);
-            setJobs(prev => [job, ...prev]);
-            toast({
-              title: "CSV Verwerkt! 🎉",
-              description: `${job.processed_rows} rijen succesvol verwerkt`
-            });
-            setIsProcessing(false);
-            await loadGeneratedPosts();
-          } else if (job.status === 'failed') {
-            clearInterval(pollInterval);
-            toast({
-              title: "Verwerkingsfout",
-              description: job.error_message || "Er is een fout opgetreden",
-              variant: "destructive"
-            });
-            setIsProcessing(false);
-            // Mark all remaining steps as failed
-            setProcessingSteps(steps => steps.map(step => 
-              step.status === 'pending' || step.status === 'running' 
-                ? { ...step, status: 'failed' as const } 
-                : step
-            ));
-          }
-        } else if (pollCount >= maxPolls) {
-          clearInterval(pollInterval);
-          console.error('Job monitoring timeout');
-          toast({
-            title: "Timeout",
-            description: "Verwerking duurt langer dan verwacht. Check de logs voor details.",
-            variant: "destructive"
-          });
-          setIsProcessing(false);
-        }
-      }, 2000);
-
-      // Start with initial poll
-      await monitorJob();
-
     } catch (error) {
       console.error("Processing error:", error);
-      
-      let errorMessage = "Er is een onbekende fout opgetreden";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      
-      toast({
-        title: "Verwerkingsfout",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      setIsProcessing(false);
-      
-      // Mark all steps as failed
-      setProcessingSteps(steps => steps.map(step => ({
-        ...step,
-        status: step.status === 'completed' ? step.status : 'failed' as const,
-        progress: step.status === 'completed' ? step.progress : 0
-      })));
-    }
-  };
-
-  const updateProcessingStep = (stepId: string, status: ProcessingStep['status'], progress: number) => {
-    setProcessingSteps(steps => steps.map(step => 
-      step.id === stepId ? { ...step, status, progress } : step
-    ));
-  };
-
-  const handlePauseProcessing = () => {
-    setIsProcessing(false);
-    toast({
-      title: "Verwerking Gepauzeerd",
-      description: "CSV verwerking is gepauzeerd en kan later worden hervat"
-    });
-  };
-
-  const loadGeneratedPosts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setGeneratedPosts(data || []);
-    } catch (error) {
-      console.error('Error loading posts:', error);
-      toast({
-        title: "Fout bij laden posts",
-        description: "Kon gegenereerde posts niet laden",
-        variant: "destructive"
-      });
     }
   };
 
@@ -506,11 +198,6 @@ const CSVProcessor = () => {
       description: "CSV bestand wordt gedownload"
     });
   };
-
-  // Load posts on component mount
-  useEffect(() => {
-    loadGeneratedPosts();
-  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('nl-NL');
@@ -563,10 +250,7 @@ const CSVProcessor = () => {
             <span className="hidden sm:inline">Instellingen</span>
           </Button>
           <Button 
-            onClick={() => {
-              loadJobs();
-              loadGeneratedPosts();
-            }}
+            onClick={() => refetchPosts()}
             variant="outline"
             size="sm"
             className="shrink-0"
@@ -576,6 +260,7 @@ const CSVProcessor = () => {
           </Button>
         </div>
       </div>
+      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <TabsList className="w-full sm:w-auto">
@@ -611,7 +296,7 @@ const CSVProcessor = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={loadGeneratedPosts}
+                onClick={() => refetchPosts()}
                 className="flex-1 sm:flex-initial"
               >
                 <RefreshCw className="h-4 w-4 sm:mr-2" />
@@ -629,7 +314,6 @@ const CSVProcessor = () => {
             }}
             onPublishItems={async (items, fileName) => {
               console.log('Publishing items:', items.length, 'from', fileName);
-              // For now, just show success
               toast({
                 title: "Items gepubliceerd!",
                 description: `${items.length} items succesvol verwerkt`
@@ -662,9 +346,12 @@ const CSVProcessor = () => {
                       <Input
                         id="csv-url"
                         value={csvUrl}
-                        onChange={(e) => setCsvUrl(e.target.value)}
+                        onChange={(e) => {
+                          setCsvUrl(e.target.value);
+                          setTimeout(() => validateCsvUrl(e.target.value), 500);
+                        }}
                         placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                        disabled={isProcessing}
+                        disabled={isProcessingCSV}
                         className={`transition-colors ${
                           urlValidationStatus === 'valid' ? 'border-green-500 focus:border-green-500' :
                           urlValidationStatus === 'invalid' ? 'border-red-500 focus:border-red-500' :
@@ -702,20 +389,10 @@ const CSVProcessor = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => setCsvUrl("https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv")}
-                      disabled={isProcessing}
+                      disabled={isProcessingCSV}
                     >
                       <Copy className="h-3 w-3 mr-1" />
                       Test Dataset
-                    </Button>
-                    <Button 
-                      type="button"
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setCsvUrl("https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv")}
-                      disabled={isProcessing}
-                    >
-                      <Copy className="h-3 w-3 mr-1" />
-                      Demo CSV
                     </Button>
                   </div>
                 </div>
@@ -742,11 +419,11 @@ const CSVProcessor = () => {
                 <div className="flex gap-3">
                   <Button
                     onClick={handleStartProcessing}
-                    disabled={isProcessing || urlValidationStatus !== 'valid'}
+                    disabled={isProcessingCSV || urlValidationStatus !== 'valid'}
                     className="min-w-[140px]"
                     size="lg"
                   >
-                    {isProcessing ? (
+                    {isProcessingCSV ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Verwerken...
@@ -758,16 +435,16 @@ const CSVProcessor = () => {
                       </>
                     )}
                   </Button>
-                  {isProcessing && (
-                    <Button variant="outline" onClick={handlePauseProcessing}>
+                  {isProcessingCSV && (
+                    <Button variant="outline" onClick={cancelProcessing}>
                       <Pause className="h-4 w-4 mr-2" />
-                      Pauzeren
+                      Stoppen
                     </Button>
                   )}
                   <Button 
                     variant="outline"
                     onClick={() => setActiveTab('schema')}
-                    disabled={isProcessing}
+                    disabled={isProcessingCSV}
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Bekijk Schema
@@ -778,36 +455,14 @@ const CSVProcessor = () => {
           </Card>
 
           {/* Processing Progress */}
-          {isProcessing && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Verwerkingsvoortgang
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {processingSteps.map((step, index) => (
-                  <div key={step.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {step.status === 'running' && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
-                        {step.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
-                        {step.status === 'pending' && <Clock className="h-4 w-4 text-gray-400" />}
-                        <div>
-                          <h4 className="font-medium">{step.name}</h4>
-                          <p className="text-sm text-muted-foreground">{step.description}</p>
-                        </div>
-                      </div>
-                      <Badge variant={step.status === 'completed' ? 'default' : 'secondary'}>
-                        {step.progress}%
-                      </Badge>
-                    </div>
-                    <Progress value={step.progress} className="h-2" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          {isProcessingCSV && (
+            <ProcessingProgress 
+              progress={progress}
+              currentStep={getCurrentStep()}
+              overallProgress={getProgressPercentage()}
+              isProcessing={isProcessingCSV}
+              onCancel={cancelProcessing}
+            />
           )}
 
           {/* Current Job Results */}
@@ -847,14 +502,23 @@ const CSVProcessor = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => window.open('/dashboard/blogs', '_blank')}
+                    onClick={() => setActiveTab('posts')}
                   >
                     <FileText className="h-4 w-4 mr-2" />
-                    Bekijk Gegenereerde Posts
+                    Bekijk Posts
                   </Button>
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {csvError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {csvError}
+              </AlertDescription>
+            </Alert>
           )}
         </TabsContent>
 
@@ -880,7 +544,7 @@ const CSVProcessor = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={loadGeneratedPosts}
+                  onClick={() => refetchPosts()}
                 >
                   <Database className="h-4 w-4 mr-2" />
                   Vernieuwen
