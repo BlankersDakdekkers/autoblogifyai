@@ -259,94 +259,130 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
 
       {/* Preview Results */}
       {showPreview && previewItems.length > 0 && (
-        <Card className="border-green-200 bg-green-50/50">
-          <CardHeader>
+        <Card className="border-2 border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-green-100 to-emerald-100 border-b border-green-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-green-700">
-                  <CheckCircle className="h-5 w-5" />
-                  Preview Resultaten
+              <div className="space-y-2">
+                <CardTitle className="flex items-center gap-3 text-green-800">
+                  <div className="p-2 rounded-full bg-green-600">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="font-bold">✅ Preview Resultaten</span>
                 </CardTitle>
-                <CardDescription className="text-green-600">
-                  <strong>{previewItems.length}</strong> items gevonden in <span className="font-mono text-xs">{fileName}</span>
+                <CardDescription className="text-green-700 text-base">
+                  <strong className="text-lg">{previewItems.length}</strong> items succesvol gevonden in 
+                  <span className="font-mono text-sm bg-green-200 px-2 py-1 rounded ml-1">{fileName}</span>
                 </CardDescription>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={clearPreview} variant="outline" size="sm" className="order-2 sm:order-1">
-                  <X className="h-4 w-4 mr-1" />
-                  <span className="hidden sm:inline">Wissen</span>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={clearPreview} 
+                  variant="outline" 
+                  size="sm" 
+                  className="order-2 sm:order-1 border-green-300 text-green-700 hover:bg-green-100"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  <span>Wissen</span>
                 </Button>
                 <Button 
                   onClick={handlePublishAll}
                   disabled={isPublishing}
                   size="sm"
-                  className="order-1 sm:order-2 bg-green-600 hover:bg-green-700"
+                  className="order-1 sm:order-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-6"
                 >
                   {isPublishing ? (
                     <>
-                      <Upload className="h-4 w-4 mr-1 animate-spin" />
-                      <span className="hidden sm:inline">Publiceren...</span>
-                      <span className="sm:hidden">Bezig...</span>
+                      <Upload className="h-4 w-4 mr-2 animate-spin" />
+                      <span>Publiceren...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Alles Publiceren</span>
-                      <span className="sm:hidden">Publiceren</span>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      <span>🚀 Alles Publiceren</span>
                     </>
                   )}
                 </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {previewItems.slice(0, 5).map((item, index) => (
+          <CardContent className="p-6">
+            <div className="grid gap-4 max-h-96 overflow-y-auto">
+              {previewItems.slice(0, 3).map((item, index) => (
                 <div
                   key={index}
-                  className="border border-green-200 rounded-xl p-4 space-y-3 bg-white/80 hover:bg-white transition-colors"
+                  className="relative bg-white border-2 border-green-200 rounded-xl p-6 hover:border-green-300 hover:shadow-md transition-all duration-200"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                    <h4 className="font-semibold text-sm text-green-800 line-clamp-2">{item.title}</h4>
+                  {/* Item Header */}
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                          #{index + 1}
+                        </span>
+                        <span className="text-xs text-green-600 font-medium uppercase tracking-wide">
+                          {item.type}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-lg text-gray-800 leading-tight line-clamp-2">
+                        {item.title}
+                      </h4>
+                    </div>
                     {item.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap">
-                        {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {item.tags.slice(0, 2).map((tag, tagIndex) => (
                           <span
                             key={tagIndex}
-                            className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
                           >
                             {tag}
                           </span>
                         ))}
-                        {item.tags.length > 3 && (
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                            +{item.tags.length - 3}
+                        {item.tags.length > 2 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                            +{item.tags.length - 2}
                           </span>
                         )}
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {item.content}
-                  </p>
-                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <span className="font-medium">Categorie:</span> {item.category}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="font-medium">Type:</span> {item.type}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="font-medium">Auteur:</span> {item.author}
-                    </span>
+
+                  {/* Content Preview */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">
+                      {item.content}
+                    </p>
+                  </div>
+
+                  {/* Item Footer */}
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold">📁 Categorie:</span>
+                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">{item.category}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold">👤 Auteur:</span>
+                      <span>{item.author}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold">📊 Woorden:</span>
+                      <span>~{item.content.length}</span>
+                    </div>
                   </div>
                 </div>
               ))}
               
-              {previewItems.length > 5 && (
-                <div className="text-center py-2">
-                  <p className="text-sm text-muted-foreground">
-                    En nog {previewItems.length - 5} items meer...
+              {previewItems.length > 3 && (
+                <div className="text-center py-6 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl border-2 border-dashed border-green-300">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">+</span>
+                    </div>
+                    <p className="text-green-800 font-semibold">
+                      En nog <strong>{previewItems.length - 3}</strong> items meer klaar voor publicatie!
+                    </p>
+                  </div>
+                  <p className="text-green-600 text-sm">
+                    Alle {previewItems.length} items worden gepubliceerd wanneer je op "Alles Publiceren" klikt
                   </p>
                 </div>
               )}
