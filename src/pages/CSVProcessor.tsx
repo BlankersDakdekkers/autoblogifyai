@@ -798,10 +798,10 @@ const CSVProcessor = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Post Viewer Modal */}
+      {/* Professional Post Viewer Modal */}
       {showPostViewer && selectedPost && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[100] p-2 sm:p-4 overflow-y-auto"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowPostViewer(false);
@@ -809,51 +809,70 @@ const CSVProcessor = () => {
             }
           }}
         >
-          <Card className="w-full max-w-4xl bg-background border shadow-2xl my-4 sm:my-8">
-            <CardHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-lg sm:text-xl leading-tight pr-2 mb-3">
+          {/* Professional Modal Container */}
+          <div className="w-full max-w-5xl bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden my-8">
+            
+            {/* Professional Header */}
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b border-border/50 p-6">
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex-1 space-y-4">
+                  {/* Article Title */}
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
                     {selectedPost.title}
-                  </CardTitle>
+                  </h1>
                   
-                  {/* Meta Description - Better positioned */}
+                  {/* Article Meta */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-primary">
+                          {selectedPost.author.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="font-medium text-foreground">{selectedPost.author}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>{formatDate(selectedPost.created_at)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <FileText className="h-4 w-4" />
+                      <span>{selectedPost.word_count} woorden</span>
+                    </div>
+                    
+                    <Badge 
+                      variant={selectedPost.status === 'published' ? 'default' : 'secondary'}
+                      className="px-3 py-1"
+                    >
+                      {selectedPost.status}
+                    </Badge>
+                  </div>
+                  
+                  {/* SEO Meta Description - Professional Layout */}
                   {selectedPost.meta_description && (
-                    <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></div>
-                        <div>
-                          <p className="text-xs font-medium text-primary mb-1">SEO Meta Beschrijving</p>
-                          <p className="text-sm text-foreground leading-relaxed">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/50 dark:border-blue-800/50 rounded-xl p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-blue-900 dark:text-blue-100 text-sm mb-1">
+                            SEO Meta Beschrijving
+                          </h4>
+                          <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
                             {selectedPost.meta_description}
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
-                  
-                  {/* Post Metadata */}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                    <Badge 
-                      variant={selectedPost.status === 'published' ? 'default' : 'secondary'} 
-                      className="text-xs"
-                    >
-                      {selectedPost.status}
-                    </Badge>
-                    <div className="flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      <span className="font-medium">{selectedPost.word_count}</span> woorden
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium">{selectedPost.author}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatDate(selectedPost.created_at)}</span>
-                    </div>
-                  </div>
                 </div>
                 
+                {/* Close Button */}
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -861,70 +880,119 @@ const CSVProcessor = () => {
                     setShowPostViewer(false);
                     setSelectedPost(null);
                   }}
-                  className="shrink-0 h-8 w-8 p-0 hover:bg-muted"
+                  className="shrink-0 h-10 w-10 p-0 rounded-full hover:bg-muted/50 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
-            </CardHeader>
+            </div>
             
-            <CardContent className="p-4 sm:p-6">
-              {/* Hero Image */}
-              {selectedPost.hero_image_url && (
-                <div className="mb-6">
-                  <img 
-                    src={selectedPost.hero_image_url} 
-                    alt={selectedPost.title}
-                    className="w-full h-48 sm:h-64 object-cover rounded-lg shadow-md"
-                    loading="lazy"
-                  />
+            {/* Professional Content Area */}
+            <div className="max-h-[70vh] overflow-y-auto">
+              <div className="p-6 md:p-8 space-y-8">
+                
+                {/* Hero Image - Professional Layout */}
+                {selectedPost.hero_image_url && (
+                  <div className="relative">
+                    <div className="aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-lg">
+                      <img 
+                        src={selectedPost.hero_image_url} 
+                        alt={selectedPost.title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                  </div>
+                )}
+                
+                {/* Professional Article Content */}
+                <div className="max-w-none">
+                  <div className="prose prose-lg max-w-none
+                    prose-headings:text-foreground prose-headings:font-bold prose-headings:tracking-tight
+                    prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-8 prose-h1:pb-2 prose-h1:border-b prose-h1:border-border/30
+                    prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8 prose-h2:text-primary
+                    prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-primary/80
+                    prose-h4:text-lg prose-h4:mb-2 prose-h4:mt-4
+                    prose-p:text-foreground prose-p:leading-7 prose-p:mb-6 prose-p:text-base
+                    prose-strong:text-foreground prose-strong:font-semibold
+                    prose-em:text-foreground prose-em:italic
+                    prose-ul:space-y-2 prose-ul:ml-6 prose-ol:space-y-2 prose-ol:ml-6
+                    prose-li:text-foreground prose-li:leading-6
+                    prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline hover:prose-a:text-primary/80
+                    prose-blockquote:border-l-4 prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 
+                    prose-blockquote:pl-6 prose-blockquote:py-4 prose-blockquote:rounded-r-lg
+                    prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:italic
+                    prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded-md 
+                    prose-code:text-sm prose-code:font-mono prose-code:text-foreground
+                    prose-pre:bg-muted prose-pre:border prose-pre:rounded-lg prose-pre:p-4 prose-pre:overflow-auto
+                    prose-img:rounded-lg prose-img:shadow-md prose-img:border prose-img:border-border/50
+                    prose-hr:border-border prose-hr:my-8
+                    prose-table:border-collapse prose-table:border prose-table:border-border
+                    prose-th:border prose-th:border-border prose-th:bg-muted prose-th:p-3 prose-th:text-left prose-th:font-semibold
+                    prose-td:border prose-td:border-border prose-td:p-3
+                  ">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {selectedPost.body_markdown || "**Geen content beschikbaar**\n\nDeze blogpost heeft nog geen content."}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-              )}
-              
-              {/* Article Content */}
-              <div className="prose prose-sm sm:prose-base max-w-none 
-                prose-headings:text-foreground prose-headings:font-semibold prose-headings:leading-tight
-                prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-4
-                prose-strong:text-foreground prose-strong:font-semibold
-                prose-em:text-foreground prose-em:italic
-                prose-ul:text-foreground prose-ul:pl-6 prose-ol:text-foreground prose-ol:pl-6
-                prose-li:text-foreground prose-li:mb-1
-                prose-a:text-primary prose-a:underline prose-a:decoration-primary/30 hover:prose-a:text-primary/80
-                prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:pl-4 prose-blockquote:py-2
-                prose-blockquote:text-muted-foreground prose-blockquote:italic
-                prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono
-                prose-pre:bg-muted prose-pre:border prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-auto
-                prose-h1:text-2xl prose-h1:mb-4 prose-h1:mt-6
-                prose-h2:text-xl prose-h2:mb-3 prose-h2:mt-5
-                prose-h3:text-lg prose-h3:mb-2 prose-h3:mt-4
-              ">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {selectedPost.body_markdown || "Geen content beschikbaar"}
-                </ReactMarkdown>
+                
+                {/* Professional Tags Section */}
+                {selectedPost.tags.length > 0 && (
+                  <div className="border-t border-border/50 pt-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground">Tags & Categorieën</h3>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {selectedPost.tags.map((tag, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-primary/10 to-primary/5 
+                                   border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 
+                                   transition-all duration-200 cursor-pointer"
+                        >
+                          <span className="mr-1">#</span>
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
               </div>
-              
-              {/* Tags Section */}
-              {selectedPost.tags.length > 0 && (
-                <div className="mt-8 pt-6 border-t">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    <p className="text-sm font-medium text-primary">Tags</p>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    {selectedPost.tags.map((tag, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="outline" 
-                        className="text-xs px-3 py-1 bg-primary/5 text-primary border-primary/30 hover:bg-primary/10 transition-colors"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+            </div>
+            
+            {/* Professional Footer */}
+            <div className="bg-muted/30 border-t border-border/50 p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Gegenereerd door AutoblogifyAI • {formatDate(selectedPost.created_at)}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setShowPostViewer(false);
+                      setSelectedPost(null);
+                    }}
+                    className="gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Sluiten
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
         </div>
       )}
     </div>
