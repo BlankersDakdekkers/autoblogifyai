@@ -254,8 +254,8 @@ const Index = () => {
     <div className="min-h-screen overflow-hidden bg-background">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+      <div className="fixed top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none" />
 
       {/* Hero Section - Mobile Optimized */}
       <section className="relative pt-16 md:pt-20 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden">

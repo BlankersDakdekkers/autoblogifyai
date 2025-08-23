@@ -154,7 +154,7 @@ export const EnhancedCSVUploader: React.FC<EnhancedCSVUploaderProps> = ({
     }
 
     try {
-      const job = await processCSV(csvUrl);
+      const job = await processCSV({ csvUrl });
       if (job && onProcessingComplete) {
         onProcessingComplete(job.id);
       }
