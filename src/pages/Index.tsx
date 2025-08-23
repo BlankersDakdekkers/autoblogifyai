@@ -168,10 +168,14 @@ const Index = () => {
   const checkSubscriptionStatus = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
+      if (error) {
+        console.warn('Subscription check failed:', error);
+        return; // Silently continue without subscription data
+      }
       setSubscription(data);
     } catch (error) {
-      console.error('Subscription check error:', error);
+      console.warn('Subscription check error:', error);
+      // Don't throw error, just continue without subscription data
     }
   };
 
