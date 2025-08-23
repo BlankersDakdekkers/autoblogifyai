@@ -36,8 +36,10 @@ import {
   Zap,
   Globe,
   Star,
-  Crown
+  Crown,
+  PenTool
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 interface ContentTemplate {
@@ -97,6 +99,7 @@ const ContentFeatures = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
 
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const templates: ContentTemplate[] = [
     {
@@ -649,9 +652,11 @@ De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}.
                     Herbruikbare content templates voor snellere creatie
                   </CardDescription>
                 </div>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nieuw Template
+                <Button 
+                  onClick={() => navigate('/dashboard/template-editor')}
+                >
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Template Editor
                 </Button>
               </div>
             </CardHeader>
@@ -722,6 +727,13 @@ De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}.
                           onClick={() => handleTemplateUse(template.id)}
                         >
                           Gebruiken
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate('/dashboard/template-editor')}
+                        >
+                          <PenTool className="h-3 w-3" />
                         </Button>
                         <Button size="sm" variant="outline">
                           <Eye className="h-3 w-3" />
