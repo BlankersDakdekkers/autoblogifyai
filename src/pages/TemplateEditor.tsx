@@ -369,81 +369,118 @@ Met vriendelijke groet,
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <FileText className="h-8 w-8 text-primary" />
-            Template Editor
-          </h2>
-          <p className="text-muted-foreground">
-            Maak, bewerk en beheer je content templates met de gebruiksvriendelijke wizard
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-secondary/5">
+      <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+        {/* Hero Header */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl shadow-lg">
+              <FileText className="h-12 w-12 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-4">
+            Template Editor Pro
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Maak professionele, converterende templates met onze geavanceerde wizard. 
+            <br className="hidden md:block" />
+            <span className="font-medium text-primary">Van concept naar conversie in minuten</span>
           </p>
+          <div className="flex justify-center mt-6">
+            <Badge className="px-6 py-2 text-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200">
+              <Crown className="h-4 w-4 mr-2" />
+              Pro Features Unlocked
+            </Badge>
+          </div>
         </div>
 
-        <div className="flex gap-2">
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 mb-12">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nieuw Template
+              <Button 
+                size="lg" 
+                className="px-8 py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <Plus className="h-5 w-5 mr-3" />
+                Nieuw Template Maken
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Wand2 className="h-5 w-5" />
-                  Template Wizard - Kies je Start
+            <DialogContent className="max-w-4xl">
+              <DialogHeader className="text-center pb-6">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl">
+                    <Wand2 className="h-8 w-8 text-primary" />
+                  </div>
+                </div>
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Template Wizard - Start je Project
                 </DialogTitle>
-                <DialogDescription>
-                  Begin met een vooraf gemaakte template of start helemaal opnieuw
+                <DialogDescription className="text-base text-muted-foreground">
+                  Kies een professioneel template of begin helemaal opnieuw. Elke optie is geoptimaliseerd voor maximale conversie.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-6">
-                <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-8">
+                <div className="grid gap-6 md:grid-cols-2">
                   {Object.entries(templateStarters).map(([category, content]) => (
                     <Card 
                       key={category} 
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 hover:border-primary/50"
+                      className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:border-primary/30 bg-gradient-to-br from-card to-card/50 overflow-hidden relative"
                       onClick={() => startNewTemplate(category, true)}
                     >
-                      <CardContent className="p-4 text-center">
-                        <div className="text-3xl mb-3">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <CardContent className="p-6 text-center relative z-10">
+                        <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
                           {category === 'blog' ? '📝' :
                            category === 'landing' ? '🎯' :
                            category === 'email' ? '📧' : '📱'}
                         </div>
-                        <h4 className="font-semibold mb-2">
-                          {category === 'blog' ? 'Blog Post' :
-                           category === 'landing' ? 'Landing Page' :
-                           category === 'email' ? 'Email Template' : 'Social Media'}
+                        <h4 className="font-bold text-lg mb-3 text-foreground">
+                          {category === 'blog' ? 'Blog Post Pro' :
+                           category === 'landing' ? 'Landing Page Expert' :
+                           category === 'email' ? 'Email Marketing' : 'Social Media Boost'}
                         </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen met lokale focus' :
-                           category === 'landing' ? 'Conversie-gerichte paginas met CTA\'s' :
-                           category === 'email' ? 'Professional email templates' : 'Sociale media posts met hashtags'}
+                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen die ranking verzekeren' :
+                           category === 'landing' ? 'High-converting paginas met bewezen CTA structuur' :
+                           category === 'email' ? 'Professionele templates met hoge open rates' : 'Virale content templates met trending hashtags'}
                         </p>
-                        <Button size="sm" className="mt-3 w-full" variant="outline">
-                          Start met {category === 'blog' ? 'Blog' : 
-                                   category === 'landing' ? 'Landing' :
-                                   category === 'email' ? 'Email' : 'Social'} Template
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            ))}
+                            <span className="text-xs text-muted-foreground ml-1">4.9/5</span>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary group-hover:shadow-lg"
+                          >
+                            <Target className="h-4 w-4 mr-2" />
+                            Start Template
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
                 
-                <div className="text-center border-t pt-4">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Of begin helemaal opnieuw zonder voorbeeldcontent
+                <div className="text-center border-t pt-6 bg-gradient-to-r from-secondary/5 to-primary/5 rounded-lg p-6">
+                  <div className="mb-4">
+                    <Code className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  </div>
+                  <h4 className="font-semibold text-lg mb-2">Custom Template</h4>
+                  <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                    Voor gevorderde gebruikers: Begin helemaal opnieuw zonder voorbeeldcontent en bouw je eigen unieke template
                   </p>
                   <Button 
                     variant="outline"
                     onClick={() => startNewTemplate()}
-                    className="w-full max-w-xs"
+                    className="px-8 py-3 border-2 hover:bg-muted/50"
                   >
                     <FileText className="h-4 w-4 mr-2" />
-                    Leeg Template Maken
+                    Blank Canvas Maken
                   </Button>
                 </div>
               </div>
@@ -452,105 +489,133 @@ Met vriendelijke groet,
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Template Library */}
-        <Card className="h-fit">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Template Bibliotheek
-            </CardTitle>
-            <CardDescription>
-              Selecteer een template om te bewerken of bekijken
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                placeholder="Zoek templates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
-              
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter categorie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alle categorieën</SelectItem>
-                  <SelectItem value="blog">Blog Posts</SelectItem>
-                  <SelectItem value="landing">Landing Pages</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="social">Social Media</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Main Content Grid - Enhanced Layout */}
+        <div className="grid gap-8 xl:grid-cols-4">
+          {/* Template Library - Enhanced */}
+          <Card className="xl:col-span-1 bg-gradient-to-br from-card to-card/50 shadow-elegant border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg">
+                <div className="p-2 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                Template Galerie
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Kies uit professionele templates of maak je eigen
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <Input
+                  placeholder="🔍 Zoek professionele templates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full border-2 focus:border-primary/50"
+                />
+                
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="border-2 focus:border-primary/50">
+                    <SelectValue placeholder="Filter categorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🎯 Alle categorieën</SelectItem>
+                    <SelectItem value="blog">📝 Blog Posts</SelectItem>
+                    <SelectItem value="landing">🎯 Landing Pages</SelectItem>
+                    <SelectItem value="email">📧 Email</SelectItem>
+                    <SelectItem value="social">📱 Social Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {filteredTemplates.map((template) => (
-                <Card 
-                  key={template.id} 
-                  className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
-                  }`}
-                  onClick={() => setSelectedTemplate(template)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {template.category}
-                        </Badge>
-                        {template.isPremium && (
-                          <Crown className="h-3 w-3 text-yellow-600" />
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                {filteredTemplates.map((template) => (
+                  <Card 
+                    key={template.id} 
+                    className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-background to-muted/20 ${
+                      selectedTemplate?.id === template.id ? 'ring-2 ring-primary shadow-lg scale-[1.02]' : ''
+                    }`}
+                    onClick={() => setSelectedTemplate(template)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={template.isPremium ? "default" : "outline"} 
+                            className={`text-xs font-medium ${template.isPremium ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : ''}`}
+                          >
+                            {template.category}
+                          </Badge>
+                          {template.isPremium && (
+                            <Crown className="h-4 w-4 text-amber-600" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                          <span className="text-sm font-medium">{template.rating}</span>
+                        </div>
+                      </div>
+                      
+                      <h4 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">
+                        {template.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
+                        {template.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Target className="h-3 w-3" />
+                            {template.usageCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            {template.variables.length}
+                          </span>
+                        </div>
+                        {selectedTemplate?.id === template.id && (
+                          <Badge className="bg-primary/10 text-primary border-primary/20">
+                            Geselecteerd
+                          </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs">{template.rating}</span>
-                      </div>
-                    </div>
-                    
-                    <h4 className="font-medium text-sm mb-1">{template.name}</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                      {template.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{template.usageCount} gebruikt</span>
-                      <span>{template.variables.length} variabelen</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {filteredTemplates.length === 0 && (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-sm font-medium text-muted-foreground">Geen templates gevonden</p>
+                    <p className="text-xs text-muted-foreground mt-1">Probeer een andere zoekopdracht</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Editor/Preview Panel */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {isEditing ? (
-                      <>
-                        <Edit className="h-5 w-5" />
-                        {selectedTemplate ? 'Template Bewerken' : 'Nieuw Template'}
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="h-5 w-5" />
-                        Template Preview
-                      </>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    {selectedTemplate?.name || editingTemplate.name || 'Selecteer een template'}
-                  </CardDescription>
-                </div>
+          {/* Enhanced Editor/Preview Panel */}
+          <div className="xl:col-span-3">
+            <Card className="h-full bg-gradient-to-br from-card to-card/50 shadow-elegant border-0">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg">
+                      {isEditing ? (
+                        <Edit className="h-5 w-5 text-primary" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-primary" />
+                      )}
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">
+                        {isEditing ? (selectedTemplate ? 'Template Editor Pro' : 'Nieuw Template Maken') : 'Template Preview'}
+                      </CardTitle>
+                      <CardDescription className="text-sm">
+                        {selectedTemplate?.name || editingTemplate.name || 'Selecteer een template om te beginnen'}
+                      </CardDescription>
+                    </div>
+                  </div>
                 
                 <div className="flex gap-2">
                   {!isEditing && selectedTemplate && (
