@@ -53,6 +53,21 @@ interface ContentTemplate {
   usageCount: number;
   author: string;
   isPremium: boolean;
+  cta?: {
+    enabled: boolean;
+    type: "phone" | "form" | "button" | "none";
+    title?: string;
+    description?: string;
+    phone?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+    formFields?: Array<{
+      name: string;
+      type: "text" | "email" | "phone" | "textarea";
+      placeholder: string;
+      required: boolean;
+    }>;
+  };
 }
 
 interface ScheduledPost {
@@ -142,7 +157,14 @@ Voor betrouwbare {{service}} in {{city}} bent u bij ons aan het juiste adres. Ne
       createdAt: "2025-01-18",
       usageCount: 1247,
       author: "SEO Expert",
-      isPremium: false
+      isPremium: false,
+      cta: {
+        enabled: true,
+        type: "phone",
+        title: "Gratis Offerte Aanvragen?",
+        description: "Bel direct voor een vrijblijvende offerte en professioneel advies",
+        phone: "{{phone_number}}"
+      }
     },
     {
       id: "service-landing-page",
@@ -156,7 +178,7 @@ Voor betrouwbare {{service}} in {{city}} bent u bij ons aan het juiste adres. Ne
 Heeft u last van {{problem}}? U bent niet de enige. In {{city}} worstelen veel mensen met {{issue}}.
 
 ## De Oplossing: {{service}}
-Onze {{service}} lost {{problem}} definitief op. Met meer dan {{years}} jaar ervaring en {{satisfied_customers}}+ tevreden klanten.
+Onze {{service}} lost {{problem}} definitief op. Met meer dan {{years}} jaar ervering en {{satisfied_customers}}+ tevreden klanten.
 
 ### Waarom Kiezen Voor Ons?
 ✅ **{{years}}+ Jaar Ervaring** - Bewezen track record
@@ -180,7 +202,19 @@ Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
       createdAt: "2025-01-18",
       usageCount: 892,
       author: "Conversion Expert",
-      isPremium: true
+      isPremium: true,
+      cta: {
+        enabled: true,
+        type: "form",
+        title: "Start Nu - 50% Korting!",
+        description: "Vul onderstaand formulier in en ontvang binnen 24 uur een gratis offerte",
+        formFields: [
+          { name: "name", type: "text", placeholder: "Uw volledige naam", required: true },
+          { name: "email", type: "email", placeholder: "E-mailadres", required: true },
+          { name: "phone", type: "phone", placeholder: "Telefoonnummer", required: true },
+          { name: "message", type: "textarea", placeholder: "Beschrijf uw situatie kort", required: false }
+        ]
+      }
     },
     {
       id: "product-review-deep",
@@ -245,7 +279,15 @@ Voor {{price}} krijg je {{value_proposition}}. Vergeleken met {{competitors}} is
       createdAt: "2025-01-18",
       usageCount: 634,
       author: "Product Reviewer",
-      isPremium: false
+      isPremium: false,
+      cta: {
+        enabled: true,
+        type: "button",
+        title: "Beste Prijs Gevonden!",
+        description: "Klik hier voor de laagste prijs bij onze partner",
+        buttonText: "Bekijk Aanbieding",
+        buttonUrl: "{{affiliate_link}}"
+      }
     },
     {
       id: "how-to-guide-expert",
@@ -635,11 +677,12 @@ De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}.
       </div>
 
       <Tabs defaultValue="templates" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="templates">Template Library</TabsTrigger>
           <TabsTrigger value="scheduler">Content Scheduler</TabsTrigger>
           <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
           <TabsTrigger value="ab-testing">A/B Testing</TabsTrigger>
+          <TabsTrigger value="cta-preview">CTA Previews</TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-6">
@@ -719,6 +762,19 @@ De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}.
                         <span>{template.usageCount} keer gebruikt</span>
                         <span>Door {template.author}</span>
                       </div>
+
+                      {template.cta?.enabled && (
+                        <div className="mb-3 p-2 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20">
+                          <div className="flex items-center gap-1 text-xs font-medium text-primary mb-1">
+                            <Target className="h-3 w-3" />
+                            CTA: {template.cta.type === 'phone' ? 'Telefoon' : 
+                                  template.cta.type === 'form' ? 'Formulier' : 'Button'}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {template.cta.title}
+                          </p>
+                        </div>
+                      )}
                       
                       <div className="flex gap-2">
                         <Button 
@@ -1097,6 +1153,182 @@ De {{industry}} markt in {{location}} wordt gedomineerd door {{market_leaders}}.
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="cta-preview" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>CTA Preview Galerij</CardTitle>
+              <CardDescription>
+                Bekijk hoe verschillende CTA types eruit zien in je content
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                
+                {/* Phone CTA Example */}
+                <Card className="border-2 border-dashed border-primary/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-sm">Telefoon CTA</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-4 rounded-lg border border-primary/20">
+                      <h4 className="font-semibold text-primary mb-2">Gratis Offerte Aanvragen?</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Bel direct voor een vrijblijvende offerte en professioneel advies
+                      </p>
+                      <Button className="w-full">
+                        📞 Bel Nu: 085-1234567
+                      </Button>
+                    </div>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      <strong>Gebruikt in:</strong> SEO Blog Post - Nederland
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Form CTA Example */}
+                <Card className="border-2 border-dashed border-primary/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-sm">Formulier CTA</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-4 rounded-lg border border-primary/20">
+                      <h4 className="font-semibold text-primary mb-2">Start Nu - 50% Korting!</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Vul onderstaand formulier in en ontvang binnen 24 uur een gratis offerte
+                      </p>
+                      <div className="space-y-2">
+                        <Input placeholder="Uw volledige naam" size={10} />
+                        <Input placeholder="E-mailadres" size={10} />
+                        <Input placeholder="Telefoonnummer" size={10} />
+                        <Textarea placeholder="Beschrijf uw situatie kort" className="min-h-[60px]" />
+                        <Button className="w-full">
+                          Aanvraag Verzenden
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      <strong>Gebruikt in:</strong> Service Landing Page
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Button CTA Example */}
+                <Card className="border-2 border-dashed border-primary/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      <CardTitle className="text-sm">Button CTA</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-4 rounded-lg border border-primary/20">
+                      <h4 className="font-semibold text-primary mb-2">Beste Prijs Gevonden!</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Klik hier voor de laagste prijs bij onze partner
+                      </p>
+                      <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
+                        🔥 Bekijk Aanbieding
+                      </Button>
+                    </div>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      <strong>Gebruikt in:</strong> Product Review
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Custom CTA Builder */}
+                <Card className="border-2 border-primary/50 md:col-span-2 lg:col-span-3">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      CTA Builder
+                    </CardTitle>
+                    <CardDescription>
+                      Ontwerp je eigen CTA en preview het resultaat
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="cta-type">CTA Type</Label>
+                          <Select defaultValue="phone">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="phone">Telefoon</SelectItem>
+                              <SelectItem value="form">Formulier</SelectItem>
+                              <SelectItem value="button">Button/Link</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="cta-title">Titel</Label>
+                          <Input 
+                            id="cta-title" 
+                            placeholder="Bijv. Gratis Offerte Krijgen?" 
+                            defaultValue="Neem Contact Op!"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="cta-description">Omschrijving</Label>
+                          <Textarea 
+                            id="cta-description" 
+                            placeholder="Korte uitleg van de actie..."
+                            defaultValue="Bel nu voor een vrijblijvende offerte binnen 24 uur"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="button-text">Button Tekst</Label>
+                          <Input 
+                            id="button-text" 
+                            placeholder="Bijv. Bel Nu, Verstuur, etc."
+                            defaultValue="Bel Direct"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm font-medium mb-3 block">Live Preview</Label>
+                        <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-4 rounded-lg border border-primary/20">
+                          <h4 className="font-semibold text-primary mb-2">Neem Contact Op!</h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Bel nu voor een vrijblijvende offerte binnen 24 uur
+                          </p>
+                          <Button className="w-full">
+                            📞 Bel Direct
+                          </Button>
+                        </div>
+                        
+                        <div className="mt-4 space-y-2">
+                          <Button variant="outline" className="w-full">
+                            <Copy className="h-4 w-4 mr-2" />
+                            Kopieer CTA Code
+                          </Button>
+                          <Button variant="outline" className="w-full">
+                            <Download className="h-4 w-4 mr-2" />
+                            Exporteer als Template
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
