@@ -47,6 +47,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactPage from "./pages/ContactPage";
 import AboutPage from "./pages/AboutPage";
+import AdvancedAIFeatures from "./pages/AdvancedAIFeatures";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -145,6 +146,7 @@ const App = () => (
               <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><AdminUsersPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />

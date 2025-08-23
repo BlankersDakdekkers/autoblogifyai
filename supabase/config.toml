@@ -53,3 +53,15 @@ verify_jwt = true
 
 [functions.wordpress-publish]
 verify_jwt = true
+
+[functions.advanced-ai-generation]
+verify_jwt = true
+
+[functions.ai-keyword-research]
+verify_jwt = true
+
+[functions.multilingual-translator]
+verify_jwt = true
+
+[functions.custom-persona-manager]
+verify_jwt = true

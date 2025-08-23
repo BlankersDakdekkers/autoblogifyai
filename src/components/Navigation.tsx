@@ -18,7 +18,9 @@ import {
   Calendar,
   Book,
   Users,
-  Activity
+  Activity,
+  Crown,
+  Brain
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -117,6 +119,17 @@ export const useNavigationSections = (): NavigationSection[] => {
         url: "/dashboard/blogs", 
         icon: FileText,
         description: "Beheer en publiceer je blogs naar WordPress"
+      },
+    ]
+  },
+  {
+    label: "Enterprise AI",
+    items: [
+      { 
+        title: "Advanced AI Features", 
+        url: "/dashboard/advanced-ai", 
+        icon: Crown,
+        description: "Geavanceerde AI modellen en functies"
       },
     ]
   },
