@@ -190,12 +190,14 @@ const PricingPage = () => {
       features: [
         "✨ 14 dagen gratis trial",
         "💎 Alles van Professional",
+        "🧠 GPT-4o/Claude Opus toegang - Meest geavanceerde AI modellen",
+        "🎭 Custom AI personas - Train je eigen schrijfstijl en merkvoice", 
+        "🌍 Meertalige content generatie - Automatisch vertalen naar 25+ talen",
+        "📊 AI-gedreven keyword research - Geavanceerde SEO suggesties",
         "🏷️ White-label oplossing",
         "👨‍💼 Dedicated account manager",
-        "🤖 Custom AI training",
-        "🔌 API toegang",
-        "🔄 Automatische verlenging na trial",
-        "🛡️ Enterprise security"
+        "🔌 API toegang & webhooks",
+        "🛡️ Enterprise security & compliance"
       ]
     }
   ];
