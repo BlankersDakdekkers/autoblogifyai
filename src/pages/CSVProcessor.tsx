@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,9 @@ import {
   Eye,
   Copy,
   AlertTriangle,
-  X
+  X,
+  List,
+  ChevronRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from 'react-markdown';
@@ -58,6 +60,7 @@ const CSVProcessor = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [csvUrl, setCsvUrl] = useState("");
   const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
+  const [showTableOfContents, setShowTableOfContents] = useState(true);
 
   // Use the enhanced CSV processor hook
   const {
@@ -76,6 +79,40 @@ const CSVProcessor = () => {
 
   // Use optimized blog posts query
   const { data: generatedPosts = [], isLoading: isLoadingPosts, refetch: refetchPosts } = useBlogPosts(user?.id || '');
+
+  // Extract table of contents from markdown
+  const tableOfContents = useMemo(() => {
+    if (!selectedPost?.body_markdown) return [];
+    
+    const headingRegex = /^(#{1,6})\s+(.+)$/gm;
+    const headings: Array<{ level: number; text: string; id: string }> = [];
+    let match;
+    
+    while ((match = headingRegex.exec(selectedPost.body_markdown)) !== null) {
+      const level = match[1].length;
+      const text = match[2].trim();
+      const id = text.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 50);
+      
+      headings.push({ level, text, id });
+    }
+    
+    return headings;
+  }, [selectedPost?.body_markdown]);
+
+  // Smooth scroll to heading
+  const scrollToHeading = useCallback((id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest' 
+      });
+    }
+  }, []);
 
   // Handle processing completion
   const handleProcessingComplete = useCallback((jobId: string) => {
@@ -888,8 +925,77 @@ const CSVProcessor = () => {
             </div>
             
             {/* Professional Content Area */}
-            <div className="max-h-[70vh] overflow-y-auto">
-              <div className="p-6 md:p-8 space-y-8">
+            <div className="flex gap-6">
+              
+              {/* Table of Contents Sidebar */}
+              {tableOfContents.length > 0 && showTableOfContents && (
+                <div className="hidden lg:block w-80 shrink-0">
+                  <div className="sticky top-24 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900/50 dark:to-blue-950/30 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <List className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg text-foreground">Inhoudsopgave</h3>
+                          <p className="text-sm text-muted-foreground">{tableOfContents.length} onderwerpen</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowTableOfContents(false)}
+                          className="ml-auto h-8 w-8 p-0 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <nav className="space-y-2">
+                        {tableOfContents.map((heading, index) => (
+                          <button
+                            key={index}
+                            onClick={() => scrollToHeading(heading.id)}
+                            className={`
+                              flex items-start gap-3 w-full text-left p-3 rounded-xl transition-all duration-200 group
+                              hover:bg-white/80 dark:hover:bg-slate-800/50 hover:shadow-md
+                              ${heading.level === 1 ? 'font-bold text-primary text-base' : ''}
+                              ${heading.level === 2 ? 'font-semibold text-foreground text-sm ml-4' : ''}
+                              ${heading.level === 3 ? 'font-medium text-muted-foreground text-sm ml-8' : ''}
+                              ${heading.level >= 4 ? 'text-muted-foreground text-xs ml-12' : ''}
+                            `}
+                          >
+                            <div className={`
+                              shrink-0 rounded-full mt-1.5 transition-all duration-200 group-hover:scale-110
+                              ${heading.level === 1 ? 'w-3 h-3 bg-primary' : ''}
+                              ${heading.level === 2 ? 'w-2.5 h-2.5 bg-primary/70' : ''}
+                              ${heading.level === 3 ? 'w-2 h-2 bg-primary/50' : ''}
+                              ${heading.level >= 4 ? 'w-1.5 h-1.5 bg-primary/30' : ''}
+                            `} />
+                            <span className="flex-1 leading-tight group-hover:text-primary transition-colors">
+                              {heading.text}
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1" />
+                          </button>
+                        ))}
+                      </nav>
+                      
+                      {/* SEO Benefits Note */}
+                      <div className="mt-6 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                          <CheckCircle className="w-3 h-3 text-green-500 mt-0.5 shrink-0" />
+                          <span className="leading-relaxed">
+                            Deze inhoudsopgave verbetert de SEO en gebruikerservaring van je artikel
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Main Content */}
+              <div className={`flex-1 ${tableOfContents.length === 0 || !showTableOfContents ? 'max-w-none' : 'max-w-3xl'} overflow-y-auto max-h-[70vh]`}>
+                <div className="p-6 md:p-8 space-y-8">
                 
                 {/* Hero Image - Professional Layout */}
                 {selectedPost.hero_image_url && (
@@ -954,24 +1060,84 @@ const CSVProcessor = () => {
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
-                        h1: ({ children }) => (
-                          <h1 className="group flex items-center gap-3 scroll-mt-20">
-                            <span className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></span>
-                            {children}
-                          </h1>
-                        ),
-                        h2: ({ children }) => (
-                          <h2 className="group flex items-center gap-3 scroll-mt-20">
-                            <span className="w-1.5 h-6 bg-gradient-to-b from-primary/80 to-primary/40 rounded-full"></span>
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className="group flex items-center gap-3 scroll-mt-20">
-                            <span className="w-1 h-5 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full"></span>
-                            {children}
-                          </h3>
-                        ),
+                        h1: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h1 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></span>
+                              {children}
+                            </h1>
+                          );
+                        },
+                        h2: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h2 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-1.5 h-6 bg-gradient-to-b from-primary/80 to-primary/40 rounded-full"></span>
+                              {children}
+                            </h2>
+                          );
+                        },
+                        h3: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h3 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-1 h-5 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full"></span>
+                              {children}
+                            </h3>
+                          );
+                        },
+                        h4: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h4 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-0.5 h-4 bg-gradient-to-b from-primary/40 to-primary/20 rounded-full"></span>
+                              {children}
+                            </h4>
+                          );
+                        },
+                        h5: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h5 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-0.5 h-3 bg-gradient-to-b from-primary/30 to-primary/15 rounded-full"></span>
+                              {children}
+                            </h5>
+                          );
+                        },
+                        h6: ({ children }) => {
+                          const text = children?.toString() || '';
+                          const id = text.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .substring(0, 50);
+                          return (
+                            <h6 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                              <span className="w-0.5 h-2 bg-gradient-to-b from-primary/20 to-primary/10 rounded-full"></span>
+                              {children}
+                            </h6>
+                          );
+                        },
                         p: ({ children, ...props }) => {
                           return <p className="leading-8 mb-6">{children}</p>;
                         },
@@ -1040,6 +1206,67 @@ const CSVProcessor = () => {
                 
               </div>
             </div>
+            
+            {/* Mobile TOC Toggle */}
+            {tableOfContents.length > 0 && !showTableOfContents && (
+              <div className="lg:hidden fixed bottom-20 right-4 z-50">
+                <Button
+                  onClick={() => setShowTableOfContents(true)}
+                  className="rounded-full shadow-lg bg-primary hover:bg-primary/90 text-white p-3"
+                  size="sm"
+                >
+                  <List className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+            
+            {/* Mobile TOC Overlay */}
+            {tableOfContents.length > 0 && showTableOfContents && (
+              <div className="lg:hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-background rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border shadow-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-bold text-lg text-foreground">Inhoudsopgave</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTableOfContents(false)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <nav className="space-y-2">
+                    {tableOfContents.map((heading, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          scrollToHeading(heading.id);
+                          setShowTableOfContents(false);
+                        }}
+                        className={`
+                          flex items-start gap-3 w-full text-left p-3 rounded-xl transition-all duration-200
+                          hover:bg-muted/50
+                          ${heading.level === 1 ? 'font-bold text-primary text-base' : ''}
+                          ${heading.level === 2 ? 'font-semibold text-foreground text-sm ml-4' : ''}
+                          ${heading.level === 3 ? 'font-medium text-muted-foreground text-sm ml-8' : ''}
+                          ${heading.level >= 4 ? 'text-muted-foreground text-xs ml-12' : ''}
+                        `}
+                      >
+                        <div className={`
+                          shrink-0 rounded-full mt-1.5
+                          ${heading.level === 1 ? 'w-3 h-3 bg-primary' : ''}
+                          ${heading.level === 2 ? 'w-2.5 h-2.5 bg-primary/70' : ''}
+                          ${heading.level === 3 ? 'w-2 h-2 bg-primary/50' : ''}
+                          ${heading.level >= 4 ? 'w-1.5 h-1.5 bg-primary/30' : ''}
+                        `} />
+                        <span className="flex-1 leading-tight">{heading.text}</span>
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+              </div>
+            )}
             
             {/* Professional Footer */}
             <div className="bg-muted/30 border-t border-border/50 p-6">
