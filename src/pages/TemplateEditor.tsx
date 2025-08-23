@@ -252,148 +252,149 @@ Met vriendelijke groet,
       id: "service-page-pro",
       name: "Dienstenpagina Pro - Lokale Dienstverlener",
       description: "Complete servicepagina template met prijzen, werkgebied, FAQ en contactgegevens",
-      category: "service",
-      content: `# {{service_title}} in {{city}} | {{company_name}}
+      category: "service" as const,
+    content: `# {{service_name}} {{city}} | {{company_name}}
 
-## ⭐ {{years_experience}} Jaar Ervaring | {{customer_count}}+ Tevreden Klanten
+**{{service_name}} {{city}}**? {{opening_line}}
 
----
+{{intro_paragraph}}
 
-## 🎯 Onze {{service_type}} Diensten
+**{{experience_statement}}**
 
-### Wat Wij Doen
-{{service_description}}
-
-### Onze Specialisaties:
-✅ {{specialization_1}}
-✅ {{specialization_2}}  
-✅ {{specialization_3}}
-✅ {{specialization_4}}
+[{{phone}}](tel:{{phone}})
 
 ---
 
-## 🌍 Werkgebied
+## **{{service_name}}** {{city}}
 
-**Wij werken in {{city}} en omgeving:**
-- {{area_1}}
-- {{area_2}}
-- {{area_3}}
-- {{area_4}}
+{{service_description_detailed}}
 
-*Twijfelt u of wij bij u in de buurt werken? Bel {{phone}} voor informatie.*
+{{problem_statement}}
 
----
+{{solution_statement}}
 
-## 💰 Transparante Prijzen
+{{process_description}}
 
-| Service | Prijs vanaf | Duur |
-|---------|-------------|------|
-| {{service_1}} | €{{price_1}} | {{duration_1}} |
-| {{service_2}} | €{{price_2}} | {{duration_2}} |
-| {{service_3}} | €{{price_3}} | {{duration_3}} |
+{{result_statement}}
 
-> **💡 Gratis offerte:** Exacte prijs krijgt u na onze gratis inspectie
+{{risk_statement}}
+
+{{closing_cta_line}}
+
+[{{phone}}](tel:{{phone}})
 
 ---
 
-## 🏆 Waarom Kiezen Voor {{company_name}}?
+### Onze **beloften**
 
-### ⚡ {{benefit_1}}
-{{benefit_1_description}}
+#### {{promise_1_title}}
+{{promise_1_description}}
 
-### 🛡️ {{benefit_2}}  
-{{benefit_2_description}}
+#### {{promise_2_title}}
+{{promise_2_description}}
 
-### 👨‍🔧 {{benefit_3}}
-{{benefit_3_description}}
+#### {{promise_3_title}}
+{{promise_3_description}}
 
-### 📞 {{benefit_4}}
-{{benefit_4_description}}
+#### {{promise_4_title}}
+{{promise_4_description}}
+
+#### {{promise_5_title}}
+{{promise_5_description}}
+
+#### {{promise_6_title}}
+{{promise_6_description}}
 
 ---
 
-## 📝 Hoe Wij Werken
+![{{service_name}} {{city}}]({{hero_image_url}})
 
-**1️⃣ Contact & Afspraak**  
+### Onze Services
+
+- {{service_1}}
+- {{service_2}}
+- {{service_3}}
+- {{service_4}}
+- {{service_5}}
+- {{service_6}}
+
+---
+
+### Gratis {{inspection_type}}
+
+[{{phone}}](tel:{{phone}})
+
+**Klantbeoordelingen:**
+
+⭐⭐⭐⭐⭐
+
+*{{review_1_text}}*
+
+**{{review_1_name}}**
+
+⭐⭐⭐⭐⭐
+
+*{{review_2_text}}*
+
+**{{review_2_name}}**
+
+⭐⭐⭐⭐⭐
+
+*{{review_3_text}}*
+
+**{{review_3_name}}**
+
+---
+
+## Werkwijze **{{company_name}}**
+
+**1. {{step_1_title}}**  
 {{step_1_description}}
 
-**2️⃣ Gratis Inspectie**  
+**2. {{step_2_title}}**  
 {{step_2_description}}
 
-**3️⃣ Offerte & Planning**  
+**3. {{step_3_title}}**  
 {{step_3_description}}
 
-**4️⃣ Professionele Uitvoering**  
-{{step_4_description}}
+---
 
-**5️⃣ Nazorg & Garantie**  
-{{step_5_description}}
+## Bent u op zoek **naar een {{professional_title}}?**
+
+{{contact_invitation}}
+
+[Bel {{phone}}](tel:{{phone}})
 
 ---
 
-## 💬 Wat Onze Klanten Zeggen
+## {{service_name}} **laten uitvoeren**
 
-### ⭐⭐⭐⭐⭐ {{rating}}/5 Sterren
+{{detailed_service_description}}
 
-> *"{{testimonial_1}}"*  
-> **- {{customer_1}}, {{location_1}}**
+{{safety_statement}}
 
-> *"{{testimonial_2}}"*  
-> **- {{customer_2}}, {{location_2}}**
+{{expertise_statement}}
 
-[Lees alle {{review_count}} reviews →](#reviews)
+{{long_term_benefits}}
 
----
+{{consequences_warning}}
 
-## ❓ Veelgestelde Vragen
+Bent u klaar voor een **{{service_name}} {{city}}**? Neem vandaag nog contact op met {{company_name}} via [{{phone}}](tel:{{phone}}) om een afspraak te maken.
 
-### {{faq_question_1}}
-{{faq_answer_1}}
-
-### {{faq_question_2}}
-{{faq_answer_2}}
-
-### {{faq_question_3}}
-{{faq_answer_3}}
-
-### {{faq_question_4}}
-{{faq_answer_4}}
+[{{phone}}](tel:{{phone}})
 
 ---
 
-## 🚨 Spoeddienst Beschikbaar
+**Waarom kiezen voor {{company_name}}?**
 
-**Noodsituatie? Wij zijn er voor u!**
+✅ {{years_experience}}+ jaar ervaring  
+✅ {{guarantee_years}} jaar garantie  
+✅ Gratis {{inspection_type}}  
+✅ Geen voorrijkosten  
+✅ 24/7 spoedservice  
+✅ {{customers_served}}+ tevreden klanten  
 
-📞 **Spoed telefoon:** {{emergency_phone}}  
-⏰ **24/7 bereikbaar** voor noodgevallen  
-🚗 **Binnen {{response_time}} ter plaatse**
-
----
-
-## 📞 Contact & Offerte
-
-### Direct Contact
-**Telefoon:** [{{phone}}](tel:{{phone}})  
-**WhatsApp:** [{{whatsapp}}](https://wa.me/{{whatsapp}})  
-**Email:** [{{email}}](mailto:{{email}})
-
-### Bezoekadres  
-{{address}}  
-{{postal_code}} {{city}}
-
-### Openingstijden
-{{opening_hours}}
-
----
-
-## 🎁 Actie: {{special_offer}}
-
-**{{cta_text}}**
-
-[📞 Bel Direct](tel:{{phone}}) | [💬 WhatsApp](https://wa.me/{{whatsapp}}) | [✉️ Mail Ons](mailto:{{email}})
-
-*Reactie gegarandeerd binnen {{response_guarantee}}*`,
+**Direct contact:** [{{phone}}](tel:{{phone}})**`,
       variables: ["service_title", "city", "company_name", "years_experience", "customer_count", "service_type", "service_description", "specialization_1", "specialization_2", "specialization_3", "specialization_4", "phone", "email"],
       tags: ["diensten", "lokaal", "business", "contact"],
       isPublic: true,
@@ -521,10 +522,72 @@ Met vriendelijke groet,
     email: "info@dakpro-amsterdam.nl",
     website: "www.dakpro-amsterdam.nl",
     
-    // Service pagina specifiek
-    service_title: "Professionele Dakdekkersdiensten",
-    service_type: "dakdekker",
-    service_description: "Van kleine reparaties tot complete dakrenovaties - wij zorgen voor een waterdicht en duurzaam resultaat. Onze gecertificeerde vakmannen werken uitsluitend met A-merk materialen en bieden 15 jaar garantie.",
+    // Service pagina specifiek - gebaseerd op echte voorbeelden
+    service_name: "Dakrenovatie",
+    opening_line: "Is uw dak in Amsterdam toe aan een grondige renovatie? Misschien wilt u uw dak vernieuwen omdat het oud is en vatbaarder wordt voor lekkages en andere problemen. In dat geval is een dakrenovatie de ideale oplossing.",
+    intro_paragraph: "Bij een dakrenovatie wordt uw volledige dak vervangen. Deze renovatieoptie is bij uitstek geschikt voor oudere daken die een verhoogd risico op lekkages en storingen met zich meebrengen. U wilt zich tenslotte veilig voelen onder uw dak, vooral tijdens het slapen.",
+    experience_statement: "Met meer dan 30 jaar ervaring hebben we duizenden daken gerenoveerd. Ons deskundige team staat klaar om uw dak te transformeren.",
+    
+    service_description_detailed: "Bij een dakrenovatie starten we met een grondige inspectie van uw huidige dak. Op basis daarvan stellen we een gedetailleerd plan van aanpak op. Vervolgens verwijderen we de oude dakbedekking en installeren we het nieuwe dak. Tot slot voeren we een nauwkeurige controle uit om de kwaliteit te waarborgen.",
+    problem_statement: "Met een dakrenovatie kunt u weer tientallen jaren zonder zorgen onder uw dak wonen. Uw vernieuwde dak vermindert het risico op scheuren en lekkages aanzienlijk. Bovendien neemt het instortingsgevaar drastisch af.",
+    solution_statement: "Het is belangrijk om te benadrukken dat het negeren van een dakrenovatie ernstige gevolgen kan hebben. Veel mensen die hun dak niet renoveren, worden uiteindelijk geconfronteerd met lekkages, wat kan leiden tot kortsluiting of brand.",
+    process_description: "Tijdens een dakrenovatie wordt uw complete dak vernieuwd. Wij zorgen voor een professionele aanpak van A tot Z.",
+    result_statement: "Bovendien gaat de isolatiewerking van het dakmateriaal aanzienlijk achteruit of gaat volledig verloren.",
+    risk_statement: "Is uw dak verouderd en wilt u het volledig laten vervangen? Kies dan voor een professionele dakrenovatie Amsterdam!",
+    closing_cta_line: "Neem vandaag nog contact op met DakPro Amsterdam om een afspraak te maken.",
+    
+    // Beloften (zoals echte website)
+    promise_1_title: "Gratis dakinspectie",
+    promise_1_description: "Uitgebreide inspectie zonder kosten",
+    promise_2_title: "24/7 spoedservice", 
+    promise_2_description: "Altijd bereikbaar voor noodgevallen",
+    promise_3_title: "10 jaar garantie",
+    promise_3_description: "Volledige garantie op alle werkzaamheden",
+    promise_4_title: "Snel geholpen",
+    promise_4_description: "Snelle reactie en planning",
+    promise_5_title: "Geen voorrijkosten",
+    promise_5_description: "Offerte en inspectie altijd gratis",
+    promise_6_title: "30+ jaar ervaring",
+    promise_6_description: "Decennia aan vakmanschap en expertise",
+    
+    // Services lijst
+    service_1: "Dakdekker Amsterdam",
+    service_2: "Dakbedekking",
+    service_3: "Dakinspectie", 
+    service_4: "Daklekkage",
+    service_5: "Dakrenovatie",
+    service_6: "Dakreparatie",
+    
+    inspection_type: "Dakinspectie",
+    professional_title: "dakdekker",
+    
+    // Echte klantreviews stijl
+    review_1_text: "Ik had te maken met een lekkage in mijn dak. Daarom heb ik contact opgenomen met DakPro Amsterdam. Ze hebben de lekkage snel gevonden en direct gerepareerd. Ik kan dit bedrijf zeker aan iedereen aanbevelen.",
+    review_1_name: "Gerard",
+    review_2_text: "Ik heb het dak van mijn schuur laten vervangen door DakPro Amsterdam. Eerst heb ik een vrijblijvende offerte gekregen. Nadat ik akkoord ging konden ze snel langskomen. Alle afspraken worden nagekomen! Uitstekende service!",
+    review_2_name: "Marianne",
+    review_3_text: "Dik tevreden over de uitgevoerde werkzaamheden aan mijn dak door dit bedrijf! Zeer professioneel en tevens erg klantvriendelijk.",
+    review_3_name: "Mike",
+    
+    // Werkwijze (zoals echte website)
+    step_1_title: "Maak een afspraak",
+    step_1_description: "Bespreek de situatie en maak een afspraak.",
+    step_2_title: "Gratis dakinspectie en vrijblijvende offerte", 
+    step_2_description: "Wij inspecteren uw dak en u ontvangt een vrijblijvende offerte.",
+    step_3_title: "Aan de slag",
+    step_3_description: "Wij voeren de werkzaamheden uit.",
+    
+    contact_invitation: "Neem vrijblijvend contact op voor persoonlijk advies.",
+    
+    detailed_service_description: "Bent u in Amsterdam op zoek naar een remedie voor uw gedateerde dak? Een dakrenovatie is de ideale oplossing als uw huidige dak te kampen heeft met lekkages of andere complicaties. Tijdens een dakrenovatie wordt uw complete dak vernieuwd.",
+    safety_statement: "Misschien voelt uw huis niet meer als de veilige haven die het ooit was. Maar wees gerust, wij staan klaar om u bij te staan! Een dakrenovatie betekent een complete vervanging van uw dakbedekking, wat u de kans geeft om weer jarenlang zorgeloos te leven.",
+    expertise_statement: "Als ervaren dakdekkers hebben wij in Amsterdam een rijke geschiedenis met de renovatie van diverse soorten daken. Onze specialisten hebben meer dan 30 jaar expertise in dakrenovaties en hebben reeds duizenden daken gerevitaliseerd.",
+    long_term_benefits: "Met een nieuwe dakbedekking kunt u decennia lang zorgeloos wonen onder uw dak.",
+    consequences_warning: "Uitstel kan leiden tot kostbare waterschade, schimmelvorming en structurele problemen.",
+    
+    guarantee_years: "10",
+    customers_served: "5000",
+    hero_image_url: "/api/placeholder/800/400",
     
     // Specialisaties
     specialization_1: "Daklekkage reparatie & noodhulp",
@@ -532,29 +595,9 @@ Met vriendelijke groet,
     specialization_3: "Dakisolatie & energiezuinige oplossingen", 
     specialization_4: "Dakgoot installatie & onderhoud",
     
-    // Werkgebied
-    area_1: "Amsterdam Centrum & Zuid",
-    area_2: "Amstelveen & Uithoorn",
-    area_3: "Diemen & Duivendrecht",
-    area_4: "Ouderkerk & Abcoude",
-    
-    // Prijzen & diensten
-    service_1: "Daklekkage reparatie",
-    price_1: "125",
-    duration_1: "1-2 uur",
-    service_2: "Dakbedekking vernieuwen",
-    price_2: "85/m²", 
-    duration_2: "2-5 dagen",
-    service_3: "Dakisolatie plaatsing",
-    price_3: "45/m²",
-    duration_3: "1-2 dagen",
-    
-    // Werkwijze stappen
-    step_1_description: "Binnen 2 uur teruggebeld, afspraak binnen 24 uur mogelijk",
-    step_2_description: "Grondige inspectie van uw dak met meetrapport en foto's",
-    step_3_description: "Gedetailleerde offerte met materialen en arbeidskosten",
-    step_4_description: "Vakkundige uitvoering door gecertificeerde specialisten",
-    step_5_description: "15 jaar garantie + jaarlijkse controle op afspraak",
+    // Werkgebied - verwijderd duplicates
+    // Prijzen & diensten - verwijderd duplicates  
+    // Werkwijze stappen - verwijderd duplicates
     
     // Contact & locatie
     address: "Herengracht 123",
