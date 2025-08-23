@@ -24,7 +24,8 @@ import {
   Zap,
   Eye,
   Copy,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from 'react-markdown';
@@ -724,49 +725,73 @@ const CSVProcessor = () => {
 
       {/* Post Viewer Modal */}
       {showPostViewer && selectedPost && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between py-4">
-              <div className="flex-1">
-                <CardTitle className="text-lg line-clamp-2">{selectedPost.title}</CardTitle>
-                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                  <Badge variant={selectedPost.status === 'published' ? 'default' : 'secondary'}>
-                    {selectedPost.status}
-                  </Badge>
-                  <span>{selectedPost.word_count} woorden</span>
-                  <span>{selectedPost.author}</span>
-                  <span>{formatDate(selectedPost.created_at)}</span>
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[100] p-2 sm:p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowPostViewer(false);
+              setSelectedPost(null);
+            }
+          }}
+        >
+          <Card className="w-full max-w-4xl bg-background border shadow-2xl my-4 sm:my-8">
+            <CardHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base sm:text-lg leading-tight pr-2">
+                    {selectedPost.title}
+                  </CardTitle>
+                  <div className="flex flex-wrap items-center gap-2 mt-2 text-xs sm:text-sm text-muted-foreground">
+                    <Badge variant={selectedPost.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                      {selectedPost.status}
+                    </Badge>
+                    <span className="whitespace-nowrap">{selectedPost.word_count} woorden</span>
+                    <span className="whitespace-nowrap">{selectedPost.author}</span>
+                    <span className="whitespace-nowrap">{formatDate(selectedPost.created_at)}</span>
+                  </div>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShowPostViewer(false);
+                    setSelectedPost(null);
+                  }}
+                  className="shrink-0 h-8 w-8 p-0 hover:bg-muted"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setShowPostViewer(false);
-                  setSelectedPost(null);
-                }}
-              >
-                Sluiten
-              </Button>
             </CardHeader>
             
-            <CardContent className="max-h-[70vh] overflow-y-auto">
+            <CardContent className="p-4 sm:p-6">
               {selectedPost.hero_image_url && (
                 <img 
                   src={selectedPost.hero_image_url} 
                   alt={selectedPost.title}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
+                  className="w-full h-32 sm:h-48 object-cover rounded-lg mb-4"
+                  loading="lazy"
                 />
               )}
               
               {selectedPost.meta_description && (
-                <div className="mb-4 p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium mb-1">Meta Beschrijving:</p>
-                  <p className="text-sm text-muted-foreground">{selectedPost.meta_description}</p>
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
+                  <p className="text-sm font-medium mb-1 text-muted-foreground">Meta Beschrijving:</p>
+                  <p className="text-sm">{selectedPost.meta_description}</p>
                 </div>
               )}
               
-              <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground prose-a:text-primary">
+              <div className="prose prose-sm sm:prose-base max-w-none 
+                prose-headings:text-foreground prose-headings:font-semibold
+                prose-p:text-foreground prose-p:leading-relaxed
+                prose-strong:text-foreground prose-strong:font-semibold
+                prose-em:text-foreground prose-em:italic
+                prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground 
+                prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80
+                prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
+                prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-pre:bg-muted prose-pre:border
+              ">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {selectedPost.body_markdown || 'Geen content beschikbaar'}
                 </ReactMarkdown>
