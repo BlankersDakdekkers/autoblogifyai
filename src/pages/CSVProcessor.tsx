@@ -525,89 +525,144 @@ const CSVProcessor = () => {
 
         <TabsContent value="posts" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Gegenereerde Blog Posts</CardTitle>
-                <CardDescription>
-                  Overzicht van alle gegenereerde blog posts uit CSV verwerking
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={downloadCSVResults}
-                  disabled={generatedPosts.length === 0}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  CSV Export
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => refetchPosts()}
-                >
-                  <Database className="h-4 w-4 mr-2" />
-                  Vernieuwen
-                </Button>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Gegenereerde Blog Posts
+                  </CardTitle>
+                  <CardDescription>
+                    Overzicht van alle gegenereerde blog posts uit CSV verwerking
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={downloadCSVResults}
+                    disabled={generatedPosts.length === 0}
+                    className="flex-1 sm:flex-initial"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    CSV Export
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => refetchPosts()}
+                    className="flex-1 sm:flex-initial"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Vernieuwen
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {generatedPosts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nog geen blog posts gegenereerd</p>
-                  <p className="text-sm">Verwerk eerst een CSV bestand om posts te genereren</p>
+              {isLoadingPosts ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Posts laden...</span>
+                </div>
+              ) : generatedPosts.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <FileText className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Nog geen blog posts</h3>
+                  <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
+                    Verwerk eerst een CSV bestand om posts te genereren
+                  </p>
+                  <Button 
+                    onClick={() => setActiveTab('processor')}
+                    className="gap-2"
+                  >
+                    <Zap className="h-4 w-4" />
+                    CSV Verwerken
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pb-2 border-b">
                     <p className="text-sm text-muted-foreground">
-                      {generatedPosts.length} posts gevonden
+                      <span className="font-medium text-foreground">{generatedPosts.length}</span> posts gevonden
                     </p>
                   </div>
-                  <div className="grid gap-4">
-                    {generatedPosts.map((post) => (
-                      <Card key={post.id} className="border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
+                  
+                  <div className="space-y-3">
+                    {generatedPosts.map((post, index) => (
+                      <Card 
+                        key={post.id} 
+                        className="group hover:shadow-md transition-all duration-200 border-l-4 border-l-primary/20 hover:border-l-primary"
+                      >
                         <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h4 className="font-medium line-clamp-1">{post.title}</h4>
-                                <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
-                                  {post.status}
-                                </Badge>
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            {/* Post Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                                <h4 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors">
+                                  {post.title}
+                                </h4>
+                                <div className="flex gap-2 shrink-0">
+                                  <Badge 
+                                    variant={post.status === 'published' ? 'default' : 'secondary'}
+                                    className="text-xs"
+                                  >
+                                    {post.status}
+                                  </Badge>
+                                </div>
                               </div>
                               
                               {post.meta_description && (
-                                <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                                   {post.meta_description}
                                 </p>
                               )}
                               
-                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>{post.word_count} woorden</span>
-                                <span>{post.author}</span>
-                                <span>{formatDate(post.created_at)}</span>
+                              {/* Metadata */}
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3">
+                                <div className="flex items-center gap-1">
+                                  <FileText className="h-3 w-3" />
+                                  <span className="font-medium">{post.word_count}</span> woorden
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge variant="outline" className="text-xs px-1 py-0">
+                                    {post.author}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{formatDate(post.created_at)}</span>
+                                </div>
                               </div>
                               
+                              {/* Tags */}
                               {post.tags.length > 0 && (
-                                <div className="flex gap-1 mt-2 flex-wrap">
-                                  {post.tags.slice(0, 3).map((tag, index) => (
-                                    <Badge key={index} variant="outline" className="text-xs">
+                                <div className="flex gap-1 flex-wrap">
+                                  {post.tags.slice(0, 4).map((tag, tagIndex) => (
+                                    <Badge 
+                                      key={tagIndex} 
+                                      variant="outline" 
+                                      className="text-xs px-2 py-0.5 bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+                                    >
                                       {tag}
                                     </Badge>
                                   ))}
-                                  {post.tags.length > 3 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{post.tags.length - 3} meer
+                                  {post.tags.length > 4 && (
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs px-2 py-0.5 bg-muted text-muted-foreground"
+                                    >
+                                      +{post.tags.length - 4} meer
                                     </Badge>
                                   )}
                                 </div>
                               )}
                             </div>
                             
-                            <div className="flex flex-col gap-2 ml-4">
+                            {/* Actions */}
+                            <div className="flex sm:flex-col gap-2 shrink-0">
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -615,16 +670,36 @@ const CSVProcessor = () => {
                                   setSelectedPost(post);
                                   setShowPostViewer(true);
                                 }}
+                                className="flex-1 sm:flex-initial gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
                               >
-                                <FileText className="h-4 w-4 mr-2" />
-                                Bekijken
+                                <Eye className="h-4 w-4" />
+                                <span className="hidden sm:inline">Bekijken</span>
                               </Button>
+                              {post.hero_image_url && (
+                                <div className="hidden sm:block w-16 h-12 rounded overflow-hidden bg-muted">
+                                  <img 
+                                    src={post.hero_image_url} 
+                                    alt={post.title}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
+                  
+                  {/* Load More Button (future enhancement) */}
+                  {generatedPosts.length >= 20 && (
+                    <div className="text-center pt-4">
+                      <Button variant="outline" size="sm">
+                        Meer posts laden
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
