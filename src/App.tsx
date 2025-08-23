@@ -114,7 +114,11 @@ const App = () => (
               <Route path="/terms" element={<><SimpleHeader /><TermsOfService /></>} />
               <Route path="/privacy" element={<><SimpleHeader /><PrivacyPolicy /></>} />
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-              <Route path="/admin-setup" element={<AdminSetup />} />
+              <Route path="/admin-setup" element={
+                <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+                  <AdminSetup />
+                </div>
+              } />
               <Route path="/admin-setup-test" element={<div>Test route works!</div>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
