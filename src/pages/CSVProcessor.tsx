@@ -813,18 +813,47 @@ const CSVProcessor = () => {
             <CardHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base sm:text-lg leading-tight pr-2">
+                  <CardTitle className="text-lg sm:text-xl leading-tight pr-2 mb-3">
                     {selectedPost.title}
                   </CardTitle>
-                  <div className="flex flex-wrap items-center gap-2 mt-2 text-xs sm:text-sm text-muted-foreground">
-                    <Badge variant={selectedPost.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                  
+                  {/* Meta Description - Better positioned */}
+                  {selectedPost.meta_description && (
+                    <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></div>
+                        <div>
+                          <p className="text-xs font-medium text-primary mb-1">SEO Meta Beschrijving</p>
+                          <p className="text-sm text-foreground leading-relaxed">
+                            {selectedPost.meta_description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Post Metadata */}
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <Badge 
+                      variant={selectedPost.status === 'published' ? 'default' : 'secondary'} 
+                      className="text-xs"
+                    >
                       {selectedPost.status}
                     </Badge>
-                    <span className="whitespace-nowrap">{selectedPost.word_count} woorden</span>
-                    <span className="whitespace-nowrap">{selectedPost.author}</span>
-                    <span className="whitespace-nowrap">{formatDate(selectedPost.created_at)}</span>
+                    <div className="flex items-center gap-1">
+                      <FileText className="h-3 w-3" />
+                      <span className="font-medium">{selectedPost.word_count}</span> woorden
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium">{selectedPost.author}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{formatDate(selectedPost.created_at)}</span>
+                    </div>
                   </div>
                 </div>
+                
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -840,44 +869,54 @@ const CSVProcessor = () => {
             </CardHeader>
             
             <CardContent className="p-4 sm:p-6">
+              {/* Hero Image */}
               {selectedPost.hero_image_url && (
-                <img 
-                  src={selectedPost.hero_image_url} 
-                  alt={selectedPost.title}
-                  className="w-full h-32 sm:h-48 object-cover rounded-lg mb-4"
-                  loading="lazy"
-                />
-              )}
-              
-              {selectedPost.meta_description && (
-                <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
-                  <p className="text-sm font-medium mb-1 text-muted-foreground">Meta Beschrijving:</p>
-                  <p className="text-sm">{selectedPost.meta_description}</p>
+                <div className="mb-6">
+                  <img 
+                    src={selectedPost.hero_image_url} 
+                    alt={selectedPost.title}
+                    className="w-full h-48 sm:h-64 object-cover rounded-lg shadow-md"
+                    loading="lazy"
+                  />
                 </div>
               )}
               
+              {/* Article Content */}
               <div className="prose prose-sm sm:prose-base max-w-none 
-                prose-headings:text-foreground prose-headings:font-semibold
-                prose-p:text-foreground prose-p:leading-relaxed
+                prose-headings:text-foreground prose-headings:font-semibold prose-headings:leading-tight
+                prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-4
                 prose-strong:text-foreground prose-strong:font-semibold
                 prose-em:text-foreground prose-em:italic
-                prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground 
-                prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80
-                prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
-                prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-                prose-pre:bg-muted prose-pre:border
+                prose-ul:text-foreground prose-ul:pl-6 prose-ol:text-foreground prose-ol:pl-6
+                prose-li:text-foreground prose-li:mb-1
+                prose-a:text-primary prose-a:underline prose-a:decoration-primary/30 hover:prose-a:text-primary/80
+                prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:pl-4 prose-blockquote:py-2
+                prose-blockquote:text-muted-foreground prose-blockquote:italic
+                prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono
+                prose-pre:bg-muted prose-pre:border prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-auto
+                prose-h1:text-2xl prose-h1:mb-4 prose-h1:mt-6
+                prose-h2:text-xl prose-h2:mb-3 prose-h2:mt-5
+                prose-h3:text-lg prose-h3:mb-2 prose-h3:mt-4
               ">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {selectedPost.body_markdown || 'Geen content beschikbaar'}
+                  {selectedPost.body_markdown || "Geen content beschikbaar"}
                 </ReactMarkdown>
               </div>
               
+              {/* Tags Section */}
               {selectedPost.tags.length > 0 && (
-                <div className="mt-6 pt-4 border-t">
-                  <p className="text-sm font-medium mb-2">Tags:</p>
-                  <div className="flex gap-1 flex-wrap">
+                <div className="mt-8 pt-6 border-t">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <p className="text-sm font-medium text-primary">Tags</p>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
                     {selectedPost.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="text-xs px-3 py-1 bg-primary/5 text-primary border-primary/30 hover:bg-primary/10 transition-colors"
+                      >
                         {tag}
                       </Badge>
                     ))}
