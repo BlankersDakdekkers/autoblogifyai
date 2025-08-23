@@ -197,10 +197,27 @@ const AdvancedAIFeatures = () => {
         });
         toast.success('Content succesvol gegenereerd (fallback modus)!');
       } else if (data?.success) {
-        setGeneratedContent(data.content);
+        // Format content for display
+        const formattedContent = {
+          primary: {
+            language: selectedLanguages[0] || 'nl',
+            content: data.content || data.generatedContent || 'Content generatie gefaald'
+          },
+          translations: []
+        };
+        setGeneratedContent(formattedContent);
         toast.success(`Content succesvol gegenereerd met ${selectedModel}!`);
       } else {
-        throw new Error(data?.error || 'Onbekende fout');
+        // No successful data, show demo content
+        const demoContent = {
+          primary: {
+            language: selectedLanguages[0] || 'nl',
+            content: `[DEMO CONTENT]\n\nOnderwerp: ${formData.topic}\nType: ${formData.contentType}\nModel: ${selectedModel}\n\nDit is een demo van geavanceerde AI content generatie. De echte functionaliteit vereist configuratie van AI API keys.\n\nConfigueer de AI services in je Supabase dashboard voor volledige functionaliteit.`
+          },
+          translations: []
+        };
+        setGeneratedContent(demoContent);
+        toast.success('Demo content gegenereerd - configureer AI services voor volledige functionaliteit');
       }
 
     } catch (error: any) {
