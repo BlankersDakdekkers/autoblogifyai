@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import { 
   FileText, 
   Eye, 
@@ -22,7 +24,16 @@ import {
   Settings,
   Trash2,
   Star,
-  Crown
+  Crown,
+  HelpCircle,
+  Lightbulb,
+  CheckCircle,
+  AlertTriangle,
+  ArrowRight,
+  ArrowLeft,
+  Zap,
+  Palette,
+  Target
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,45 +60,89 @@ const TemplateEditor = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({});
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showHelp, setShowHelp] = useState(false);
 
-  const [templates, setTemplates] = useState<Template[]>([
+  // Wizard steps for better UX
+  const steps = [
+    { id: 1, title: "Template Info", description: "Basisinformatie", icon: FileText },
+    { id: 2, title: "Content", description: "Template inhoud", icon: Edit },
+    { id: 3, title: "Variabelen", description: "Dynamische velden", icon: Zap },
+    { id: 4, title: "Instellingen", description: "Configuratie", icon: Settings },
+    { id: 5, title: "Preview", description: "Voorbeeld", icon: Eye }
+  ];
+
+  // Predefined variable suggestions
+  const variableSuggestions = [
+    { name: "title", description: "Hoofdtitel van de content", example: "{{title}}" },
+    { name: "city", description: "Stad of locatie", example: "{{city}}" },
+    { name: "service", description: "Service of product", example: "{{service}}" },
+    { name: "phone", description: "Telefoonnummer", example: "{{phone}}" },
+    { name: "company_name", description: "Bedrijfsnaam", example: "{{company_name}}" },
+    { name: "price", description: "Prijs informatie", example: "{{price}}" },
+    { name: "date", description: "Datum", example: "{{date}}" },
+    { name: "author", description: "Auteur naam", example: "{{author}}" }
+  ];
+
+  // Template starters for different categories
+  const templateStarters = {
+    blog: `# {{title}} - {{city}}
+
+## Inleiding
+Welkom bij onze gids over {{topic}}. In dit artikel behandelen we alles wat u moet weten over {{service}} in {{city}}.
+
+## Hoofdcontent
+{{main_content}}
+
+## Conclusie
+Voor meer informatie over {{service}}, neem contact met ons op via {{phone}}.`,
+    
+    landing: `# {{headline}}
+
+## Het Probleem
+{{problem_description}}
+
+## De Oplossing
+{{solution_description}}
+
+## Waarom Kiezen Voor Ons?
+✅ {{benefit_1}}
+✅ {{benefit_2}}
+✅ {{benefit_3}}
+
+## Call to Action
+{{cta_text}} - Bel {{phone}} of mail naar {{email}}`,
+
+    email: `Onderwerp: {{subject}}
+
+Beste {{first_name}},
+
+{{intro_text}}
+
+{{main_message}}
+
+Met vriendelijke groet,
+{{sender_name}}
+{{company_name}}`,
+
+    social: `🔥 {{headline}}
+
+{{description}}
+
+👉 {{call_to_action}}
+
+#{{hashtag1}} #{{hashtag2}} #{{hashtag3}}`
+  };
+
+  const templates: Template[] = [
     {
       id: "seo-blog-nl",
       name: "SEO Blog Post - Nederland",
       description: "Geoptimaliseerd voor Nederlandse markt met lokale SEO focus",
       category: "blog",
-      content: `# {{title}} - {{city}}
-
-## Inleiding
-Zoekt u naar {{service}} in {{city}}? In deze uitgebreide gids vindt u alles wat u moet weten over {{keyword}} in {{location}}. Van kosten tot kwaliteit, wij helpen u de beste keuze te maken.
-
-## Waarom {{service}} belangrijk is
-{{keyword}} speelt een cruciale rol in {{context}}. Hier zijn de belangrijkste voordelen:
-
-- **Kosteneffectief**: Bespaar tot 30% op {{costs}}
-- **Kwaliteit**: Ervaren professionals in {{city}}
-- **Service**: 24/7 ondersteuning en garantie
-- **Lokaal**: Bekend met {{city}} regelgeving
-
-## Top {{number}} {{service}} in {{city}}
-
-### 1. {{company_name}}
-Gespecialiseerd in {{specialization}} met meer dan {{years}} jaar ervaring.
-
-## Kosten voor {{service}} in {{city}}
-De gemiddelde kosten voor {{keyword}} in {{city}} variëren tussen €{{min_price}} en €{{max_price}}, afhankelijk van {{factors}}.
-
-## Veelgestelde vragen
-
-**Wat kost {{service}} in {{city}}?**
-De kosten variëren van €{{range}}. Een gratis offerte kunt u aanvragen via ons contactformulier.
-
-**Hoe lang duurt {{service}}?**
-Gemiddeld duurt {{keyword}} {{duration}}, afhankelijk van {{variables}}.
-
-## Conclusie
-Voor betrouwbare {{service}} in {{city}} bent u bij ons aan het juiste adres. Neem vandaag nog contact op voor een vrijblijvende offerte.`,
-      variables: ["title", "city", "service", "keyword", "location", "context", "costs", "number", "company_name", "specialization", "years", "min_price", "max_price", "factors", "range", "duration", "variables"],
+      content: templateStarters.blog,
+      variables: ["title", "city", "topic", "service", "main_content", "phone"],
       tags: ["seo", "nederland", "lokaal", "blog"],
       isPublic: true,
       isPremium: false,
@@ -101,34 +156,8 @@ Voor betrouwbare {{service}} in {{city}} bent u bij ons aan het juiste adres. Ne
       name: "Service Landing Page",
       description: "Conversie-geoptimaliseerde landingspagina voor lokale diensten",
       category: "landing",
-      content: `# {{headline}} - {{city}}
-
-## Het Probleem
-Heeft u last van {{problem}}? U bent niet de enige. In {{city}} worstelen veel mensen met {{issue}}.
-
-## De Oplossing: {{service}}
-Onze {{service}} lost {{problem}} definitief op. Met meer dan {{years}} jaar ervaring en {{satisfied_customers}}+ tevreden klanten.
-
-### Waarom Kiezen Voor Ons?
-✅ **{{years}}+ Jaar Ervaring** - Bewezen track record
-✅ **Lokaal in {{city}}** - Snelle service, persoonlijk contact  
-✅ **{{guarantee}} Garantie** - 100% tevredenheidsgarantie
-✅ **Transparante Prijzen** - Geen verborgen kosten
-
-## Wat Onze Klanten Zeggen
-*"{{testimonial}}"* - {{customer_name}}, {{city}}
-
-## Uw Voordelen
-- **Besparing**: Tot {{percentage}}% goedkoper dan de concurrentie
-- **Snelheid**: Service binnen {{timeframe}}
-- **Kwaliteit**: {{quality_measures}}
-
-## Actie Vereist!
-**Beperkte tijd:** {{offer}} voor de eerste {{number}} klanten uit {{city}}.
-
-### Bel Nu: {{phone}}
-Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
-      variables: ["headline", "city", "problem", "issue", "service", "years", "satisfied_customers", "guarantee", "testimonial", "customer_name", "percentage", "timeframe", "quality_measures", "offer", "number", "phone"],
+      content: templateStarters.landing,
+      variables: ["headline", "problem_description", "solution_description", "benefit_1", "benefit_2", "benefit_3", "cta_text", "phone", "email"],
       tags: ["conversie", "landing", "service", "lokaal"],
       isPublic: true,
       isPremium: true,
@@ -137,17 +166,103 @@ Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
       author: "Conversion Expert",
       createdAt: "2025-01-18"
     }
-  ]);
+  ];
 
-  const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({
-    name: "",
-    description: "",
-    category: "blog",
-    content: "",
-    tags: [],
-    isPublic: true,
-    isPremium: false
-  });
+  const extractVariables = (content: string): string[] => {
+    const matches = content.match(/\{\{([^}]+)\}\}/g);
+    if (!matches) return [];
+    
+    return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
+  };
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!(editingTemplate.name && editingTemplate.category);
+      case 2:
+        return !!(editingTemplate.content && editingTemplate.content.length > 10);
+      case 3:
+        return true; // Variables are optional
+      case 4:
+        return true; // Settings are optional
+      case 5:
+        return true; // Preview is just viewing
+      default:
+        return false;
+    }
+  };
+
+  const getStepStatus = (step: number) => {
+    if (step < currentStep) return 'completed';
+    if (step === currentStep) return 'current';
+    return 'upcoming';
+  };
+
+  const insertVariable = (variable: string) => {
+    const textarea = document.getElementById('template-content') as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const currentContent = editingTemplate.content || '';
+      const newContent = currentContent.substring(0, start) + `{{${variable}}}` + currentContent.substring(end);
+      
+      setEditingTemplate(prev => ({ ...prev, content: newContent }));
+      
+      // Set cursor position after inserted variable
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + variable.length + 4, start + variable.length + 4);
+      }, 0);
+    }
+  };
+
+  const startWithTemplate = (category: string) => {
+    const starter = templateStarters[category as keyof typeof templateStarters];
+    setEditingTemplate(prev => ({ 
+      ...prev, 
+      content: starter,
+      category: category as any
+    }));
+    setCurrentStep(2);
+  };
+
+  const renderPreview = (content: string) => {
+    let previewContent = content
+      .replace(/\{\{([^}]+)\}\}/g, '<span class="bg-yellow-200 px-1 rounded">$1</span>')
+      .replace(/\n/g, '<br/>');
+    
+    return previewContent;
+  };
+
+  const handleSaveTemplate = () => {
+    if (!editingTemplate.name || !editingTemplate.content) {
+      toast({
+        title: "Ontbrekende velden",
+        description: "Vul tenminste een naam en content in.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const variables = extractVariables(editingTemplate.content);
+    
+    toast({
+      title: "Template opgeslagen",
+      description: `"${editingTemplate.name}" is succesvol opgeslagen met ${variables.length} variabelen.`
+    });
+    
+    setIsEditing(false);
+    setEditingTemplate({});
+    setCurrentStep(1);
+  };
+
+  const handleUseTemplate = (template: Template) => {
+    navigator.clipboard.writeText(template.content);
+    toast({
+      title: "Template gekopieerd",
+      description: `"${template.name}" is naar het klembord gekopieerd.`
+    });
+  };
 
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -159,127 +274,6 @@ Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
     return matchesSearch && matchesCategory;
   });
 
-  const extractVariables = (content: string): string[] => {
-    const matches = content.match(/\{\{([^}]+)\}\}/g);
-    if (!matches) return [];
-    
-    return [...new Set(matches.map(match => match.replace(/[{}]/g, '')))];
-  };
-
-  const renderPreview = (content: string) => {
-    // Vervang variables met voorbeeld data voor preview
-    const sampleData: Record<string, string> = {
-      title: "Dakdekker Amsterdam - Volledige Gids",
-      city: "Amsterdam",
-      service: "dakdekwerk",
-      keyword: "dakdekker Amsterdam",
-      location: "Amsterdam en omgeving",
-      context: "woningonderhoud",
-      costs: "dakvervanging",
-      number: "10",
-      company_name: "DakPro Amsterdam",
-      specialization: "bitumen dakbedekking",
-      years: "15",
-      min_price: "2500",
-      max_price: "8500",
-      factors: "dakgrootte en materiaal",
-      range: "2500-8500",
-      duration: "2-5 dagen",
-      variables: "weersomstandigheden"
-    };
-
-    let preview = content;
-    Object.entries(sampleData).forEach(([key, value]) => {
-      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-      preview = preview.replace(regex, value);
-    });
-
-    return preview;
-  };
-
-  const handleSaveTemplate = () => {
-    if (!editingTemplate.name || !editingTemplate.content) {
-      toast({
-        title: "Verplichte velden ontbreken",
-        description: "Naam en content zijn verplicht",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const variables = extractVariables(editingTemplate.content);
-    
-    if (selectedTemplate) {
-      // Update existing template
-      setTemplates(prev => prev.map(t => 
-        t.id === selectedTemplate.id 
-          ? { ...t, ...editingTemplate, variables } as Template
-          : t
-      ));
-      toast({
-        title: "Template Bijgewerkt",
-        description: `"${editingTemplate.name}" is succesvol bijgewerkt`
-      });
-    } else {
-      // Create new template
-      const newTemplate: Template = {
-        id: editingTemplate.name!.toLowerCase().replace(/\s+/g, '-'),
-        name: editingTemplate.name!,
-        description: editingTemplate.description || "",
-        category: editingTemplate.category as "blog" | "landing" | "email" | "social",
-        content: editingTemplate.content!,
-        variables,
-        tags: editingTemplate.tags || [],
-        isPublic: editingTemplate.isPublic || true,
-        isPremium: editingTemplate.isPremium || false,
-        usageCount: 0,
-        rating: 0,
-        author: "Je Account",
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      
-      setTemplates(prev => [...prev, newTemplate]);
-      toast({
-        title: "Template Aangemaakt",
-        description: `"${newTemplate.name}" is succesvol aangemaakt`
-      });
-    }
-
-    setIsEditing(false);
-    setSelectedTemplate(null);
-    setEditingTemplate({});
-  };
-
-  const handleUseTemplate = (template: Template) => {
-    // Verhoog usage count
-    setTemplates(prev => prev.map(t => 
-      t.id === template.id 
-        ? { ...t, usageCount: t.usageCount + 1 }
-        : t
-    ));
-
-    // Kopieer template content naar clipboard
-    navigator.clipboard.writeText(template.content);
-    
-    toast({
-      title: "Template Gekopieerd",
-      description: `"${template.name}" is naar je clipboard gekopieerd en klaar voor gebruik`
-    });
-  };
-
-  const handleDeleteTemplate = (templateId: string) => {
-    setTemplates(prev => prev.filter(t => t.id !== templateId));
-    if (selectedTemplate?.id === templateId) {
-      setSelectedTemplate(null);
-      setIsEditing(false);
-    }
-    
-    toast({
-      title: "Template Verwijderd",
-      description: "Template is permanent verwijderd"
-    });
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -289,369 +283,753 @@ Of vul ons contactformulier in voor een gratis offerte binnen 24 uur.`,
             Template Editor
           </h2>
           <p className="text-muted-foreground">
-            Maak, bewerk en beheer je content templates
+            Maak, bewerk en beheer je content templates met de gebruiksvriendelijke wizard
           </p>
         </div>
 
         <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => {
-              setSelectedTemplate(null);
-              setEditingTemplate({
-                name: "",
-                description: "",
-                category: "blog",
-                content: "",
-                tags: [],
-                isPublic: true,
-                isPremium: false
-              });
-              setIsEditing(true);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nieuw Template
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nieuw Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Wand2 className="h-5 w-5" />
+                  Template Wizard
+                </DialogTitle>
+                <DialogDescription>
+                  Maak stap-voor-stap een nieuw template met onze gebruiksvriendelijke wizard
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  {Object.entries(templateStarters).map(([category, content]) => (
+                    <Card 
+                      key={category} 
+                      className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105"
+                      onClick={() => {
+                        setSelectedTemplate(null);
+                        setEditingTemplate({
+                          name: "",
+                          description: "",
+                          category: category as any,
+                          content: content,
+                          tags: [],
+                          isPublic: true,
+                          isPremium: false
+                        });
+                        setCurrentStep(1);
+                        setIsEditing(true);
+                      }}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl mb-2">
+                          {category === 'blog' ? '📝' :
+                           category === 'landing' ? '🎯' :
+                           category === 'email' ? '📧' : '📱'}
+                        </div>
+                        <h4 className="font-medium">
+                          {category === 'blog' ? 'Blog Post' :
+                           category === 'landing' ? 'Landing Page' :
+                           category === 'email' ? 'Email Template' : 'Social Media'}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen' :
+                           category === 'landing' ? 'Conversie-gerichte paginas' :
+                           category === 'email' ? 'Professional emails' : 'Sociale media posts'}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                <div className="text-center">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTemplate(null);
+                      setEditingTemplate({
+                        name: "",
+                        description: "",
+                        category: "blog",
+                        content: "",
+                        tags: [],
+                        isPublic: true,
+                        isPremium: false
+                      });
+                      setCurrentStep(1);
+                      setIsEditing(true);
+                    }}
+                  >
+                    Begin met leeg template
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Template Library */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Template Library</CardTitle>
-              <CardDescription>
-                Selecteer een template om te bewerken
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Filters */}
-              <div className="space-y-2">
-                <Input
-                  placeholder="Zoek templates..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter categorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Alle categorieën</SelectItem>
-                    <SelectItem value="blog">Blog Posts</SelectItem>
-                    <SelectItem value="landing">Landing Pages</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="social">Social Media</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Template Bibliotheek
+            </CardTitle>
+            <CardDescription>
+              Selecteer een template om te bewerken of bekijken
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                placeholder="Zoek templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+              
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter categorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle categorieën</SelectItem>
+                  <SelectItem value="blog">Blog Posts</SelectItem>
+                  <SelectItem value="landing">Landing Pages</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="social">Social Media</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Template List */}
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {filteredTemplates.map(template => (
-                  <Card 
-                    key={template.id} 
-                    className={`cursor-pointer transition-colors hover:bg-accent ${
-                      selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
-                    }`}
-                    onClick={() => {
-                      setSelectedTemplate(template);
-                      setEditingTemplate(template);
-                      setIsEditing(false);
-                      setPreviewMode(false);
-                    }}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-sm">{template.name}</h4>
-                            {template.isPremium && (
-                              <Crown className="h-3 w-3 text-yellow-500" />
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredTemplates.map((template) => (
+                <Card 
+                  key={template.id} 
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
+                  }`}
+                  onClick={() => setSelectedTemplate(template)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {template.category}
+                        </Badge>
+                        {template.isPremium && (
+                          <Crown className="h-3 w-3 text-yellow-600" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs">{template.rating}</span>
+                      </div>
+                    </div>
+                    
+                    <h4 className="font-medium text-sm mb-1">{template.name}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      {template.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{template.usageCount} gebruikt</span>
+                      <span>{template.variables.length} variabelen</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Editor/Preview Panel */}
+        <div className="lg:col-span-2">
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    {isEditing ? (
+                      <>
+                        <Edit className="h-5 w-5" />
+                        {selectedTemplate ? 'Template Bewerken' : 'Nieuw Template'}
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-5 w-5" />
+                        Template Preview
+                      </>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    {selectedTemplate?.name || editingTemplate.name || 'Selecteer een template'}
+                  </CardDescription>
+                </div>
+                
+                <div className="flex gap-2">
+                  {!isEditing && selectedTemplate && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPreviewMode(!previewMode)}
+                      >
+                        {previewMode ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUseTemplate(selectedTemplate)}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Kopieer
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setEditingTemplate(selectedTemplate);
+                          setCurrentStep(1);
+                          setIsEditing(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Bewerk
+                      </Button>
+                    </>
+                  )}
+                  
+                  {isEditing && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditingTemplate({});
+                          setCurrentStep(1);
+                        }}
+                      >
+                        Annuleer
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {isEditing ? (
+                <div className="space-y-6">
+                  {/* Step Progress Indicator */}
+                  <div className="flex items-center justify-between">
+                    {steps.map((step, index) => (
+                      <div key={step.id} className="flex items-center">
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                          getStepStatus(step.id) === 'completed' 
+                            ? 'bg-primary text-primary-foreground border-primary' 
+                            : getStepStatus(step.id) === 'current'
+                            ? 'bg-primary/10 text-primary border-primary'
+                            : 'bg-background text-muted-foreground border-muted-foreground'
+                        }`}>
+                          {getStepStatus(step.id) === 'completed' ? (
+                            <CheckCircle className="h-5 w-5" />
+                          ) : (
+                            <step.icon className="h-4 w-4" />
+                          )}
+                        </div>
+                        {index < steps.length - 1 && (
+                          <div className={`w-16 h-0.5 ml-2 ${
+                            getStepStatus(step.id) === 'completed' ? 'bg-primary' : 'bg-muted'
+                          }`} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Step Titles */}
+                  <div className="text-center space-y-1">
+                    <h3 className="text-xl font-semibold">
+                      {steps[currentStep - 1]?.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {steps[currentStep - 1]?.description}
+                    </p>
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="min-h-[400px]">
+                    {/* Step 1: Template Info */}
+                    {currentStep === 1 && (
+                      <div className="space-y-6 animate-fade-in">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                          <div className="flex items-start gap-3">
+                            <Lightbulb className="h-5 w-5 text-blue-600 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-blue-900">Template Starter</h4>
+                              <p className="text-sm text-blue-700 mb-3">
+                                Begin snel met een vooraf gemaakte template structuur
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(templateStarters).map(([category, content]) => (
+                                  <Button
+                                    key={category}
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => startWithTemplate(category)}
+                                    className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                                  >
+                                    {category === 'blog' ? 'Blog Post' :
+                                     category === 'landing' ? 'Landing Page' :
+                                     category === 'email' ? 'Email' : 'Social Media'}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="template-name" className="flex items-center gap-2">
+                              Template Naam
+                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
+                            </Label>
+                            <Input
+                              id="template-name"
+                              value={editingTemplate.name || ""}
+                              onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
+                              placeholder="Bijv. SEO Blog Post Nederland"
+                              className={`${!editingTemplate.name ? 'border-red-200 focus:border-red-500' : 'border-green-200'}`}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Kies een duidelijke naam die het doel van je template beschrijft
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="template-category" className="flex items-center gap-2">
+                              Categorie
+                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
+                            </Label>
+                            <Select 
+                              value={editingTemplate.category || ""} 
+                              onValueChange={(value) => setEditingTemplate(prev => ({ ...prev, category: value as any }))}
+                            >
+                              <SelectTrigger className={`${!editingTemplate.category ? 'border-red-200' : 'border-green-200'}`}>
+                                <SelectValue placeholder="Selecteer categorie" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="blog">📝 Blog Post</SelectItem>
+                                <SelectItem value="landing">🎯 Landing Page</SelectItem>
+                                <SelectItem value="email">📧 Email</SelectItem>
+                                <SelectItem value="social">📱 Social Media</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="template-description">Beschrijving</Label>
+                          <Textarea
+                            id="template-description"
+                            value={editingTemplate.description || ""}
+                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Korte beschrijving van wat dit template doet en wanneer je het gebruikt"
+                            rows={3}
+                            className="resize-none"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Leg uit wanneer en hoe dit template gebruikt moet worden
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 2: Content */}
+                    {currentStep === 2 && (
+                      <div className="space-y-6 animate-fade-in">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                          <div className="flex items-start gap-3">
+                            <Palette className="h-5 w-5 text-purple-600 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-purple-900">Template Content Tips</h4>
+                              <ul className="text-sm text-purple-700 space-y-1 mt-1">
+                                <li>• Gebruik <code className="bg-purple-100 px-1 rounded">{"{{variabele}}"}</code> voor dynamische content</li>
+                                <li>• Schrijf in duidelijke, simpele taal</li>
+                                <li>• Gebruik koppen (# ## ###) voor structuur</li>
+                                <li>• Voeg call-to-actions toe waar relevant</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="template-content" className="flex items-center gap-2">
+                              Template Content
+                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
+                            </Label>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowHelp(!showHelp)}
+                            >
+                              <HelpCircle className="h-4 w-4 mr-1" />
+                              Help
+                            </Button>
+                          </div>
+                          
+                          <Textarea
+                            id="template-content"
+                            value={editingTemplate.content || ""}
+                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
+                            placeholder="Schrijf hier je template content. Gebruik {{variabele}} voor dynamische velden..."
+                            rows={20}
+                            className={`font-mono text-sm resize-none ${!editingTemplate.content ? 'border-red-200 focus:border-red-500' : 'border-green-200'}`}
+                          />
+                          
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>
+                              {editingTemplate.content?.length || 0} karakters
+                            </span>
+                            <span>
+                              {extractVariables(editingTemplate.content || "").length} variabelen gevonden
+                            </span>
+                          </div>
+                        </div>
+
+                        {showHelp && (
+                          <div className="bg-muted/50 p-4 rounded-lg space-y-3 animate-fade-in">
+                            <h4 className="font-medium flex items-center gap-2">
+                              <HelpCircle className="h-4 w-4" />
+                              Markdown Syntax Help
+                            </h4>
+                            <div className="grid gap-2 text-sm">
+                              <div><code># Hoofdkop</code> - Grote titel</div>
+                              <div><code>## Subkop</code> - Subtitel</div>
+                              <div><code>**Vet tekst**</code> - Vetgedrukt</div>
+                              <div><code>*Cursief*</code> - Cursieve tekst</div>
+                              <div><code>- Lijst item</code> - Opsommingsteken</div>
+                              <div><code>[Link tekst](url)</code> - Hyperlink</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 3: Variables */}
+                    {currentStep === 3 && (
+                      <div className="space-y-6 animate-fade-in">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                          <div className="flex items-start gap-3">
+                            <Zap className="h-5 w-5 text-green-600 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-green-900">Variabelen Beheer</h4>
+                              <p className="text-sm text-green-700">
+                                Klik op een variabele om deze in je content toe te voegen
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                          <div>
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <Target className="h-4 w-4" />
+                              Gevonden Variabelen
+                            </h4>
+                            {extractVariables(editingTemplate.content || "").length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {extractVariables(editingTemplate.content || "").map(variable => (
+                                  <Badge key={variable} variant="secondary" className="text-xs py-1">
+                                    {variable}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                Geen variabelen gevonden. Voeg variabelen toe met {"{{naam}}"} syntax.
+                              </p>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {template.description}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              {template.category}
-                            </Badge>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Star className="h-3 w-3 fill-current" />
-                              {template.rating}
+
+                          <div>
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <Lightbulb className="h-4 w-4" />
+                              Voorgestelde Variabelen
+                            </h4>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {variableSuggestions.map((suggestion) => (
+                                <div
+                                  key={suggestion.name}
+                                  className="p-2 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                                  onClick={() => insertVariable(suggestion.name)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <code className="text-xs bg-muted px-1 rounded">{suggestion.example}</code>
+                                    <Plus className="h-3 w-3 text-muted-foreground" />
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">{suggestion.description}</p>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Template Editor/Preview */}
-        <div className="lg:col-span-2">
-          {selectedTemplate || isEditing ? (
-            <Card className="h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      {isEditing ? (
-                        <>
-                          <Edit className="h-5 w-5" />
-                          {selectedTemplate ? 'Template Bewerken' : 'Nieuw Template'}
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-5 w-5" />
-                          Template Preview
-                        </>
-                      )}
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedTemplate?.name || 'Nieuw template'}
-                    </CardDescription>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    {!isEditing && selectedTemplate && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setPreviewMode(!previewMode)}
-                        >
-                          {previewMode ? <Code className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleUseTemplate(selectedTemplate)}
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Gebruik
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => setIsEditing(true)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Bewerk
-                        </Button>
-                      </>
                     )}
-                    
-                    {isEditing && (
-                      <>
+
+                    {/* Step 4: Settings */}
+                    {currentStep === 4 && (
+                      <div className="space-y-6 animate-fade-in">
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Organisatie</h4>
+                            <div className="space-y-2">
+                              <Label htmlFor="template-tags">Tags (gescheiden door komma's)</Label>
+                              <Input
+                                id="template-tags"
+                                value={editingTemplate.tags?.join(', ') || ""}
+                                onChange={(e) => setEditingTemplate(prev => ({ 
+                                  ...prev, 
+                                  tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                                }))}
+                                placeholder="seo, lokaal, dienstverlening, marketing"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Tags helpen bij het organiseren en zoeken van templates
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Zichtbaarheid</h4>
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="template-public"
+                                  checked={editingTemplate.isPublic || false}
+                                  onCheckedChange={(checked) => setEditingTemplate(prev => ({ ...prev, isPublic: !!checked }))}
+                                />
+                                <Label htmlFor="template-public" className="flex items-center gap-2">
+                                  Publiek template
+                                  <Badge variant="secondary" className="text-xs">Aanbevolen</Badge>
+                                </Label>
+                              </div>
+                              <p className="text-xs text-muted-foreground ml-6">
+                                Andere gebruikers kunnen dit template gebruiken
+                              </p>
+                              
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="template-premium"
+                                  checked={editingTemplate.isPremium || false}
+                                  onCheckedChange={(checked) => setEditingTemplate(prev => ({ ...prev, isPremium: !!checked }))}
+                                />
+                                <Label htmlFor="template-premium" className="flex items-center gap-2">
+                                  Premium template
+                                  <Crown className="h-3 w-3 text-yellow-600" />
+                                </Label>
+                              </div>
+                              <p className="text-xs text-muted-foreground ml-6">
+                                Alleen premium gebruikers kunnen dit template gebruiken
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 5: Preview */}
+                    {currentStep === 5 && (
+                      <div className="space-y-6 animate-fade-in">
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
+                          <div className="flex items-start gap-3">
+                            <Eye className="h-5 w-5 text-amber-600 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-amber-900">Template Voorvertoning</h4>
+                              <p className="text-sm text-amber-700">
+                                Controleer je template voordat je het opslaat
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-6 lg:grid-cols-2">
+                          <div>
+                            <h4 className="font-medium mb-3">Template Samenvatting</h4>
+                            <div className="space-y-3 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Naam:</span>
+                                <span className="font-medium">{editingTemplate.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Categorie:</span>
+                                <Badge variant="outline">{editingTemplate.category}</Badge>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Variabelen:</span>
+                                <span>{extractVariables(editingTemplate.content || "").length}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Content lengte:</span>
+                                <span>{editingTemplate.content?.length || 0} karakters</span>
+                              </div>
+                              <Separator />
+                              <div>
+                                <span className="text-muted-foreground block mb-1">Tags:</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {editingTemplate.tags?.map(tag => (
+                                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                                  )) || <span className="text-xs text-muted-foreground">Geen tags</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="font-medium mb-3">Preview (met sample data)</h4>
+                            <div className="bg-muted/30 p-4 rounded-lg border max-h-80 overflow-y-auto text-sm">
+                              <div dangerouslySetInnerHTML={{ 
+                                __html: renderPreview(editingTemplate.content || "") 
+                              }} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Navigation Buttons */}
+                  <div className="flex items-center justify-between pt-6 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : null}
+                      disabled={currentStep === 1}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-1" />
+                      Vorige
+                    </Button>
+
+                    <div className="text-sm text-muted-foreground">
+                      Stap {currentStep} van {steps.length}
+                    </div>
+
+                    <div className="flex gap-2">
+                      {currentStep < steps.length ? (
                         <Button
-                          variant="outline"
-                          size="sm"
                           onClick={() => {
-                            setIsEditing(false);
-                            if (!selectedTemplate) {
-                              setEditingTemplate({});
+                            if (validateStep(currentStep)) {
+                              setCurrentStep(currentStep + 1);
+                            } else {
+                              toast({
+                                title: "Ontbrekende informatie",
+                                description: "Vul alle verplichte velden in voordat je doorgaat.",
+                                variant: "destructive"
+                              });
                             }
                           }}
+                          disabled={!validateStep(currentStep)}
                         >
-                          Annuleer
+                          Volgende
+                          <ArrowRight className="h-4 w-4 ml-1" />
                         </Button>
-                        <Button size="sm" onClick={handleSaveTemplate}>
+                      ) : (
+                        <Button onClick={handleSaveTemplate}>
                           <Save className="h-4 w-4 mr-1" />
-                          Opslaan
+                          Template Opslaan
                         </Button>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {isEditing ? (
-                  <Tabs defaultValue="content" className="space-y-4">
-                    <TabsList>
-                      <TabsTrigger value="content">Content</TabsTrigger>
-                      <TabsTrigger value="settings">Instellingen</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="content" className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                          <Label htmlFor="template-name">Naam</Label>
-                          <Input
-                            id="template-name"
-                            value={editingTemplate.name || ""}
-                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder="Template naam"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="template-category">Categorie</Label>
-                          <Select 
-                            value={editingTemplate.category || "blog"} 
-                            onValueChange={(value) => setEditingTemplate(prev => ({ ...prev, category: value as any }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="blog">Blog Post</SelectItem>
-                              <SelectItem value="landing">Landing Page</SelectItem>
-                              <SelectItem value="email">Email</SelectItem>
-                              <SelectItem value="social">Social Media</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+              ) : selectedTemplate ? (
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div>
+                      <Label className="text-sm font-medium">Categorie</Label>
+                      <Badge variant="outline" className="mt-1">
+                        {selectedTemplate.category}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Rating</Label>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{selectedTemplate.rating}</span>
                       </div>
-                      
-                      <div>
-                        <Label htmlFor="template-description">Beschrijving</Label>
-                        <Textarea
-                          id="template-description"
-                          value={editingTemplate.description || ""}
-                          onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Korte beschrijving van dit template"
-                          rows={2}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="template-content">Template Content</Label>
-                        <Textarea
-                          id="template-content"
-                          value={editingTemplate.content || ""}
-                          onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
-                          placeholder="Template content met {{variabelen}}"
-                          rows={15}
-                          className="font-mono text-sm"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Gebruik {"{{"} variabele {"}"} om dynamische content aan te duiden
-                        </p>
-                      </div>
-                      
-                      {editingTemplate.content && (
-                        <div>
-                          <Label>Gevonden Variabelen</Label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {extractVariables(editingTemplate.content).map(variable => (
-                              <Badge key={variable} variant="secondary" className="text-xs">
-                                {variable}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </TabsContent>
-                    
-                    <TabsContent value="settings" className="space-y-4">
-                      <div>
-                        <Label htmlFor="template-tags">Tags (gescheiden door komma's)</Label>
-                        <Input
-                          id="template-tags"
-                          value={editingTemplate.tags?.join(', ') || ""}
-                          onChange={(e) => setEditingTemplate(prev => ({ 
-                            ...prev, 
-                            tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-                          }))}
-                          placeholder="seo, lokaal, dienstverlening"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="template-public"
-                            checked={editingTemplate.isPublic || false}
-                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, isPublic: e.target.checked }))}
-                          />
-                          <Label htmlFor="template-public">Publiek template</Label>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="template-premium"
-                            checked={editingTemplate.isPremium || false}
-                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, isPremium: e.target.checked }))}
-                          />
-                          <Label htmlFor="template-premium">Premium template</Label>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                ) : (
-                  <div className="space-y-4">
-                    {selectedTemplate && (
-                      <>
-                        <div className="grid gap-4 md:grid-cols-3">
-                          <div>
-                            <Label className="text-sm font-medium">Categorie</Label>
-                            <Badge variant="outline" className="mt-1">
-                              {selectedTemplate.category}
-                            </Badge>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium">Gebruikt</Label>
-                            <p className="text-sm text-muted-foreground">{selectedTemplate.usageCount}x</p>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium">Rating</Label>
-                            <p className="text-sm text-muted-foreground">⭐ {selectedTemplate.rating}</p>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <Label className="text-sm font-medium">Variabelen</Label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {selectedTemplate.variables.map(variable => (
-                              <Badge key={variable} variant="secondary" className="text-xs">
-                                {variable}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <Label className="text-sm font-medium">
-                            {previewMode ? 'Preview' : 'Raw Content'}
-                          </Label>
-                          <div className="mt-2 p-4 bg-muted rounded-lg">
-                            <pre className="whitespace-pre-wrap text-sm">
-                              {previewMode 
-                                ? renderPreview(selectedTemplate.content)
-                                : selectedTemplate.content
-                              }
-                            </pre>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Gebruik</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {selectedTemplate.usageCount}x gebruikt
+                      </p>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="h-full flex items-center justify-center">
-              <CardContent className="text-center">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Geen Template Geselecteerd</h3>
-                <p className="text-muted-foreground mb-4">
-                  Selecteer een template uit de library of maak een nieuw template aan
-                </p>
-                <Button onClick={() => setIsEditing(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nieuw Template
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Variabelen</Label>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedTemplate.variables.map(variable => (
+                        <Badge key={variable} variant="secondary" className="text-xs">
+                          {"{{" + variable + "}}"}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Tags</Label>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedTemplate.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Content Preview</Label>
+                    <div className="mt-2 p-4 bg-muted/30 rounded-lg border max-h-80 overflow-y-auto">
+                      {previewMode ? (
+                        <div 
+                          className="text-sm prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: renderPreview(selectedTemplate.content) }}
+                        />
+                      ) : (
+                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                          {selectedTemplate.content}
+                        </pre>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
+                  <FileText className="h-16 w-16 text-muted-foreground/50" />
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">Geen template geselecteerd</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Selecteer een template uit de bibliotheek om te bekijken of bewerken, 
+                      of maak een nieuw template met de wizard.
+                    </p>
+                  </div>
+                  <Button variant="outline">
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Start Template Wizard
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
