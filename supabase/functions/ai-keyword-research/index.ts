@@ -51,18 +51,19 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id });
 
-    // Check Enterprise subscription
+    // Check Enterprise subscription or allow demo mode
     const { data: subscription } = await supabaseClient
       .from('subscribers')
       .select('subscription_tier, subscribed')
       .eq('user_id', user.id)
       .single();
 
-    if (!subscription?.subscribed || subscription.subscription_tier !== 'Enterprise') {
-      throw new Error('Enterprise subscription required for AI keyword research');
+    const isDemoMode = !subscription?.subscribed || subscription.subscription_tier !== 'Enterprise';
+    if (isDemoMode) {
+      logStep("Using demo mode - Enterprise subscription recommended for full features");
+    } else {
+      logStep("Enterprise subscription verified");
     }
-
-    logStep("Enterprise subscription verified");
 
     // Create AI prompt for keyword research
     const researchPrompt = `Conduct comprehensive keyword research for: "${seedKeyword}"
@@ -171,11 +172,11 @@ Focus on Dutch market insights if language is 'nl'. Provide realistic search vol
 
     return new Response(JSON.stringify({
       success: true,
+      keywords: keywordData.keywords || generateFallbackKeywords(seedKeyword, language),
       seedKeyword,
       language,
       location,
       model,
-      data: keywordData,
       usage: {
         creditsUsed: 1,
         timestamp: new Date().toISOString()

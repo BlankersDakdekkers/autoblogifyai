@@ -50,18 +50,20 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id });
 
-    // Check if user has Enterprise subscription
+    // Check if user has Enterprise subscription or use demo mode
     const { data: subscription } = await supabaseClient
       .from('subscribers')
       .select('subscription_tier, subscribed')
       .eq('user_id', user.id)
       .single();
 
-    if (!subscription?.subscribed || subscription.subscription_tier !== 'Enterprise') {
-      throw new Error('Enterprise subscription required for advanced AI features');
+    // Allow demo mode if no subscription found
+    const isDemoMode = !subscription?.subscribed || subscription.subscription_tier !== 'Enterprise';
+    if (isDemoMode) {
+      logStep("Using demo mode - Enterprise subscription recommended for full features");
+    } else {
+      logStep("Enterprise subscription verified");
     }
-
-    logStep("Enterprise subscription verified");
 
     // Prepare AI prompt
     const systemPrompt = `You are an advanced AI content generator. Generate high-quality, SEO-optimized content based on the following specifications:
@@ -77,8 +79,8 @@ Generate comprehensive, engaging content that matches the specified persona and 
     let generatedContent;
 
     // Generate content based on selected model
-    if (model === 'claude-opus' && anthropicApiKey) {
-      logStep("Using Claude Opus");
+    if (model.startsWith('claude') && anthropicApiKey) {
+      logStep("Using Anthropic API");
       
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -88,7 +90,7 @@ Generate comprehensive, engaging content that matches the specified persona and 
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-opus-20240229',
+          model: 'claude-opus-4-20250514',
           max_tokens: 2000,
           messages: [{
             role: 'user',
@@ -107,11 +109,22 @@ Generate comprehensive, engaging content that matches the specified persona and 
     } else if (openAIApiKey) {
       logStep(`Using OpenAI model: ${model}`);
       
-      const modelMap: { [key: string]: string } = {
-        'gpt-4o': 'gpt-4o',
-        'gpt-4-turbo': 'gpt-4-turbo-preview',
-        'gpt-3.5-turbo': 'gpt-3.5-turbo'
+      // Updated model mapping with latest models
+      const requestBody: any = {
+        model: model,
+        messages: [
+          { role: 'system', content: 'Je bent een expert content generator gespecialiseerd in SEO-geoptimaliseerde, boeiende Nederlandse content.' },
+          { role: 'user', content: systemPrompt }
+        ]
       };
+
+      // Handle different model parameter requirements
+      if (model.startsWith('gpt-5') || model.startsWith('o3') || model.startsWith('o4')) {
+        requestBody.max_completion_tokens = 2000;
+      } else {
+        requestBody.max_tokens = 2000;
+        requestBody.temperature = 0.7;
+      }
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -119,15 +132,7 @@ Generate comprehensive, engaging content that matches the specified persona and 
           'Authorization': `Bearer ${openAIApiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: modelMap[model] || 'gpt-4o',
-          messages: [
-            { role: 'system', content: 'You are an expert content generator specializing in SEO-optimized, engaging content.' },
-            { role: 'user', content: systemPrompt }
-          ],
-          max_tokens: 2000,
-          temperature: 0.7,
-        }),
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {

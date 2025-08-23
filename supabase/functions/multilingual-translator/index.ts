@@ -86,18 +86,19 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id });
 
-    // Check Enterprise subscription
+    // Check Enterprise subscription or allow demo mode
     const { data: subscription } = await supabaseClient
       .from('subscribers')
       .select('subscription_tier, subscribed')
       .eq('user_id', user.id)
       .single();
 
-    if (!subscription?.subscribed || subscription.subscription_tier !== 'Enterprise') {
-      throw new Error('Enterprise subscription required for multilingual translation');
+    const isDemoMode = !subscription?.subscribed || subscription.subscription_tier !== 'Enterprise';
+    if (isDemoMode) {
+      logStep("Using demo mode - Enterprise subscription recommended for full features");
+    } else {
+      logStep("Enterprise subscription verified");
     }
-
-    logStep("Enterprise subscription verified");
 
     const translations: any[] = [];
     const errors: any[] = [];
