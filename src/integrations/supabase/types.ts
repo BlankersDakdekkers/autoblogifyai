@@ -480,6 +480,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      auto_make_first_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       deduct_credit: {
         Args: { user_uuid: string }
         Returns: boolean

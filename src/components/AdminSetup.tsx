@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Crown, AlertTriangle } from "lucide-react";
+import { Shield, Crown, AlertTriangle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,45 @@ export const AdminSetup = () => {
   const { toast } = useToast();
   const { user, refreshCredits } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [isAutoChecking, setIsAutoChecking] = useState(true);
+  const [adminExists, setAdminExists] = useState<boolean>(false);
+
+  // Automatically check and assign admin if no admin exists
+  useEffect(() => {
+    const autoAssignAdmin = async () => {
+      if (!user) return;
+      
+      try {
+        setIsAutoChecking(true);
+        
+        // Check if any admin exists
+        const { data: adminCheck } = await supabase.rpc('admin_exists');
+        setAdminExists(adminCheck);
+        
+        if (!adminCheck) {
+          // No admin exists, automatically make this user admin
+          await supabase.rpc('auto_make_first_admin');
+          
+          toast({
+            title: "Automatisch Admin Gemaakt! 👑",
+            description: "Je bent automatisch admin geworden als eerste gebruiker",
+          });
+          
+          // Refresh and reload to show admin features
+          refreshCredits();
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error in auto admin setup:', error);
+      } finally {
+        setIsAutoChecking(false);
+      }
+    };
+
+    autoAssignAdmin();
+  }, [user, refreshCredits, toast]);
 
   const handleMakeAdmin = async () => {
     if (!user) {
@@ -65,6 +104,39 @@ export const AdminSetup = () => {
           </CardTitle>
           <CardDescription>
             Je moet eerst ingelogd zijn om admin rechten aan te kunnen vragen.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (isAutoChecking) {
+    return (
+      <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant animate-fade-in">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+            Admin Setup Controleren...
+          </CardTitle>
+          <CardDescription>
+            Controleren of admin rechten automatisch toegekend kunnen worden...
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  // If admin already exists, don't show the setup
+  if (adminExists) {
+    return (
+      <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant animate-fade-in">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-accent" />
+            Admin Setup Voltooid
+          </CardTitle>
+          <CardDescription>
+            Er is al een admin account ingesteld in het systeem.
           </CardDescription>
         </CardHeader>
       </Card>
