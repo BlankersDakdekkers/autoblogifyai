@@ -259,17 +259,17 @@ Met vriendelijke groet,
     });
   };
 
-  // Sample data voor preview
+  // Sample data voor preview - uitgebreidere dataset
   const sampleData = {
     title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden",
-    city: "Amsterdam",
+    city: "Amsterdam", 
     topic: "dakdekken",
     service: "dakdekker diensten",
-    main_content: "Onze ervaren dakdekkers bieden volledige dakoplossingen in Amsterdam...",
+    main_content: "Onze ervaren dakdekkers bieden volledige dakoplossingen in Amsterdam. Van lekkage reparatie tot complete nieuwe daken, wij zorgen voor kwaliteit en snelle service.",
     phone: "020-1234567",
     headline: "De Beste Dakdekker in Amsterdam",
-    problem_description: "Uw dak lekt en u zoekt een betrouwbare dakdekker?",
-    solution_description: "Wij bieden snelle, professionele dakreparaties en nieuwe daken.",
+    problem_description: "Uw dak lekt en u zoekt een betrouwbare dakdekker? Lekkages kunnen tot ernstige waterschade leiden.",
+    solution_description: "Wij bieden snelle, professionele dakreparaties en nieuwe daken. Onze experts komen binnen 24 uur ter plaatse.",
     benefit_1: "25 jaar ervaring in dakdekken",
     benefit_2: "Gratis inspectie en offerte",
     benefit_3: "Garantie op al ons werk",
@@ -283,40 +283,58 @@ Met vriendelijke groet,
     sender_name: "Piet Janssen",
     call_to_action: "Bel direct voor hulp!",
     hashtag1: "dakdekker",
-    hashtag2: "amsterdam",
-    hashtag3: "dakservice"
+    hashtag2: "amsterdam", 
+    hashtag3: "dakservice",
+    // Extra variabelen die ontbreken kunnen worden toegevoegd
+    description: "Professionele dakwerkzaamheden in Amsterdam en omstreken"
   };
 
   const renderPreview = (content: string, withSampleData: boolean = false) => {
+    if (!content) return '';
+    
     let previewContent = content;
     
     if (withSampleData) {
+      // Debug logging
+      console.log('Rendering with sample data:', withSampleData);
+      console.log('Original content:', content.substring(0, 100) + '...');
+      
       // Replace variables with sample data
       Object.entries(sampleData).forEach(([key, value]) => {
-        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+        const beforeCount = (previewContent.match(regex) || []).length;
         previewContent = previewContent.replace(regex, `<span class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">${value}</span>`);
+        if (beforeCount > 0) {
+          console.log(`Replaced ${beforeCount} instances of {{${key}}} with "${value}"`);
+        }
       });
       
-      // Replace any remaining variables with highlighted placeholders
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed">$1</span>');
+      // Replace any remaining variables with highlighted placeholders  
+      const remainingVars = previewContent.match(/\{\{([^}]+)\}\}/g);
+      if (remainingVars) {
+        console.log('Remaining unmatched variables:', remainingVars);
+      }
+      
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed border-orange-300">Ontbreekt: $1</span>');
     } else {
       // Just highlight variable names
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md">$1</span>');
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md font-mono text-xs">{{$1}}</span>');
     }
     
-    // Convert markdown-style formatting
+    // Convert markdown-style formatting with better styling
     previewContent = previewContent
-      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground">$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground">$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground">$1</h3>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground border-b pb-2">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground mt-6">$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground mt-4">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
       .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-      .replace(/^- (.+)$/gm, '<li class="ml-4">• $1</li>')
-      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2"><span class="text-green-600">✅</span> $1</div>')
-      .replace(/^👉 (.+)$/gm, '<div class="flex items-center gap-2 mb-2"><span class="text-blue-600">👉</span> $1</div>')
-      .replace(/\n\n/g, '<br/><br/>')
+      .replace(/^- (.+)$/gm, '<li class="ml-6 mb-1 list-disc">$1</li>')
+      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded"><span class="text-green-600 font-medium">✅</span> <span>$1</span></div>')
+      .replace(/^👉 (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-blue-50 rounded"><span class="text-blue-600 font-medium">👉</span> <span>$1</span></div>')
+      .replace(/\n\n/g, '<div class="mb-4"></div>')
       .replace(/\n/g, '<br/>');
     
+    console.log('Final preview content:', previewContent.substring(0, 200) + '...');
     return previewContent;
   };
 
@@ -1185,40 +1203,48 @@ Met vriendelijke groet,
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <Label className="text-sm font-medium">Content Preview</Label>
-                      <div className="text-xs text-muted-foreground">
-                        {selectedTemplate.content.length} karakters
+                      <div className="flex items-center gap-2">
+                        <Badge variant={previewMode ? "default" : "secondary"} className="text-xs">
+                          {previewMode ? 'Preview Mode' : 'Raw Mode'} 
+                        </Badge>
+                        <div className="text-xs text-muted-foreground">
+                          {selectedTemplate.content.length} karakters
+                        </div>
                       </div>
                     </div>
                     <div className="mt-2 p-4 bg-card border rounded-lg max-h-80 overflow-y-auto">
-                      {previewMode ? (
-                        <div 
-                          className="text-sm prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: renderPreview(selectedTemplate.content, true) }}
-                        />
-                      ) : (
-                        <pre className="text-xs font-mono whitespace-pre-wrap text-muted-foreground">
-                          {selectedTemplate.content}
-                        </pre>
-                      )}
+                      <div 
+                        className="text-sm prose prose-sm max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h2]:text-base [&>h2]:font-semibold [&>h3]:text-sm [&>h3]:font-medium"
+                        dangerouslySetInnerHTML={{ 
+                          __html: previewMode ? 
+                            renderPreview(selectedTemplate.content, true) : 
+                            `<pre class="text-xs font-mono whitespace-pre-wrap text-muted-foreground">${selectedTemplate.content}</pre>`
+                        }}
+                      />
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setPreviewMode(!previewMode)}
-                      >
-                        {previewMode ? (
-                          <>
-                            <Code className="h-4 w-4 mr-1" />
-                            Raw Code
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4 mr-1" />
-                            Preview
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPreviewMode(!previewMode)}
+                        >
+                          {previewMode ? (
+                            <>
+                              <Code className="h-4 w-4 mr-1" />
+                              Raw Code
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-1" />
+                              Preview
+                            </>
+                          )}
+                        </Button>
+                        <Badge variant={previewMode ? "default" : "secondary"} className="text-xs">
+                          {previewMode ? 'Met Sample Data' : 'Raw Template'}
+                        </Badge>
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
