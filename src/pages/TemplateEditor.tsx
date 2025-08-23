@@ -169,6 +169,23 @@ Met vriendelijke groet,
     }
   ];
 
+  const filteredTemplates = templates.filter(template => {
+    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesCategory = filterCategory === "all" || template.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Debug logging
+  console.log('Templates available:', templates.length);
+  console.log('Filtered templates:', filteredTemplates.length);
+  console.log('IsEditing:', isEditing);
+  console.log('Selected template:', selectedTemplate?.name);
+  console.log('Current step:', currentStep);
+
   const extractVariables = (content: string): string[] => {
     const matches = content.match(/\{\{([^}]+)\}\}/g);
     if (!matches) return [];
@@ -279,16 +296,6 @@ Met vriendelijke groet,
       description: `"${template.name}" is naar het klembord gekopieerd.`
     });
   };
-
-  const filteredTemplates = templates.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesCategory = filterCategory === "all" || template.category === filterCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <div className="p-6 space-y-6">
@@ -961,8 +968,20 @@ Met vriendelijke groet,
                     </div>
                   </div>
                 </div>
-              ) : selectedTemplate ? (
+                ) : selectedTemplate ? (
                 <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 mb-4">
+                    <div className="flex items-start gap-3">
+                      <Eye className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-blue-900">Template Bekijken</h4>
+                        <p className="text-sm text-blue-700">
+                          Bekijk de template details en variabelen. Klik 'Bewerk' om aan te passen.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid gap-4 md:grid-cols-3">
                     <div>
                       <Label className="text-sm font-medium">Categorie</Label>
@@ -986,7 +1005,7 @@ Met vriendelijke groet,
                   </div>
                   
                   <div>
-                    <Label className="text-sm font-medium">Variabelen</Label>
+                    <Label className="text-sm font-medium">Variabelen ({selectedTemplate.variables.length})</Label>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {selectedTemplate.variables.map(variable => (
                         <Badge key={variable} variant="secondary" className="text-xs">
@@ -994,6 +1013,9 @@ Met vriendelijke groet,
                         </Badge>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Deze variabelen worden vervangen door echte content bij gebruik
+                    </p>
                   </div>
                   
                   <div>
@@ -1008,7 +1030,12 @@ Met vriendelijke groet,
                   </div>
                   
                   <div>
-                    <Label className="text-sm font-medium">Content Preview</Label>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-medium">Content Preview</Label>
+                      <div className="text-xs text-muted-foreground">
+                        {selectedTemplate.content.length} karakters
+                      </div>
+                    </div>
                     <div className="mt-2 p-4 bg-muted/30 rounded-lg border max-h-80 overflow-y-auto">
                       {previewMode ? (
                         <div 
@@ -1020,6 +1047,16 @@ Met vriendelijke groet,
                           {selectedTemplate.content}
                         </pre>
                       )}
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setPreviewMode(!previewMode)}
+                      >
+                        {previewMode ? <Code className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                        {previewMode ? 'Raw Code' : 'Preview'}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1033,7 +1070,10 @@ Met vriendelijke groet,
                       of maak een nieuw template met de wizard.
                     </p>
                   </div>
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={() => startNewTemplate()}
+                  >
                     <Wand2 className="h-4 w-4 mr-2" />
                     Start Template Wizard
                   </Button>
