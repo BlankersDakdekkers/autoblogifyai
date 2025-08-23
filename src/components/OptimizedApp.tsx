@@ -36,6 +36,7 @@ const BlogManagement = lazy(() => import("../pages/BlogManagement"));
 const ResourceCenter = lazy(() => import("../pages/ResourceCenter"));
 const MediaPortal = lazy(() => import("../pages/MediaPortal"));
 const ContentFeatures = lazy(() => import("../pages/ContentFeatures"));
+const AdvancedAIFeatures = lazy(() => import("../pages/AdvancedAIFeatures"));
 const CategoryManager = lazy(() => import("../pages/CategoryManager"));
 const TemplateEditor = lazy(() => import("../pages/TemplateEditor"));
 const CSVProcessor = lazy(() => import("../pages/CSVProcessor"));
@@ -121,6 +122,7 @@ const routes = [
   { path: "/dashboard/generate", element: AutoBlogProducerWithTabs, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/media", element: MediaPortal, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/content-features", element: ContentFeatures, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/advanced-ai", element: AdvancedAIFeatures, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/category-manager", element: CategoryManager, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/template-editor", element: TemplateEditor, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/csv-processor", element: CSVProcessor, layout: "dashboard" as const, protected: true },
