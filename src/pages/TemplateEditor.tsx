@@ -259,9 +259,62 @@ Met vriendelijke groet,
     });
   };
 
-  const renderPreview = (content: string) => {
-    let previewContent = content
-      .replace(/\{\{([^}]+)\}\}/g, '<span class="bg-yellow-200 px-1 rounded">$1</span>')
+  // Sample data voor preview
+  const sampleData = {
+    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden",
+    city: "Amsterdam",
+    topic: "dakdekken",
+    service: "dakdekker diensten",
+    main_content: "Onze ervaren dakdekkers bieden volledige dakoplossingen in Amsterdam...",
+    phone: "020-1234567",
+    headline: "De Beste Dakdekker in Amsterdam",
+    problem_description: "Uw dak lekt en u zoekt een betrouwbare dakdekker?",
+    solution_description: "Wij bieden snelle, professionele dakreparaties en nieuwe daken.",
+    benefit_1: "25 jaar ervaring in dakdekken",
+    benefit_2: "Gratis inspectie en offerte",
+    benefit_3: "Garantie op al ons werk",
+    cta_text: "Bel nu voor een gratis offerte",
+    email: "info@dakdekker-amsterdam.nl",
+    company_name: "Dakdekkers Amsterdam BV",
+    first_name: "Jan",
+    subject: "Uw dakprobleem opgelost binnen 24 uur",
+    intro_text: "Heeft u last van een lekkend dak?",
+    main_message: "Onze specialisten staan voor u klaar om uw dakprobleem snel op te lossen.",
+    sender_name: "Piet Janssen",
+    call_to_action: "Bel direct voor hulp!",
+    hashtag1: "dakdekker",
+    hashtag2: "amsterdam",
+    hashtag3: "dakservice"
+  };
+
+  const renderPreview = (content: string, withSampleData: boolean = false) => {
+    let previewContent = content;
+    
+    if (withSampleData) {
+      // Replace variables with sample data
+      Object.entries(sampleData).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        previewContent = previewContent.replace(regex, `<span class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">${value}</span>`);
+      });
+      
+      // Replace any remaining variables with highlighted placeholders
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed">$1</span>');
+    } else {
+      // Just highlight variable names
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md">$1</span>');
+    }
+    
+    // Convert markdown-style formatting
+    previewContent = previewContent
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground">$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground">$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+      .replace(/^- (.+)$/gm, '<li class="ml-4">• $1</li>')
+      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2"><span class="text-green-600">✅</span> $1</div>')
+      .replace(/^👉 (.+)$/gm, '<div class="flex items-center gap-2 mb-2"><span class="text-blue-600">👉</span> $1</div>')
+      .replace(/\n\n/g, '<br/><br/>')
       .replace(/\n/g, '<br/>');
     
     return previewContent;
@@ -689,38 +742,103 @@ Met vriendelijke groet,
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="template-content" className="flex items-center gap-2">
-                              Template Content
-                              <Badge variant="destructive" className="text-xs">Verplicht</Badge>
-                            </Label>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setShowHelp(!showHelp)}
-                            >
-                              <HelpCircle className="h-4 w-4 mr-1" />
-                              Help
-                            </Button>
+                        <div className="grid gap-4 lg:grid-cols-2">
+                          {/* Content Editor */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="template-content" className="text-base font-medium flex items-center gap-2">
+                                Template Content
+                                <Badge variant="destructive" className="text-xs">Verplicht</Badge>
+                              </Label>
+                              <Button
+                                size="sm"
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowHelp(!showHelp)}
+                              >
+                                <HelpCircle className="h-4 w-4 mr-1" />
+                                Help
+                              </Button>
+                            </div>
+                            
+                            <Textarea
+                              id="template-content"
+                              value={editingTemplate.content || ""}
+                              onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
+                              placeholder="Schrijf hier je template content. Gebruik {{variabele}} voor dynamische velden..."
+                              rows={18}
+                              className={`font-mono text-sm resize-none ${!editingTemplate.content ? 'border-destructive/50 focus:border-destructive' : 'border-success/50'}`}
+                            />
+                            
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>
+                                {editingTemplate.content?.length || 0} karakters
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Zap className="h-3 w-3" />
+                                {extractVariables(editingTemplate.content || "").length} variabelen gevonden
+                              </span>
+                            </div>
                           </div>
-                          
-                          <Textarea
-                            id="template-content"
-                            value={editingTemplate.content || ""}
-                            onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
-                            placeholder="Schrijf hier je template content. Gebruik {{variabele}} voor dynamische velden..."
-                            rows={20}
-                            className={`font-mono text-sm resize-none ${!editingTemplate.content ? 'border-red-200 focus:border-red-500' : 'border-green-200'}`}
-                          />
-                          
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>
-                              {editingTemplate.content?.length || 0} karakters
-                            </span>
-                            <span>
-                              {extractVariables(editingTemplate.content || "").length} variabelen gevonden
-                            </span>
+
+                          {/* Live Preview */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-base font-medium">Live Preview</Label>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setPreviewMode(!previewMode)}
+                              >
+                                {previewMode ? (
+                                  <>
+                                    <Code className="h-4 w-4 mr-1" />
+                                    Variabelen
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Sample Data
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+
+                            <div className="border rounded-lg p-4 bg-muted/30 min-h-[430px] max-h-[430px] overflow-y-auto">
+                              {editingTemplate.content ? (
+                                <div 
+                                  className="text-sm prose prose-sm max-w-none [&>h1]:text-lg [&>h1]:font-bold [&>h2]:text-base [&>h2]:font-semibold [&>h3]:text-sm [&>h3]:font-medium"
+                                  dangerouslySetInnerHTML={{ 
+                                    __html: renderPreview(editingTemplate.content, previewMode) 
+                                  }}
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-center">
+                                  <Eye className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                                  <p className="text-sm text-muted-foreground font-medium">
+                                    Begin met typen om een live preview te zien
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Variabelen worden automatisch gedetecteerd
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="text-xs bg-muted/50 p-3 rounded-lg">
+                              <div className="flex items-start gap-2">
+                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-medium text-muted-foreground">Preview Tips:</p>
+                                  <p className="text-muted-foreground mt-1">
+                                    {previewMode ? 
+                                      "✨ Je ziet nu hoe de template eruit ziet met echte sample data" : 
+                                      "🔤 Variabelen worden getoond zoals ze in de template staan"
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -913,11 +1031,46 @@ Met vriendelijke groet,
                           </div>
 
                           <div>
-                            <h4 className="font-medium mb-3">Preview (met sample data)</h4>
-                            <div className="bg-muted/30 p-4 rounded-lg border max-h-80 overflow-y-auto text-sm">
-                              <div dangerouslySetInnerHTML={{ 
-                                __html: renderPreview(editingTemplate.content || "") 
-                              }} />
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-medium">Preview</h4>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {previewMode ? 'Met Sample Data' : 'Variabelen Zichtbaar'}
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setPreviewMode(!previewMode)}
+                                >
+                                  {previewMode ? (
+                                    <>
+                                      <Code className="h-3 w-3 mr-1" />
+                                      Variabelen
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      Sample Data
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-card border rounded-lg p-4 max-h-80 overflow-y-auto text-sm">
+                              <div 
+                                className="prose prose-sm max-w-none"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: renderPreview(editingTemplate.content || "", previewMode) 
+                                }} 
+                              />
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded">
+                              {previewMode ? 
+                                "💡 Dit is hoe je template eruit ziet met echte content data" : 
+                                "💡 Variabelen worden getoond zoals ze in de template staan"
+                              }
                             </div>
                           </div>
                         </div>
@@ -1036,27 +1189,57 @@ Met vriendelijke groet,
                         {selectedTemplate.content.length} karakters
                       </div>
                     </div>
-                    <div className="mt-2 p-4 bg-muted/30 rounded-lg border max-h-80 overflow-y-auto">
+                    <div className="mt-2 p-4 bg-card border rounded-lg max-h-80 overflow-y-auto">
                       {previewMode ? (
                         <div 
                           className="text-sm prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: renderPreview(selectedTemplate.content) }}
+                          dangerouslySetInnerHTML={{ __html: renderPreview(selectedTemplate.content, true) }}
                         />
                       ) : (
-                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                        <pre className="text-xs font-mono whitespace-pre-wrap text-muted-foreground">
                           {selectedTemplate.content}
                         </pre>
                       )}
                     </div>
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex items-center justify-between mt-3">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setPreviewMode(!previewMode)}
                       >
-                        {previewMode ? <Code className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-                        {previewMode ? 'Raw Code' : 'Preview'}
+                        {previewMode ? (
+                          <>
+                            <Code className="h-4 w-4 mr-1" />
+                            Raw Code
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-1" />
+                            Preview
+                          </>
+                        )}
                       </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleUseTemplate(selectedTemplate)}
+                        >
+                          <Copy className="h-4 w-4 mr-1" />
+                          Kopieer
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setEditingTemplate({...selectedTemplate});
+                            setIsEditing(true);
+                            setCurrentStep(1);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Bewerk
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
