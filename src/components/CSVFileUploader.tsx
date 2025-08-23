@@ -27,9 +27,9 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
   const [fileName, setFileName] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const processFile = useCallback(async (file: File) => {
     if (!file) return;
 
     // Validate file type
@@ -100,10 +100,37 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
       });
     } finally {
       setIsUploading(false);
+    }
+  }, [toast, onPreviewGenerated]);
+
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      processFile(file);
       // Reset file input
       event.target.value = '';
     }
-  }, [toast, onPreviewGenerated]);
+  }, [processFile]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      processFile(files[0]);
+    }
+  }, [processFile]);
 
   const handlePublishAll = async () => {
     if (previewItems.length === 0) return;
@@ -154,77 +181,117 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            <div className="flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-              <div className="text-center">
-                <FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground" />
-                <div className="mt-4">
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                  >
-                    Selecteer bestand
-                  </label>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    className="sr-only"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileUpload}
-                    disabled={isUploading}
-                  />
+            <div 
+              className={`relative flex items-center justify-center border-2 border-dashed rounded-xl p-8 transition-all duration-200 ${
+                isDragOver 
+                  ? 'border-primary bg-primary/5 scale-102' 
+                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50'
+              } ${isUploading ? 'pointer-events-none opacity-60' : 'cursor-pointer'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('file-upload')?.click()}
+            >
+              <div className="text-center space-y-4">
+                <div className={`mx-auto transition-all duration-200 ${isDragOver ? 'scale-110' : ''}`}>
+                  <FileSpreadsheet className={`mx-auto h-16 w-16 ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  CSV, XLS of XLSX bestanden (max 10MB)
-                </p>
+                
+                {!isUploading ? (
+                  <>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">
+                        {isDragOver ? 'Laat bestand hier vallen' : 'Upload je CSV of Excel bestand'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Sleep en laat vallen of klik om te selecteren
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      type="button" 
+                      className="mt-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document.getElementById('file-upload')?.click();
+                      }}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Selecteer Bestand
+                    </Button>
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    <Upload className="mx-auto h-8 w-8 animate-pulse text-primary" />
+                    <div>
+                      <p className="text-lg font-medium">Bestand wordt verwerkt...</p>
+                      <p className="text-sm text-muted-foreground">Even geduld alstublieft</p>
+                    </div>
+                  </div>
+                )}
+                
+                <input
+                  id="file-upload"
+                  type="file"
+                  className="sr-only"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                />
               </div>
             </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2 text-xs text-muted-foreground justify-center">
+              <span className="flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                Ondersteunt CSV, XLS, XLSX
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span>Maximaal 10MB</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Drag & drop ondersteund</span>
+            </div>
 
-            {isUploading && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4 animate-pulse" />
-                  <span className="text-sm">Bestand wordt verwerkt...</span>
-                </div>
-                <Progress value={undefined} className="h-2" />
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Preview Results */}
       {showPreview && previewItems.length > 0 && (
-        <Card>
+        <Card className="border-green-200 bg-green-50/50">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                  <CheckCircle className="h-5 w-5" />
                   Preview Resultaten
                 </CardTitle>
-                <CardDescription>
-                  {previewItems.length} items gevonden in {fileName}
+                <CardDescription className="text-green-600">
+                  <strong>{previewItems.length}</strong> items gevonden in <span className="font-mono text-xs">{fileName}</span>
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={clearPreview} variant="outline" size="sm">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={clearPreview} variant="outline" size="sm" className="order-2 sm:order-1">
                   <X className="h-4 w-4 mr-1" />
-                  Wissen
+                  <span className="hidden sm:inline">Wissen</span>
                 </Button>
                 <Button 
                   onClick={handlePublishAll}
                   disabled={isPublishing}
                   size="sm"
+                  className="order-1 sm:order-2 bg-green-600 hover:bg-green-700"
                 >
                   {isPublishing ? (
                     <>
                       <Upload className="h-4 w-4 mr-1 animate-spin" />
-                      Publiceren...
+                      <span className="hidden sm:inline">Publiceren...</span>
+                      <span className="sm:hidden">Bezig...</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      Alles Publiceren
+                      <span className="hidden sm:inline">Alles Publiceren</span>
+                      <span className="sm:hidden">Publiceren</span>
                     </>
                   )}
                 </Button>
@@ -232,35 +299,56 @@ export const CSVFileUploader = ({ onPreviewGenerated, onPublishItems }: CSVFileU
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {previewItems.map((item, index) => (
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {previewItems.slice(0, 5).map((item, index) => (
                 <div
                   key={index}
-                  className="border rounded-lg p-4 space-y-2 bg-card"
+                  className="border border-green-200 rounded-xl p-4 space-y-3 bg-white/80 hover:bg-white transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <h4 className="font-medium text-sm">{item.title}</h4>
-                    <div className="flex gap-1">
-                      {item.tags.map((tag, tagIndex) => (
-                        <span
-                          key={tagIndex}
-                          className="px-2 py-1 bg-muted rounded text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <h4 className="font-semibold text-sm text-green-800 line-clamp-2">{item.title}</h4>
+                    {item.tags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap">
+                        {item.tags.slice(0, 3).map((tag, tagIndex) => (
+                          <span
+                            key={tagIndex}
+                            className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {item.tags.length > 3 && (
+                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                            +{item.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
                     {item.content}
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>Categorie: {item.category}</span>
-                    <span>Type: {item.type}</span>
-                    <span>Auteur: {item.author}</span>
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">Categorie:</span> {item.category}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">Type:</span> {item.type}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">Auteur:</span> {item.author}
+                    </span>
                   </div>
                 </div>
               ))}
+              
+              {previewItems.length > 5 && (
+                <div className="text-center py-2">
+                  <p className="text-sm text-muted-foreground">
+                    En nog {previewItems.length - 5} items meer...
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

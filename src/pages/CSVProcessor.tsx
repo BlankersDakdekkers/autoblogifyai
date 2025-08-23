@@ -492,83 +492,82 @@ const CSVProcessor = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <FileSpreadsheet className="h-8 w-8 text-primary" />
-            CSV Processor Pro
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+            <FileSpreadsheet className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              CSV Processor Pro
+            </span>
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Verwerk CSV bestanden naar SEO-geoptimaliseerde blogposts met AI content generatie
           </p>
         </div>
         <div className="flex gap-2">
           <Button 
+            onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} 
             variant="outline" 
             size="sm"
-            onClick={() => window.open('/dashboard/blogs', '_blank')}
-            className="flex items-center gap-2"
+            className="shrink-0"
           >
-            <FileText className="h-4 w-4" />
-            Blog Management
+            <Settings className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Instellingen</span>
           </Button>
           <Button 
-            variant="outline" 
+            onClick={() => {
+              loadJobs();
+              loadGeneratedPosts();
+            }}
+            variant="outline"
             size="sm"
-            onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+            className="shrink-0"
           >
-            <Settings className="h-4 w-4 mr-2" />
-            {showAdvancedOptions ? 'Verberg' : 'Geavanceerd'}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={loadJobs}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Vernieuwen
+            <RefreshCw className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Vernieuwen</span>
           </Button>
         </div>
       </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="processor">
-              <Zap className="h-4 w-4 mr-2" />
-              CSV Verwerken
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="processor" className="flex-1 sm:flex-initial">
+              <Zap className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">CSV Verwerken</span>
             </TabsTrigger>
-            <TabsTrigger value="posts">
-              <FileText className="h-4 w-4 mr-2" />
-              Posts ({generatedPosts.length})
+            <TabsTrigger value="posts" className="flex-1 sm:flex-initial">
+              <FileText className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Posts ({generatedPosts.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="jobs">
-              <Database className="h-4 w-4 mr-2" />
-              Historie ({jobs.length})
+            <TabsTrigger value="jobs" className="flex-1 sm:flex-initial">
+              <Database className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Historie ({jobs.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="schema">
-              <Settings className="h-4 w-4 mr-2" />
-              Schema
+            <TabsTrigger value="schema" className="flex-1 sm:flex-initial">
+              <Settings className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Schema</span>
             </TabsTrigger>
           </TabsList>
           {activeTab === 'posts' && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={downloadCSVResults}
                 disabled={generatedPosts.length === 0}
+                className="flex-1 sm:flex-initial"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Export CSV</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={loadGeneratedPosts}
+                className="flex-1 sm:flex-initial"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Vernieuwen
+                <RefreshCw className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Vernieuwen</span>
               </Button>
             </div>
           )}
