@@ -88,52 +88,148 @@ const TemplateEditor = () => {
 
   // Template starters for different categories
   const templateStarters = {
-    blog: `# {{title}} - {{city}}
+    blog: `# {{title}} | {{city}} - Professionele {{service}}
+
+> **💡 Tip:** Dit artikel helpt u {{problem_description}} op te lossen
 
 ## Inleiding
-Welkom bij onze gids over {{topic}}. In dit artikel behandelen we alles wat u moet weten over {{service}} in {{city}}.
+Bent u op zoek naar {{service}} in {{city}}? Dan bent u bij ons aan het juiste adres. Met meer dan {{years_experience}} jaar ervaring weten wij precies hoe we u het beste kunnen helpen.
 
-## Hoofdcontent
+## {{main_topic}} - Wat u Moet Weten
+
 {{main_content}}
 
-## Conclusie
-Voor meer informatie over {{service}}, neem contact met ons op via {{phone}}.`,
-    
-    landing: `# {{headline}}
+### Waarom is dit Belangrijk?
+- **Kwaliteit:** {{quality_reason}}
+- **Snelheid:** {{speed_reason}}  
+- **Expertise:** {{expertise_reason}}
 
-## Het Probleem
+## Veelgestelde Vragen
+
+**Q: {{faq_question_1}}**
+A: {{faq_answer_1}}
+
+**Q: {{faq_question_2}}**  
+A: {{faq_answer_2}}
+
+## Klaar voor Actie?
+
+{{conclusion_text}} Neem vandaag nog contact met ons op voor een **gratis offerte** zonder verplichtingen.
+
+**📞 Direct bereikbaar:** {{phone}}
+**✉️ Of mail naar:** {{email}}
+
+*{{company_name}} - Uw betrouwbare partner sinds {{founded_year}}*`,
+    
+    landing: `# 🎯 {{headline}}
+
+---
+
+## 😰 Herkenbaar? Dit Probleem Heeft Iedereen...
+
 {{problem_description}}
 
-## De Oplossing
+**Gevolgen als u niets doet:**
+- ❌ {{negative_consequence_1}}
+- ❌ {{negative_consequence_2}}  
+- ❌ {{negative_consequence_3}}
+
+---
+
+## ✨ Wij Hebben DE Oplossing!
+
 {{solution_description}}
 
-## Waarom Kiezen Voor Ons?
-✅ {{benefit_1}}
-✅ {{benefit_2}}
-✅ {{benefit_3}}
+**Resultaat na onze aanpak:**
+- ✅ {{positive_result_1}}
+- ✅ {{positive_result_2}}
+- ✅ {{positive_result_3}}
 
-## Call to Action
-{{cta_text}} - Bel {{phone}} of mail naar {{email}}`,
+---
 
-    email: `Onderwerp: {{subject}}
+## 🏆 Waarom {{customer_count}}+ Klanten Voor Ons Kiezen
+
+### ⭐ {{benefit_1}}
+{{benefit_1_explanation}}
+
+### ⭐ {{benefit_2}}  
+{{benefit_2_explanation}}
+
+### ⭐ {{benefit_3}}
+{{benefit_3_explanation}}
+
+---
+
+## 💬 Wat Onze Klanten Zeggen
+
+> *"{{testimonial_quote}}"*  
+> **- {{testimonial_name}}, {{testimonial_location}}**
+
+⭐⭐⭐⭐⭐ **{{rating}}/5 sterren** (gebaseerd op {{review_count}} reviews)
+
+---
+
+## 🚀 {{cta_text}}
+
+### 🎁 **BEPERKTE TIJD:** {{special_offer}}
+
+**📞 Bel direct:** [{{phone}}](tel:{{phone}})  
+**✉️ Of mail:** [{{email}}](mailto:{{email}})
+
+*Reactie binnen 2 uur gegarandeerd • {{guarantee_text}}*`,
+
+    email: `Onderwerp: {{subject}} | {{company_name}}
 
 Beste {{first_name}},
 
 {{intro_text}}
 
+## Waarom deze email?
+{{reason_for_email}}
+
+## Wat betekent dit voor u?
 {{main_message}}
 
+### Uw voordelen:
+✅ {{benefit_1}}  
+✅ {{benefit_2}}
+✅ {{benefit_3}}
+
+## Volgende stap
+{{next_step_instruction}}
+
+**Direct actie ondernemen?**
+📞 Bel: {{phone}}
+✉️ Mail: {{email}}
+🌐 Website: {{website}}
+
+---
+
 Met vriendelijke groet,
-{{sender_name}}
-{{company_name}}`,
+
+**{{sender_name}}**  
+{{job_title}}  
+{{company_name}}  
+
+*P.S. {{ps_message}}*`,
 
     social: `🔥 {{headline}}
 
 {{description}}
 
-👉 {{call_to_action}}
+💡 **Waarom dit belangrijk is:**
+{{why_important}}
 
-#{{hashtag1}} #{{hashtag2}} #{{hashtag3}}`
+🎯 **Resultaat:**  
+{{expected_result}}
+
+👆 **Actie vereist:**
+{{call_to_action}}
+
+💬 Reageer met "{{response_keyword}}" voor meer info!
+
+#{{hashtag1}} #{{hashtag2}} #{{hashtag3}}
+#{{location_hashtag}} #{{industry_hashtag}}`
   };
 
   const templates: Template[] = [
@@ -259,34 +355,90 @@ Met vriendelijke groet,
     });
   };
 
-  // Sample data voor preview - uitgebreidere dataset
+  // Uitgebreide sample data voor professionele preview
   const sampleData = {
-    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden",
+    // Basis informatie
+    title: "Dakdekker Amsterdam - Professionele Dakwerkzaamheden & Renovatie",
     city: "Amsterdam", 
-    topic: "dakdekken",
     service: "dakdekker diensten",
-    main_content: "Onze ervaren dakdekkers bieden volledige dakoplossingen in Amsterdam. Van lekkage reparatie tot complete nieuwe daken, wij zorgen voor kwaliteit en snelle service.",
+    company_name: "DakPro Amsterdam",
     phone: "020-1234567",
-    headline: "De Beste Dakdekker in Amsterdam",
-    problem_description: "Uw dak lekt en u zoekt een betrouwbare dakdekker? Lekkages kunnen tot ernstige waterschade leiden.",
-    solution_description: "Wij bieden snelle, professionele dakreparaties en nieuwe daken. Onze experts komen binnen 24 uur ter plaatse.",
-    benefit_1: "25 jaar ervaring in dakdekken",
-    benefit_2: "Gratis inspectie en offerte",
-    benefit_3: "Garantie op al ons werk",
-    cta_text: "Bel nu voor een gratis offerte",
-    email: "info@dakdekker-amsterdam.nl",
-    company_name: "Dakdekkers Amsterdam BV",
-    first_name: "Jan",
-    subject: "Uw dakprobleem opgelost binnen 24 uur",
-    intro_text: "Heeft u last van een lekkend dak?",
-    main_message: "Onze specialisten staan voor u klaar om uw dakprobleem snel op te lossen.",
+    email: "info@dakpro-amsterdam.nl",
+    website: "www.dakpro-amsterdam.nl",
+    
+    // Landing page specifiek
+    headline: "🏠 Daklek? Wij Lossen Het Vandaag Nog Op!",
+    problem_description: "Heeft u last van een lekkend dak, losliggende dakpannen of verouderde dakbedekking? Dit kan leiden tot kostbare waterschade, schimmel en structurele problemen aan uw woning.",
+    solution_description: "Onze gecertificeerde dakspecialisten komen binnen 4 uur ter plaatse en bieden directe noodoplossingen. Van kleine reparaties tot complete dakrenovaties - wij zorgen voor een waterdicht resultaat.",
+    
+    // Verbeterde benefits
+    benefit_1: "24/7 Spoeddienst - Ook in weekenden",
+    benefit_1_explanation: "Dakproblemen wachten niet op kantooruren. Onze nooddienst is 24/7 bereikbaar voor urgente reparaties.",
+    benefit_2: "15 jaar garantie op alle werkzaamheden", 
+    benefit_2_explanation: "Wij staan achter ons werk met de langste garantieperiode in Amsterdam - 15 jaar volledige dekking.",
+    benefit_3: "Gratis inspectie & offerte binnen 2 uur",
+    benefit_3_explanation: "Onze experts komen langs voor een grondige dakinsectie en uitgebreide offerte, volledig kosteloos.",
+    
+    // Gevolgen en resultaten
+    negative_consequence_1: "Waterschade kan oplopen tot €25.000+",
+    negative_consequence_2: "Schimmelvorming bedreigt uw gezondheid", 
+    negative_consequence_3: "Waardevermindering van uw woning met 10-15%",
+    positive_result_1: "100% waterdicht dak met 15 jaar garantie",
+    positive_result_2: "Waardeverhoging woning tot €35.000",
+    positive_result_3: "Energiebesparing tot 40% door isolatie",
+    
+    // CTA en aanbiedingen
+    cta_text: "Bel Nu Voor Gratis Spoedinsectie", 
+    special_offer: "Geen voorrijdkosten + 20% korting bij opdracht deze maand",
+    customer_count: "1.200",
+    rating: "4.9",
+    review_count: "347",
+    guarantee_text: "15 jaar garantie & tevredenheidsgarantie",
+    
+    // Testimonial
+    testimonial_quote: "Binnen 3 uur was mijn daklek verholpen. Professioneel, snel en netjes opgeruimd. Absolute aanrader!",
+    testimonial_name: "Maria van der Berg",
+    testimonial_location: "Amsterdam Zuid",
+    
+    // Blog specifiek  
+    topic: "daklekkage repareren",
+    main_topic: "Daklekkage Herkennen & Voorkomen",
+    main_content: "Een lekkend dak is meer dan alleen een ongemak - het kan binnen enkele maanden duizenden euro's schade aanrichten. Vroege signalen zijn: vochtige plekken op het plafond, schimmelgeur, of dakpannen die zijn verschoven na storm. Onze ervaring leert dat 80% van de dakproblemen voorkomen had kunnen worden met tijdig onderhoud.",
+    years_experience: "25",
+    founded_year: "1998",
+    quality_reason: "Alleen A-merk materialen en gecertificeerde monteurs",
+    speed_reason: "Gemiddelde responstijd van 2,5 uur binnen Amsterdam", 
+    expertise_reason: "Gespecialiseerd in monumentale panden én moderne woningen",
+    conclusion_text: "Wacht niet tot een klein probleem een grote reparatie wordt.",
+    
+    // FAQ
+    faq_question_1: "Hoe snel kunnen jullie langskomen bij een noodgeval?",
+    faq_answer_1: "Bij spoedgevallen komen we binnen 2-4 uur ter plaatse, ook 's avonds en in weekenden. Voor normale werkzaamheden plannen we binnen 48 uur een afspraak.",
+    faq_question_2: "Welke garantie krijg ik op de werkzaamheden?", 
+    faq_answer_2: "Wij geven 15 jaar garantie op alle dakwerkzaamheden. Dit is de langste garantieperiode in Amsterdam en toont ons vertrouwen in de kwaliteit.",
+    
+    // Email specifiek
+    subject: "Uw dakprobleem opgelost binnen 24 uur - Gratis inspectie",
+    first_name: "Meneer/Mevrouw",
+    intro_text: "Wij begrijpen dat dakproblemen stress veroorzaken. Daarom bieden wij u een complete oplossing zonder zorgen.",
+    reason_for_email: "U heeft recent gezocht naar dakdekkers in Amsterdam, en wij willen u helpen met betrouwbare en snelle service.",
+    main_message: "Onze gecertificeerde dakspecialisten staan klaar om uw dakprobleem vandaag nog op te lossen. Van kleine reparaties tot complete renovaties - wij regelen alles van A tot Z.",
+    next_step_instruction: "Bel ons voor een gratis inspectie en ontvang binnen 2 uur een gedetailleerde offerte.",
     sender_name: "Piet Janssen",
-    call_to_action: "Bel direct voor hulp!",
-    hashtag1: "dakdekker",
-    hashtag2: "amsterdam", 
-    hashtag3: "dakservice",
-    // Extra variabelen die ontbreken kunnen worden toegevoegd
-    description: "Professionele dakwerkzaamheden in Amsterdam en omstreken"
+    job_title: "Senior Dakspecialist",
+    ps_message: "Bij opdracht deze maand: geen voorrijkosten én 15% korting op alle werkzaamheden.",
+    
+    // Social media specifiek
+    description: "🏠 Daklek in Amsterdam? Onze experts lossen het binnen 4 uur op! ⚡",
+    why_important: "Elke dag uitstel kan duizenden euro's extra schade betekenen",
+    expected_result: "Waterdicht dak + 15 jaar garantie + geen stress meer",
+    call_to_action: "Bel 020-1234567 voor gratis spoedinsectie", 
+    response_keyword: "DAKLEK",
+    hashtag1: "dakdekkeramsterdam",
+    hashtag2: "daklekreparatie", 
+    hashtag3: "spoeddienst",
+    location_hashtag: "amsterdam",
+    industry_hashtag: "dakkappellen"
   };
 
   const renderPreview = (content: string, withSampleData: boolean = false) => {
