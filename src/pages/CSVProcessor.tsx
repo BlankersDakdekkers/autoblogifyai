@@ -835,7 +835,7 @@ const CSVProcessor = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Professional Post Viewer Modal */}
+      {/* Professional Post Viewer Modal with Table of Contents */}
       {showPostViewer && selectedPost && (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto"
@@ -924,7 +924,7 @@ const CSVProcessor = () => {
               </div>
             </div>
             
-            {/* Professional Content Area */}
+            {/* Professional Content Area with TOC */}
             <div className="flex gap-6">
               
               {/* Table of Contents Sidebar */}
@@ -996,214 +996,215 @@ const CSVProcessor = () => {
               {/* Main Content */}
               <div className={`flex-1 ${tableOfContents.length === 0 || !showTableOfContents ? 'max-w-none' : 'max-w-3xl'} overflow-y-auto max-h-[70vh]`}>
                 <div className="p-6 md:p-8 space-y-8">
-                
-                {/* Hero Image - Professional Layout */}
-                {selectedPost.hero_image_url && (
-                  <div className="relative">
-                    <div className="aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-lg">
-                      <img 
-                        src={selectedPost.hero_image_url} 
-                        alt={selectedPost.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-                  </div>
-                )}
-                
-                {/* Professional Article Content */}
-                <div className="max-w-none">
-                  <article className="prose prose-lg max-w-none
-                    prose-headings:text-foreground prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-20
-                    prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-12 prose-h1:pb-4 prose-h1:border-b-2 prose-h1:border-primary/20
-                    prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-primary prose-h2:leading-tight
-                    prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-primary/90 prose-h3:leading-tight
-                    prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-foreground prose-h4:font-semibold
-                    prose-h5:text-lg prose-h5:mb-2 prose-h5:mt-5 prose-h5:text-foreground prose-h5:font-semibold
-                    prose-h6:text-base prose-h6:mb-2 prose-h6:mt-4 prose-h6:text-muted-foreground prose-h6:font-semibold prose-h6:uppercase prose-h6:tracking-wide
-                    
-                    prose-p:text-foreground prose-p:leading-8 prose-p:mb-6 prose-p:text-lg
-                    prose-strong:text-foreground prose-strong:font-bold prose-strong:bg-primary/10 prose-strong:px-1 prose-strong:rounded
-                    prose-em:text-primary prose-em:italic prose-em:font-medium
-                    
-                    prose-ul:space-y-3 prose-ul:ml-0 prose-ul:mb-8 prose-ol:space-y-3 prose-ol:ml-0 prose-ol:mb-8
-                    prose-li:text-foreground prose-li:leading-7 prose-li:pl-2 prose-li:relative
-                    
-                    prose-a:text-primary prose-a:font-semibold prose-a:no-underline prose-a:border-b prose-a:border-primary/30
-                    hover:prose-a:border-primary hover:prose-a:bg-primary/5 prose-a:transition-all prose-a:duration-200 prose-a:px-1 prose-a:rounded-sm
-                    
-                    prose-blockquote:border-l-4 prose-blockquote:border-l-primary prose-blockquote:bg-gradient-to-r prose-blockquote:from-primary/10 prose-blockquote:to-primary/5
-                    prose-blockquote:pl-8 prose-blockquote:py-6 prose-blockquote:rounded-r-xl prose-blockquote:shadow-sm
-                    prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:italic prose-blockquote:text-lg prose-blockquote:leading-8
-                    prose-blockquote:my-8 prose-blockquote:relative
-                    
-                    prose-code:bg-muted prose-code:px-3 prose-code:py-1.5 prose-code:rounded-lg prose-code:border
-                    prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-code:font-semibold
-                    prose-code:before:content-none prose-code:after:content-none
-                    
-                    prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 prose-pre:rounded-xl prose-pre:p-6 prose-pre:overflow-auto
-                    prose-pre:shadow-lg prose-pre:my-8
-                    
-                    prose-img:rounded-xl prose-img:shadow-xl prose-img:border prose-img:border-border/50 prose-img:my-8
-                    prose-img:hover:shadow-2xl prose-img:transition-shadow prose-img:duration-300
-                    
-                    prose-hr:border-0 prose-hr:h-px prose-hr:bg-gradient-to-r prose-hr:from-transparent prose-hr:via-border prose-hr:to-transparent prose-hr:my-12
-                    
-                    prose-table:border-collapse prose-table:border prose-table:border-border prose-table:rounded-lg prose-table:overflow-hidden prose-table:shadow-sm prose-table:my-8
-                    prose-thead:bg-muted prose-thead:border-b-2 prose-thead:border-border
-                    prose-th:border prose-th:border-border prose-th:p-4 prose-th:text-left prose-th:font-bold prose-th:text-foreground prose-th:text-sm prose-th:uppercase prose-th:tracking-wide
-                    prose-td:border prose-td:border-border prose-td:p-4 prose-td:text-foreground prose-td:align-top
-                    prose-tbody:divide-y prose-tbody:divide-border
-                    prose-tr:transition-colors hover:prose-tr:bg-muted/50
-                  ">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        h1: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h1 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></span>
-                              {children}
-                            </h1>
-                          );
-                        },
-                        h2: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h2 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-1.5 h-6 bg-gradient-to-b from-primary/80 to-primary/40 rounded-full"></span>
-                              {children}
-                            </h2>
-                          );
-                        },
-                        h3: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h3 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-1 h-5 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full"></span>
-                              {children}
-                            </h3>
-                          );
-                        },
-                        h4: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h4 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-0.5 h-4 bg-gradient-to-b from-primary/40 to-primary/20 rounded-full"></span>
-                              {children}
-                            </h4>
-                          );
-                        },
-                        h5: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h5 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-0.5 h-3 bg-gradient-to-b from-primary/30 to-primary/15 rounded-full"></span>
-                              {children}
-                            </h5>
-                          );
-                        },
-                        h6: ({ children }) => {
-                          const text = children?.toString() || '';
-                          const id = text.toLowerCase()
-                            .replace(/[^a-z0-9\s]/g, '')
-                            .replace(/\s+/g, '-')
-                            .substring(0, 50);
-                          return (
-                            <h6 id={id} className="group flex items-center gap-3 scroll-mt-20">
-                              <span className="w-0.5 h-2 bg-gradient-to-b from-primary/20 to-primary/10 rounded-full"></span>
-                              {children}
-                            </h6>
-                          );
-                        },
-                        p: ({ children, ...props }) => {
-                          return <p className="leading-8 mb-6">{children}</p>;
-                        },
-                        blockquote: ({ children }) => (
-                          <blockquote className="relative">
-                            <div className="absolute -left-4 top-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                              <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
-                              </svg>
-                            </div>
-                            {children}
-                          </blockquote>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="space-y-3 ml-0 mb-8">
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="space-y-3 ml-0 mb-8">
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children, ...props }) => {
-                          return (
-                            <li className="flex items-start gap-3">
-                              <span className="w-2 h-2 bg-primary rounded-full shrink-0 mt-3"></span>
-                              <span className="flex-1">{children}</span>
-                            </li>
-                          );
-                        }
-                      }}
-                    >
-                      {selectedPost.body_markdown || "**Geen content beschikbaar**\n\nDeze blogpost heeft nog geen content. Upload een CSV bestand om automatisch content te genereren."}
-                    </ReactMarkdown>
-                  </article>
-                </div>
-                
-                {/* Professional Tags Section */}
-                {selectedPost.tags.length > 0 && (
-                  <div className="border-t border-border/50 pt-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                        </svg>
+                  
+                  {/* Hero Image - Professional Layout */}
+                  {selectedPost.hero_image_url && (
+                    <div className="relative">
+                      <div className="aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-lg">
+                        <img 
+                          src={selectedPost.hero_image_url} 
+                          alt={selectedPost.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
                       </div>
-                      <h3 className="text-lg font-semibold text-foreground">Tags & Categorieën</h3>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {selectedPost.tags.map((tag, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline" 
-                          className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-primary/10 to-primary/5 
-                                   border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 
-                                   transition-all duration-200 cursor-pointer"
-                        >
-                          <span className="mr-1">#</span>
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                  )}
+                  
+                  {/* Professional Article Content */}
+                  <div className="max-w-none">
+                    <article className="prose prose-lg max-w-none
+                      prose-headings:text-foreground prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-20
+                      prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-12 prose-h1:pb-4 prose-h1:border-b-2 prose-h1:border-primary/20
+                      prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-primary prose-h2:leading-tight
+                      prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-primary/90 prose-h3:leading-tight
+                      prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-foreground prose-h4:font-semibold
+                      prose-h5:text-lg prose-h5:mb-2 prose-h5:mt-5 prose-h5:text-foreground prose-h5:font-semibold
+                      prose-h6:text-base prose-h6:mb-2 prose-h6:mt-4 prose-h6:text-muted-foreground prose-h6:font-semibold prose-h6:uppercase prose-h6:tracking-wide
+                      
+                      prose-p:text-foreground prose-p:leading-8 prose-p:mb-6 prose-p:text-lg
+                      prose-strong:text-foreground prose-strong:font-bold prose-strong:bg-primary/10 prose-strong:px-1 prose-strong:rounded
+                      prose-em:text-primary prose-em:italic prose-em:font-medium
+                      
+                      prose-ul:space-y-3 prose-ul:ml-0 prose-ul:mb-8 prose-ol:space-y-3 prose-ol:ml-0 prose-ol:mb-8
+                      prose-li:text-foreground prose-li:leading-7 prose-li:pl-2 prose-li:relative
+                      
+                      prose-a:text-primary prose-a:font-semibold prose-a:no-underline prose-a:border-b prose-a:border-primary/30
+                      hover:prose-a:border-primary hover:prose-a:bg-primary/5 prose-a:transition-all prose-a:duration-200 prose-a:px-1 prose-a:rounded-sm
+                      
+                      prose-blockquote:border-l-4 prose-blockquote:border-l-primary prose-blockquote:bg-gradient-to-r prose-blockquote:from-primary/10 prose-blockquote:to-primary/5
+                      prose-blockquote:pl-8 prose-blockquote:py-6 prose-blockquote:rounded-r-xl prose-blockquote:shadow-sm
+                      prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:italic prose-blockquote:text-lg prose-blockquote:leading-8
+                      prose-blockquote:my-8 prose-blockquote:relative
+                      
+                      prose-code:bg-muted prose-code:px-3 prose-code:py-1.5 prose-code:rounded-lg prose-code:border
+                      prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-code:font-semibold
+                      prose-code:before:content-none prose-code:after:content-none
+                      
+                      prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 prose-pre:rounded-xl prose-pre:p-6 prose-pre:overflow-auto
+                      prose-pre:shadow-lg prose-pre:my-8
+                      
+                      prose-img:rounded-xl prose-img:shadow-xl prose-img:border prose-img:border-border/50 prose-img:my-8
+                      prose-img:hover:shadow-2xl prose-img:transition-shadow prose-img:duration-300
+                      
+                      prose-hr:border-0 prose-hr:h-px prose-hr:bg-gradient-to-r prose-hr:from-transparent prose-hr:via-border prose-hr:to-transparent prose-hr:my-12
+                      
+                      prose-table:border-collapse prose-table:border prose-table:border-border prose-table:rounded-lg prose-table:overflow-hidden prose-table:shadow-sm prose-table:my-8
+                      prose-thead:bg-muted prose-thead:border-b-2 prose-thead:border-border
+                      prose-th:border prose-th:border-border prose-th:p-4 prose-th:text-left prose-th:font-bold prose-th:text-foreground prose-th:text-sm prose-th:uppercase prose-th:tracking-wide
+                      prose-td:border prose-td:border-border prose-td:p-4 prose-td:text-foreground prose-td:align-top
+                      prose-tbody:divide-y prose-tbody:divide-border
+                      prose-tr:transition-colors hover:prose-tr:bg-muted/50
+                    ">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          h1: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h1 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></span>
+                                {children}
+                              </h1>
+                            );
+                          },
+                          h2: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h2 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-1.5 h-6 bg-gradient-to-b from-primary/80 to-primary/40 rounded-full"></span>
+                                {children}
+                              </h2>
+                            );
+                          },
+                          h3: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h3 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-1 h-5 bg-gradient-to-b from-primary/60 to-primary/30 rounded-full"></span>
+                                {children}
+                              </h3>
+                            );
+                          },
+                          h4: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h4 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-0.5 h-4 bg-gradient-to-b from-primary/40 to-primary/20 rounded-full"></span>
+                                {children}
+                              </h4>
+                            );
+                          },
+                          h5: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h5 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-0.5 h-3 bg-gradient-to-b from-primary/30 to-primary/15 rounded-full"></span>
+                                {children}
+                              </h5>
+                            );
+                          },
+                          h6: ({ children }) => {
+                            const text = children?.toString() || '';
+                            const id = text.toLowerCase()
+                              .replace(/[^a-z0-9\s]/g, '')
+                              .replace(/\s+/g, '-')
+                              .substring(0, 50);
+                            return (
+                              <h6 id={id} className="group flex items-center gap-3 scroll-mt-20">
+                                <span className="w-0.5 h-2 bg-gradient-to-b from-primary/20 to-primary/10 rounded-full"></span>
+                                {children}
+                              </h6>
+                            );
+                          },
+                          p: ({ children, ...props }) => {
+                            return <p className="leading-8 mb-6">{children}</p>;
+                          },
+                          blockquote: ({ children }) => (
+                            <blockquote className="relative">
+                              <div className="absolute -left-4 top-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                                </svg>
+                              </div>
+                              {children}
+                            </blockquote>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="space-y-3 ml-0 mb-8">
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="space-y-3 ml-0 mb-8">
+                              {children}
+                            </ol>
+                          ),
+                          li: ({ children, ...props }) => {
+                            return (
+                              <li className="flex items-start gap-3">
+                                <span className="w-2 h-2 bg-primary rounded-full shrink-0 mt-3"></span>
+                                <span className="flex-1">{children}</span>
+                              </li>
+                            );
+                          }
+                        }}
+                      >
+                        {selectedPost.body_markdown || "**Geen content beschikbaar**\n\nDeze blogpost heeft nog geen content. Upload een CSV bestand om automatisch content te genereren."}
+                      </ReactMarkdown>
+                    </article>
                   </div>
-                )}
-                
+                  
+                  {/* Professional Tags Section */}
+                  {selectedPost.tags.length > 0 && (
+                    <div className="border-t border-border/50 pt-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground">Tags & Categorieën</h3>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {selectedPost.tags.map((tag, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="outline" 
+                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-primary/10 to-primary/5 
+                                     border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 
+                                     transition-all duration-200 cursor-pointer"
+                          >
+                            <span className="mr-1">#</span>
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                </div>
               </div>
             </div>
             
