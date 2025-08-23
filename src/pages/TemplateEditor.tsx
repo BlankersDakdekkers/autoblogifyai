@@ -63,6 +63,7 @@ const TemplateEditor = () => {
   const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({});
   const [currentStep, setCurrentStep] = useState(1);
   const [showHelp, setShowHelp] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Wizard steps for better UX
   const steps = [
@@ -216,14 +217,29 @@ Met vriendelijke groet,
     }
   };
 
-  const startWithTemplate = (category: string) => {
-    const starter = templateStarters[category as keyof typeof templateStarters];
-    setEditingTemplate(prev => ({ 
-      ...prev, 
-      content: starter,
-      category: category as any
-    }));
-    setCurrentStep(2);
+  const startNewTemplate = (category?: string, withStarter: boolean = false) => {
+    const content = withStarter && category ? templateStarters[category as keyof typeof templateStarters] : "";
+    
+    setSelectedTemplate(null);
+    setEditingTemplate({
+      name: "",
+      description: "",
+      category: (category as any) || "blog",
+      content: content,
+      tags: [],
+      isPublic: true,
+      isPremium: false
+    });
+    setCurrentStep(1);
+    setIsEditing(true);
+    setIsDialogOpen(false);
+    
+    toast({
+      title: "Wizard gestart!",
+      description: withStarter ? 
+        `Template wizard gestart met ${category} starter` : 
+        "Template wizard gestart met leeg template"
+    });
   };
 
   const renderPreview = (content: string) => {
@@ -288,9 +304,9 @@ Met vriendelijke groet,
         </div>
 
         <div className="flex gap-2">
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nieuw Template
               </Button>
@@ -299,73 +315,57 @@ Met vriendelijke groet,
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Wand2 className="h-5 w-5" />
-                  Template Wizard
+                  Template Wizard - Kies je Start
                 </DialogTitle>
                 <DialogDescription>
-                  Maak stap-voor-stap een nieuw template met onze gebruiksvriendelijke wizard
+                  Begin met een vooraf gemaakte template of start helemaal opnieuw
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="grid gap-3 md:grid-cols-2">
                   {Object.entries(templateStarters).map(([category, content]) => (
                     <Card 
                       key={category} 
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105"
-                      onClick={() => {
-                        setSelectedTemplate(null);
-                        setEditingTemplate({
-                          name: "",
-                          description: "",
-                          category: category as any,
-                          content: content,
-                          tags: [],
-                          isPublic: true,
-                          isPremium: false
-                        });
-                        setCurrentStep(1);
-                        setIsEditing(true);
-                      }}
+                      className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 hover:border-primary/50"
+                      onClick={() => startNewTemplate(category, true)}
                     >
                       <CardContent className="p-4 text-center">
-                        <div className="text-2xl mb-2">
+                        <div className="text-3xl mb-3">
                           {category === 'blog' ? '📝' :
                            category === 'landing' ? '🎯' :
                            category === 'email' ? '📧' : '📱'}
                         </div>
-                        <h4 className="font-medium">
+                        <h4 className="font-semibold mb-2">
                           {category === 'blog' ? 'Blog Post' :
                            category === 'landing' ? 'Landing Page' :
                            category === 'email' ? 'Email Template' : 'Social Media'}
                         </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen' :
-                           category === 'landing' ? 'Conversie-gerichte paginas' :
-                           category === 'email' ? 'Professional emails' : 'Sociale media posts'}
+                        <p className="text-xs text-muted-foreground">
+                          {category === 'blog' ? 'SEO-geoptimaliseerde artikelen met lokale focus' :
+                           category === 'landing' ? 'Conversie-gerichte paginas met CTA\'s' :
+                           category === 'email' ? 'Professional email templates' : 'Sociale media posts met hashtags'}
                         </p>
+                        <Button size="sm" className="mt-3 w-full" variant="outline">
+                          Start met {category === 'blog' ? 'Blog' : 
+                                   category === 'landing' ? 'Landing' :
+                                   category === 'email' ? 'Email' : 'Social'} Template
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
                 
-                <div className="text-center">
+                <div className="text-center border-t pt-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Of begin helemaal opnieuw zonder voorbeeldcontent
+                  </p>
                   <Button 
                     variant="outline"
-                    onClick={() => {
-                      setSelectedTemplate(null);
-                      setEditingTemplate({
-                        name: "",
-                        description: "",
-                        category: "blog",
-                        content: "",
-                        tags: [],
-                        isPublic: true,
-                        isPremium: false
-                      });
-                      setCurrentStep(1);
-                      setIsEditing(true);
-                    }}
+                    onClick={() => startNewTemplate()}
+                    className="w-full max-w-xs"
                   >
-                    Begin met leeg template
+                    <FileText className="h-4 w-4 mr-2" />
+                    Leeg Template Maken
                   </Button>
                 </div>
               </div>
@@ -583,7 +583,18 @@ Met vriendelijke groet,
                                     key={category}
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => startWithTemplate(category)}
+                                    onClick={() => {
+                                      setEditingTemplate(prev => ({
+                                        ...prev,
+                                        content: content,
+                                        category: category as any
+                                      }));
+                                      setCurrentStep(2);
+                                      toast({
+                                        title: "Template starter geladen!",
+                                        description: `${category} template is toegevoegd aan je content`
+                                      });
+                                    }}
                                     className="text-blue-700 border-blue-300 hover:bg-blue-100"
                                   >
                                     {category === 'blog' ? 'Blog Post' :
