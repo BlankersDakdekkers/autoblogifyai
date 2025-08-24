@@ -77,12 +77,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .single();
+        .order('role', { ascending: false }); // admin komt voor user alfabetisch
 
       if (roleError) throw roleError;
 
+      // Neem de hoogste rol (admin heeft prioriteit)
+      const userRole = roleData && roleData.length > 0 ? 
+        (roleData.find(r => r.role === 'admin') || roleData[0]).role : 'user';
+
       setProfile(profileData);
-      setUserRole(roleData.role);
+      setUserRole(userRole);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
