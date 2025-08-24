@@ -104,10 +104,42 @@ const App = () => (
           }}
         >
           <AuthProvider>
-            <Routes>
-              <Route path="/" element={<><SimpleHeader /><Index /></>} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
+             <Routes>
+               <Route path="/" element={<><SimpleHeader /><Index /></>} />
+               <Route path="/auth" element={<AuthPage />} />
+               
+               {/* CMS ROUTES - MOVED TO TOP FOR PRIORITY */}
+               <Route 
+                 path="/dashboard/cms-integration" 
+                 element={
+                   <ProtectedRoute>
+                     <Layout>
+                       <div className="p-8 bg-green-50 border-4 border-green-500">
+                         <h1 className="text-4xl font-bold text-green-600">✅ TOP PRIORITY ROUTE WERKT!</h1>
+                         <p className="text-lg">Als je dit ziet, werkt de routing!</p>
+                         <p className="text-sm">URL: /dashboard/cms-integration</p>
+                       </div>
+                     </Layout>
+                   </ProtectedRoute>
+                 } 
+               />
+               
+               <Route 
+                 path="/dashboard/cms-integrations" 
+                 element={
+                   <ProtectedRoute>
+                     <Layout>
+                       <div className="p-8 bg-blue-50 border-4 border-blue-500">
+                         <h1 className="text-4xl font-bold text-blue-600">✅ BACKUP ROUTE WERKT!</h1>
+                         <p className="text-lg">Backup route met S aan het eind</p>
+                         <p className="text-sm">URL: /dashboard/cms-integrations</p>
+                       </div>
+                     </Layout>
+                   </ProtectedRoute>
+                 } 
+               />
+               
+               <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
               <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
               <Route path="/customer-cases" element={<><SimpleHeader /><CustomerCases /></>} />
               <Route path="/about" element={<><SimpleHeader /><AboutPage /></>} />
@@ -117,37 +149,7 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
-              {/* CMS Integrations route - TEST WITH SIMPLE COMPONENT */}
-              <Route 
-                path="/dashboard/cms-integration" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <div className="p-8">
-                        <h1 className="text-3xl font-bold text-green-600">🎯 ROUTE WERKT!</h1>
-                        <p>Dit betekent dat de routing wel werkt, maar er is een probleem met de CMSIntegrations component.</p>
-                      </div>
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Test backup route */}
-              <Route 
-                path="/dashboard/cms-integrations" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <div className="p-8">
-                        <h1 className="text-3xl font-bold text-blue-600">🎯 BACKUP ROUTE WERKT!</h1>
-                        <p>Backup route test</p>
-                      </div>
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Dashboard routes */}
+               {/* Dashboard routes */}
               <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/websites" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
