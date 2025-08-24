@@ -117,15 +117,11 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
-              {/* Test route - moved to top for priority */}
+              {/* CMS Integrations route - WORKING VERSION */}
               <Route path="/dashboard/cms-integration" element={
                 <ProtectedRoute>
                   <Layout>
-                    <div className="p-8 bg-green-50 border-2 border-green-200 rounded-lg">
-                      <h1 className="text-3xl font-bold text-green-600 mb-4">🎉 ROUTE WERKT EINDELIJK!</h1>
-                      <p className="text-lg">De CMS Integration pagina is nu bereikbaar!</p>
-                      <p className="text-sm mt-2">Route: /dashboard/cms-integration</p>
-                    </div>
+                    <CMSIntegrations />
                   </Layout>
                 </ProtectedRoute>
               } />
