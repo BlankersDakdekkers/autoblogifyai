@@ -117,6 +117,19 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
+              {/* Test route - moved to top for priority */}
+              <Route path="/dashboard/cms-integration" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <div className="p-8 bg-green-50 border-2 border-green-200 rounded-lg">
+                      <h1 className="text-3xl font-bold text-green-600 mb-4">🎉 ROUTE WERKT EINDELIJK!</h1>
+                      <p className="text-lg">De CMS Integration pagina is nu bereikbaar!</p>
+                      <p className="text-sm mt-2">Route: /dashboard/cms-integration</p>
+                    </div>
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
               {/* Dashboard routes */}
               <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
@@ -143,7 +156,7 @@ const App = () => (
               <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/cms-integration" element={<ProtectedRoute><Layout><div className="p-6"><h1 className="text-2xl font-bold text-green-600">✅ CMS INTEGRATION WERKT!</h1><p>Dit is een test om te zien of de route werkt.</p></div></Layout></ProtectedRoute>} />
+              
               <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
