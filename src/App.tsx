@@ -42,6 +42,8 @@ const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const CoursePage = lazy(() => import("./pages/CoursePage"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const OptimizedHeader = lazy(() => import("./components/OptimizedHeader"));
+const Footer = lazy(() => import("./components/Footer"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -59,44 +61,78 @@ const App = () => {
             <AuthProvider>
               <SidebarProvider>
                 <Routes>
-                  {/* Public Routes */}
+                  {/* Public Routes - Standalone */}
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/pricing" element={
+                    <div>
+                      <OptimizedHeader />
+                      <PricingPage />
+                      <Footer />
+                    </div>
+                  } />
                   <Route path="/about" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <AboutPage />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <AboutPage />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/contact" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <ContactPage />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <ContactPage />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/help" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <HelpSupport />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <HelpSupport />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/knowledge-base" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <KnowledgeBase />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <KnowledgeBase />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/course" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <CoursePage />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <CoursePage />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/privacy" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <PrivacyPolicy />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <PrivacyPolicy />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
                   <Route path="/terms" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <TermsOfService />
-                    </Suspense>
+                    <div>
+                      <OptimizedHeader />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <TermsOfService />
+                      </Suspense>
+                      <Footer />
+                    </div>
                   } />
 
                   {/* Protected Routes with Layout */}
