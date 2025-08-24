@@ -62,10 +62,10 @@ const AdminResourceManager = () => {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('resource-manager', {
-        method: 'GET'
-      });
-
+      
+      // Use the improved edge function helper
+      const { data, error } = await supabase.functions.invoke('resource-manager');
+      
       if (error) {
         console.error('Error fetching resources:', error);
         toast.error('Kon resources niet laden');

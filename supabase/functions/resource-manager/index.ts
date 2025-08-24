@@ -26,42 +26,56 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
+    // Create Supabase client with service role for authentication
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user is admin
-    const { data: { user } } = await supabaseClient.auth.getUser()
-    if (!user) {
+    // Get the authorization header from the request
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'No authorization header' }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
-      )
+      );
     }
 
-    const { data: userRole } = await supabaseClient
+    // Extract JWT from Bearer token
+    const jwt = authHeader.replace('Bearer ', '');
+    
+    // Verify JWT token using service role client
+    const { data: { user }, error: jwtError } = await supabase.auth.getUser(jwt);
+    
+    if (jwtError || !user) {
+      console.error('JWT verification failed:', jwtError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Check if user has admin role using service role client
+    const { data: userRole, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single()
+      .eq('role', 'admin')
+      .single();
 
-    if (!userRole || userRole.role !== 'admin') {
+    if (roleError || !userRole) {
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
-      )
+      );
     }
 
     const url = new URL(req.url)
@@ -69,7 +83,7 @@ Deno.serve(async (req) => {
 
     // GET - List all resources
     if (method === 'GET') {
-      const { data: resources, error } = await supabaseClient
+      const { data: resources, error } = await supabase
         .from('resources')
         .select('*')
         .order('featured', { ascending: false })
@@ -99,7 +113,7 @@ Deno.serve(async (req) => {
     if (method === 'POST') {
       const body = await req.json() as Resource
 
-      const { data: resource, error } = await supabaseClient
+      const { data: resource, error } = await supabase
         .from('resources')
         .insert([{
           title: body.title,
@@ -149,7 +163,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      const { data: resource, error } = await supabaseClient
+      const { data: resource, error } = await supabase
         .from('resources')
         .update({
           title: body.title,
@@ -201,7 +215,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      const { error } = await supabaseClient
+      const { error } = await supabase
         .from('resources')
         .delete()
         .eq('id', body.id)
