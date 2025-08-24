@@ -143,6 +143,7 @@ const App = () => (
               <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/cms-integrations" element={<ProtectedRoute><Layout><CMSIntegrationsPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
@@ -150,7 +151,6 @@ const App = () => (
               <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/resources" element={<ProtectedRoute requiredRole="admin"><Layout><AdminResourceManager /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/cms-integrations" element={<ProtectedRoute><Layout><CMSIntegrationsPage /></Layout></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
