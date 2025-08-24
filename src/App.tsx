@@ -117,13 +117,16 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
-              {/* CMS Integrations route - NEW SYNTAX */}
+              {/* CMS Integrations route - TEST WITH SIMPLE COMPONENT */}
               <Route 
                 path="/dashboard/cms-integration" 
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <CMSIntegrations />
+                      <div className="p-8">
+                        <h1 className="text-3xl font-bold text-green-600">🎯 ROUTE WERKT!</h1>
+                        <p>Dit betekent dat de routing wel werkt, maar er is een probleem met de CMSIntegrations component.</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 } 
@@ -135,7 +138,10 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <CMSIntegrations />
+                      <div className="p-8">
+                        <h1 className="text-3xl font-bold text-blue-600">🎯 BACKUP ROUTE WERKT!</h1>
+                        <p>Backup route test</p>
+                      </div>
                     </Layout>
                   </ProtectedRoute>
                 } 
