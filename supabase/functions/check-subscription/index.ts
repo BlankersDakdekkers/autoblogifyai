@@ -47,11 +47,17 @@ serve(async (req) => {
     
     console.log("Stripe key validation passed");
     
-    // Authenticate user
+    // Authenticate user with improved error handling
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      console.error("No authorization header");
-      throw new Error("No authorization header");
+      console.error("AUTHENTICATION ERROR: No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
     }
     
     const supabaseAuth = createClient(
@@ -60,18 +66,50 @@ serve(async (req) => {
     );
     
     const token = authHeader.replace("Bearer ", "");
+    console.log("TOKEN VALIDATION: Attempting to validate user token");
+    
     const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    
     if (userError) {
-      console.error("Authentication error:", userError);
-      throw new Error(`Auth error: ${userError.message}`);
+      console.error("AUTHENTICATION ERROR:", userError.message);
+      
+      // Handle expired sessions more gracefully
+      if (userError.message.includes("session_not_found") || userError.message.includes("expired")) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Session expired", 
+            message: "Please log in again",
+            code: "SESSION_EXPIRED"
+          }),
+          { 
+            status: 401, 
+            headers: { ...corsHeaders, "Content-Type": "application/json" } 
+          }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ error: "Authentication failed" }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
     }
     
     const user = userData.user;
     if (!user?.email) {
-      console.error("User not authenticated or no email");
-      throw new Error("User not authenticated");
+      console.error("USER VALIDATION ERROR: No user or email found in token");
+      return new Response(
+        JSON.stringify({ error: "Invalid user data" }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
     }
-    console.log("User authenticated:", user.email);
+    
+    console.log("USER AUTHENTICATED:", user.email);
 
     // Initialize Supabase with service role for database operations
     const supabaseClient = createClient(
@@ -184,15 +222,48 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
     
-  } catch (error) {
+  } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("GENERAL ERROR in check-subscription:", errorMessage);
-    return new Response(JSON.stringify({ 
-      error: "Er is een onbekende fout opgetreden",
-      debug: errorMessage
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    
+    // Handle specific authentication errors
+    if (errorMessage.includes("session_not_found") || errorMessage.includes("Session not found")) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Session expired", 
+          message: "Your session has expired. Please log in again.",
+          code: "SESSION_EXPIRED"
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
+    
+    if (errorMessage.includes("Authentication") || errorMessage.includes("Auth error")) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Authentication failed", 
+          message: "Please log in to access this feature.",
+          code: "AUTH_FAILED"
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
+    
+    return new Response(
+      JSON.stringify({ 
+        error: "Er is een onbekende fout opgetreden",
+        debug: errorMessage
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
   }
 });

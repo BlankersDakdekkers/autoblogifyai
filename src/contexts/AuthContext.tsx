@@ -65,13 +65,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors if no profile exists yet
 
-      if (profileError) throw profileError;
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
 
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -79,26 +83,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', userId)
         .order('role', { ascending: false }); // admin komt voor user alfabetisch
 
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error('Role fetch error:', roleError);
+        // Don't throw, just default to user role
+      }
 
       // Neem de hoogste rol (admin heeft prioriteit)
       const userRole = roleData && roleData.length > 0 ? 
         (roleData.find(r => r.role === 'admin') || roleData[0]).role : 'user';
 
+      console.log('Profile fetched:', { profile: !!profileData, role: userRole });
+      
       setProfile(profileData);
       setUserRole(userRole);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Set default values for new users
+      setUserRole('user');
     }
   };
 
   const refreshCredits = async () => {
-    if (!session) return;
+    if (!session?.access_token) {
+      console.log('No session token available for credits refresh');
+      return;
+    }
     
     try {
-      const { data, error } = await supabase.functions.invoke('check-credits');
+      console.log('Refreshing credits...');
+      
+      const { data, error } = await supabase.functions.invoke('check-credits', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
       if (!error && data) {
+        console.log('Credits refreshed:', data);
         setCredits(data.credits_remaining || 0);
+      } else if (error) {
+        console.error('Credits refresh error:', error);
+        
+        // Handle session expiry gracefully
+        if (error.message?.includes('SESSION_EXPIRED') || 
+            error.message?.includes('session_not_found')) {
+          console.log('Session expired during credits refresh');
+          // Don't show error toast for session expiry during background refresh
+          return;
+        }
       }
     } catch (error) {
       console.error('Error refreshing credits:', error);
@@ -112,18 +144,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state change:', event, session?.user?.email);
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer profile fetching to avoid potential callback conflicts
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            refreshCredits();
-          }, 0);
+          // Always fetch profile and credits for authenticated users
+          try {
+            await fetchProfile(session.user.id);
+            await refreshCredits();
+          } catch (error) {
+            console.error('Error fetching user data:', error);
+          }
         } else {
           setProfile(null);
           setUserRole(null);
@@ -134,22 +174,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-          refreshCredits();
-        }, 0);
+    // THEN check for existing session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setLoading(false);
+          return;
+        }
+        
+        if (!mounted) return;
+        
+        console.log('Initial session check:', session?.user?.email);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          try {
+            await fetchProfile(session.user.id);
+            await refreshCredits();
+          } catch (error) {
+            console.error('Error initializing user data:', error);
+          }
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        setLoading(false);
       }
-      
-      setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
