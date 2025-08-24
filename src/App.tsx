@@ -48,7 +48,7 @@ import ContactPage from "./pages/ContactPage";
 import AboutPage from "./pages/AboutPage";
 import AdvancedAIFeatures from "./pages/AdvancedAIFeatures";
 import AdminResourceManager from "./pages/AdminResourceManager";
-import CMSIntegrations from "./pages/CMSIntegrations";
+import CMSIntegrationsPage from "./components/CMSIntegrationsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -150,7 +150,7 @@ const App = () => (
               <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/admin/resources" element={<ProtectedRoute requiredRole="admin"><Layout><AdminResourceManager /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/cms-integrations" element={<ProtectedRoute><Layout><CMSIntegrations /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/cms-integrations" element={<ProtectedRoute><Layout><CMSIntegrationsPage /></Layout></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
