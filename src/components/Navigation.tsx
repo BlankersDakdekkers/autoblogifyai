@@ -245,6 +245,12 @@ export const useNavigationSections = (): NavigationSection[] => {
           url: "/dashboard/admin/monitoring",
           icon: Activity,
           description: "System health en performance monitoring"
+        },
+        {
+          title: "Resource Manager",
+          url: "/dashboard/admin/resources",
+          icon: Book,
+          description: "Beheer resources, tutorials en tools"
         }
       ]
     });
