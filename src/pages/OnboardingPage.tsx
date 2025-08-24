@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSEO } from "@/hooks/useSEO";
 import { ResponsiveContainer, ResponsiveGrid } from "@/components/ui/responsive-components";
 import { useIsMobile } from "@/utils/responsive";
 import { 
@@ -29,7 +30,13 @@ import {
   Target,
   Zap,
   Clock,
-  Award
+  Award,
+  Rocket,
+  Brain,
+  Globe,
+  Star,
+  Trophy,
+  Gift
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -55,6 +62,12 @@ const OnboardingPage = () => {
     displayName: profile?.display_name || '',
     bio: profile?.bio || '',
     goals: [] as string[],
+  });
+
+  useSEO({
+    title: "Welkom bij AutoblogifyAI - Account Setup",
+    description: "Configureer je AutoblogifyAI account in 3 eenvoudige stappen en start met AI-gestuurde content creatie.",
+    keywords: "onboarding, setup, account, AI content, welkom"
   });
 
   const goalOptions = [

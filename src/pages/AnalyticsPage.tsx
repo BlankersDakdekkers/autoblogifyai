@@ -39,10 +39,13 @@ import {
   LineChart,
   DollarSign,
   Star,
-  Lightbulb
+  Lightbulb,
+  Sparkles,
+  Brain
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSEO } from "@/hooks/useSEO";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { ResponsiveContainer, ResponsiveGrid } from "@/components/ui/responsive-components";
 
@@ -265,6 +268,12 @@ const AnalyticsPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  useSEO({
+    title: "Analytics - AutoblogifyAI Performance Dashboard", 
+    description: "Uitgebreide analytics en performance insights voor je content. Bekijk views, conversies, ROI en meer in real-time.",
+    keywords: "analytics, performance, views, conversies, ROI, content metrics, dashboard"
+  });
+
   // Enhanced analytics data
   const analyticsData = {
     overview: {
@@ -339,49 +348,79 @@ const AnalyticsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-accent/10 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      <div className="fixed top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/20 to-primary/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+      <div className="fixed top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-accent/10 to-primary/10 rounded-full blur-2xl animate-pulse pointer-events-none transform -translate-x-1/2 -translate-y-1/2" />
+
       <ResponsiveContainer maxWidth="7xl">
-        <div className="py-8 space-y-8">
-          {/* Premium Header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 text-white animate-fade-in">
-            <div className="absolute inset-0 bg-black/10" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
+        <div className="relative z-10 py-8 space-y-8">
+          {/* Hero Header */}
+          <div className="text-center space-y-6 py-12">
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full blur-xl opacity-30 animate-pulse" />
+                <div className="relative p-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full border border-primary/20 backdrop-blur-sm">
+                  <BarChart3 className="h-16 w-16 text-primary animate-bounce" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <Badge variant="outline" className="px-4 py-2 text-sm font-medium border-primary/20 text-primary bg-primary/5 backdrop-blur-sm">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Real-time Analytics
+                </Badge>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent leading-tight">
+                Analytics Dashboard
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Complete inzicht in je content prestaties met geavanceerde metrics, 
+                real-time tracking en AI-gedreven insights voor optimale ROI.
+              </p>
+            </div>
+          </div>
+          {/* Smart Control Panel */}
+          <Card className="bg-gradient-to-r from-background/80 to-secondary/10 backdrop-blur-lg border-primary/20 shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-full backdrop-blur">
-                    <BarChart3 className="h-8 w-8" />
+                  <div className="p-3 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full">
+                    <Brain className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-                    <p className="text-white/90 text-lg">
-                      Complete inzicht in je content prestaties en ROI
-                    </p>
+                    <h3 className="text-lg font-semibold">AI Analytics Insights</h3>
+                    <p className="text-sm text-muted-foreground">Geavanceerde data-analyse met machine learning</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1">
                     <Button
-                      variant={timeRange === '7d' ? 'secondary' : 'ghost'}
+                      variant={timeRange === '7d' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setTimeRange('7d')}
-                      className="text-white hover:bg-white/20"
+                      className="text-sm"
                     >
                       7d
                     </Button>
                     <Button
-                      variant={timeRange === '30d' ? 'secondary' : 'ghost'}
+                      variant={timeRange === '30d' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setTimeRange('30d')}
-                      className="text-white hover:bg-white/20"
+                      className="text-sm"
                     >
                       30d
                     </Button>
                     <Button
-                      variant={timeRange === '90d' ? 'secondary' : 'ghost'}
+                      variant={timeRange === '90d' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setTimeRange('90d')}
-                      className="text-white hover:bg-white/20"
+                      className="text-sm"
                     >
                       90d
                     </Button>
@@ -390,9 +429,9 @@ const AnalyticsPage = () => {
                   <Button
                     onClick={refreshData}
                     disabled={isRefreshing}
-                    variant="secondary"
+                    variant="outline"
                     size="sm"
-                    className="bg-white/20 backdrop-blur border-white/30 text-white hover:bg-white/30"
+                    className="border-primary/20 hover:bg-primary/10"
                   >
                     <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                     Ververs
@@ -401,52 +440,73 @@ const AnalyticsPage = () => {
                   <Button 
                     onClick={generateReport} 
                     disabled={isLoading}
-                    className="bg-white text-purple-600 hover:bg-white/90"
+                    className="bg-gradient-to-r from-primary to-accent text-white"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     {isLoading ? "Genereren..." : "Export"}
                   </Button>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Eye className="h-5 w-5" />
-                    <span className="font-medium">Realtime Views</span>
+            </CardContent>
+          </Card>
+
+          {/* Real-time Stats Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-200/50 hover-scale">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-full">
+                    <Eye className="h-5 w-5 text-blue-600" />
                   </div>
-                  <div className="text-2xl font-bold">147 active</div>
-                  <div className="text-sm text-white/80">Nu online</div>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span className="font-medium">Growth Rate</span>
+                  <div>
+                    <div className="text-2xl font-bold text-blue-800">147</div>
+                    <div className="text-sm text-blue-600">Nu online</div>
                   </div>
-                  <div className="text-2xl font-bold">+23%</div>
-                  <div className="text-sm text-white/80">Deze maand</div>
                 </div>
-                
-                <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="h-5 w-5" />
-                    <span className="font-medium">Revenue</span>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-green-500/10 to-green-600/10 border-green-200/50 hover-scale">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/20 rounded-full">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
                   </div>
-                  <div className="text-2xl font-bold">€15.2K</div>
-                  <div className="text-sm text-white/80">Deze periode</div>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Award className="h-5 w-5" />
-                    <span className="font-medium">ROI Score</span>
+                  <div>
+                    <div className="text-2xl font-bold text-green-800">+23%</div>
+                    <div className="text-sm text-green-600">Growth Rate</div>
                   </div>
-                  <div className="text-2xl font-bold">847%</div>
-                  <div className="text-sm text-white/80">Return on Investment</div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-200/50 hover-scale">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/20 rounded-full">
+                    <DollarSign className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-purple-800">€15.2K</div>
+                    <div className="text-sm text-purple-600">Revenue</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-orange-500/10 to-orange-600/10 border-orange-200/50 hover-scale">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-500/20 rounded-full">
+                    <Award className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-800">847%</div>
+                    <div className="text-sm text-orange-600">ROI Score</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Key Metrics */}

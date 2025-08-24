@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Search, Image, Video, FileText, Tag, Eye, Edit, Trash2, Plus, Download, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Search, Image, Video, FileText, Tag, Eye, Edit, Trash2, Plus, Download, Loader2, AlertCircle, Sparkles, Brain, Globe, Star, Filter, Grid, List } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MediaItem {
@@ -38,6 +39,7 @@ const MediaPortal = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [newMedia, setNewMedia] = useState({
     name: '',
     title: '',
@@ -50,6 +52,12 @@ const MediaPortal = () => {
 
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
+
+  useSEO({
+    title: "Media Portal - AutoblogifyAI Asset Management",
+    description: "Beheer al je media bestanden, afbeeldingen en video's voor content creatie. Upload, organiseer en optimaliseer je media assets.",
+    keywords: "media, bestanden, afbeeldingen, video, upload, asset management, content"
+  });
 
   // Get current user on component mount
   useEffect(() => {
@@ -362,50 +370,84 @@ const MediaPortal = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Media Portaal</h2>
-          <p className="text-muted-foreground">
-            Beheer en categoriseer media voor je blog content
-          </p>
-        </div>
-        
-        <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Media Uploaden
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Nieuwe Media Uploaden</DialogTitle>
-              <DialogDescription>
-                Voeg nieuwe media toe met volledige SEO metadata voor optimale vindbaarheid
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Sleep bestanden hier of klik om te uploaden
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Ondersteunt JPG, PNG, MP4, PDF (Max 10MB)
-                </p>
-                <Input 
-                  type="file" 
-                  className="mt-4" 
-                  accept="image/*,video/*,.pdf" 
-                  onChange={handleFileSelect}
-                />
-                {selectedFile && (
-                  <p className="text-sm text-primary mt-2">
-                    Geselecteerd: {selectedFile.name} ({formatFileSize(selectedFile.size)})
-                  </p>
-                )}
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-accent/10 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      <div className="fixed top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/20 to-primary/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+      <div className="fixed top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-accent/10 to-primary/10 rounded-full blur-2xl animate-pulse pointer-events-none transform -translate-x-1/2 -translate-y-1/2" />
+
+      <div className="relative z-10 p-6 space-y-8">
+        {/* Hero Header */}
+        <div className="text-center space-y-6 py-12">
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full blur-xl opacity-30 animate-pulse" />
+              <div className="relative p-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full border border-primary/20 backdrop-blur-sm">
+                <Image className="h-16 w-16 text-primary animate-bounce" />
               </div>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <Badge variant="outline" className="px-4 py-2 text-sm font-medium border-primary/20 text-primary bg-primary/5 backdrop-blur-sm">
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI-Powered Media Management
+              </Badge>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent leading-tight">
+              Media Portal
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Beheer, organiseer en optimaliseer al je media assets met geavanceerde AI-gestuurde 
+              categorisatie en SEO-metadata voor maximale impact.
+            </p>
+            
+            <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+              <DialogTrigger asChild>
+                <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 px-8 py-4 text-lg">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Upload Media
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto bg-gradient-to-br from-background to-secondary/10 backdrop-blur-lg">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center text-2xl">
+                    <Brain className="h-6 w-6 mr-3 text-primary" />
+                    Nieuwe Media Uploaden
+                  </DialogTitle>
+                  <DialogDescription>
+                    Voeg nieuwe media toe met volledige SEO metadata voor optimale vindbaarheid en AI-gestuurde categorisatie
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <Card className="border-dashed border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+                    <CardContent className="p-8 text-center">
+                      <div className="flex justify-center mb-4">
+                        <div className="p-4 bg-primary/10 rounded-full">
+                          <Upload className="h-8 w-8 text-primary" />
+                        </div>
+                      </div>
+                      <p className="text-lg font-medium mb-2">Sleep bestanden hier of klik om te uploaden</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Ondersteunt JPG, PNG, MP4, PDF (Max 10MB)
+                      </p>
+                      <Input 
+                        type="file" 
+                        className="bg-background/50 backdrop-blur-sm" 
+                        accept="image/*,video/*,.pdf" 
+                        onChange={handleFileSelect}
+                      />
+                      {selectedFile && (
+                        <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <p className="text-sm text-green-800 font-medium">
+                            ✓ Geselecteerd: {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
               
               <div className="space-y-3">
                 <div>
@@ -510,107 +552,145 @@ const MediaPortal = () => {
               </div>
             </div>
           </DialogContent>
-        </Dialog>
-      </div>
+            </Dialog>
+          </div>
+        </div>
 
-      {/* Statistieken */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totaal Media</CardTitle>
-            <Image className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mediaItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              bestanden in bibliotheek
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Afbeeldingen</CardTitle>
-            <Image className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mediaItems.filter(item => getFileType(item.file_type) === 'image').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              afbeelding bestanden
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Video's</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mediaItems.filter(item => getFileType(item.file_type) === 'video').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              video bestanden
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorieën</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.length}</div>
-            <p className="text-xs text-muted-foreground">
-              actieve categorieën
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Enhanced Statistics Cards */}
+        <div className="grid gap-6 md:grid-cols-4">
+          <Card className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-200/50 hover-scale">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-800">Totaal Media</CardTitle>
+              <div className="p-2 bg-blue-500/20 rounded-full">
+                <Image className="h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-900">{mediaItems.length}</div>
+              <p className="text-xs text-blue-600 mt-1">
+                bestanden in bibliotheek
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-green-500/10 to-green-600/10 border-green-200/50 hover-scale">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-800">Afbeeldingen</CardTitle>
+              <div className="p-2 bg-green-500/20 rounded-full">
+                <Image className="h-4 w-4 text-green-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-900">
+                {mediaItems.filter(item => getFileType(item.file_type) === 'image').length}
+              </div>
+              <p className="text-xs text-green-600 mt-1">
+                afbeelding bestanden
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-200/50 hover-scale">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-800">Video's</CardTitle>
+              <div className="p-2 bg-purple-500/20 rounded-full">
+                <Video className="h-4 w-4 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-900">
+                {mediaItems.filter(item => getFileType(item.file_type) === 'video').length}
+              </div>
+              <p className="text-xs text-purple-600 mt-1">
+                video bestanden
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-orange-500/10 to-orange-600/10 border-orange-200/50 hover-scale">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-orange-800">Categorieën</CardTitle>
+              <div className="p-2 bg-orange-500/20 rounded-full">
+                <Tag className="h-4 w-4 text-orange-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-orange-900">{categories.length}</div>
+              <p className="text-xs text-orange-600 mt-1">
+                actieve categorieën
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Zoek en Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Media Bibliotheek</CardTitle>
-          <CardDescription>Zoek en filter je media bestanden</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Zoek op naam, beschrijving of tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        {/* Enhanced Media Library Card */}
+        <Card className="bg-gradient-to-r from-background/80 to-secondary/10 backdrop-blur-lg border-primary/20 shadow-2xl">
+          <CardHeader className="pb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full">
+                  <Globe className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">Media Bibliotheek</CardTitle>
+                  <CardDescription className="text-base">Zoek, filter en beheer je media collectie</CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Alle categorieën" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle categorieën</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Alle types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle types</SelectItem>
-                <SelectItem value="image">Afbeeldingen</SelectItem>
-                <SelectItem value="video">Video's</SelectItem>
-                <SelectItem value="document">Documenten</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 mb-8">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Zoek op naam, beschrijving of tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-background/50 backdrop-blur-sm border-primary/20"
+                  />
+                </div>
+              </div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-52 bg-background/50 backdrop-blur-sm border-primary/20">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Alle categorieën" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle categorieën</SelectItem>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-44 bg-background/50 backdrop-blur-sm border-primary/20">
+                  <SelectValue placeholder="Alle types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle types</SelectItem>
+                  <SelectItem value="image">Afbeeldingen</SelectItem>
+                  <SelectItem value="video">Video's</SelectItem>
+                  <SelectItem value="document">Documenten</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
           {/* Loading state */}
           {isLoading && (
@@ -772,7 +852,8 @@ const MediaPortal = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

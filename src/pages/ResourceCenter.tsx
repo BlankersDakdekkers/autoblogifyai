@@ -16,7 +16,13 @@ import {
   FileText,
   Lightbulb,
   Target,
-  Loader2
+  Loader2,
+  Sparkles,
+  Brain,
+  Rocket,
+  Award,
+  Users,
+  TrendingUp
 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
