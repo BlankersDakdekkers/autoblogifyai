@@ -1,251 +1,188 @@
-import React, { useState, useCallback, memo } from 'react';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Link, useLocation } from "react-router-dom";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-  Menu, 
-  X, 
-  Zap, 
-  Rocket,
-  ArrowRight,
-  Sparkles
-} from "lucide-react";
+  User, Settings, LogOut, Crown, Sparkles, 
+  Menu, Home, Info, Phone, HelpCircle, BookOpen 
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-// Memoized navigation link component for better performance
-const NavLink = memo(({ to, children, onClick, className = "" }: {
-  to: string;
-  children: React.ReactNode;
-  onClick?: () => void;
+interface OptimizedHeaderProps {
   className?: string;
-}) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  
-  return (
-    <Link 
-      to={to} 
-      onClick={onClick}
-      className={`
-        relative text-muted-foreground hover:text-primary transition-all duration-300 font-medium
-        focus-visible-ring group
-        ${isActive ? 'text-primary' : ''}
-        ${className}
-      `}
-    >
-      {children}
-      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-    </Link>
-  );
-});
+}
 
-NavLink.displayName = 'NavLink';
+const OptimizedHeader: React.FC<OptimizedHeaderProps> = ({ className = '' }) => {
+  const { user, profile, userRole, signOut } = useAuth();
+  const navigate = useNavigate();
 
-// Memoized logo component
-const Logo = memo(() => (
-  <Link 
-    to="/" 
-    className="flex items-center space-x-3 group focus-visible-ring rounded-lg p-1 -m-1"
-    aria-label="AutoblogifyAI Home"
-  >
-    <div className="relative">
-      <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-xl flex items-center justify-center shadow-elegant group-hover:shadow-glow transition-all duration-300 group-hover:scale-105">
-        <Zap className="h-6 w-6 text-white" />
-      </div>
-      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse opacity-80" />
-    </div>
-    <div className="flex flex-col">
-      <span className="font-heading font-bold text-xl text-gradient group-hover:scale-105 transition-transform duration-300">
-        AutoblogifyAI
-      </span>
-      <span className="text-xs text-muted-foreground opacity-80">
-        Powered by AI
-      </span>
-    </div>
-  </Link>
-));
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
-Logo.displayName = 'Logo';
-
-// Enhanced CTA button component
-const CTAButton = memo(({ variant = 'primary', children, to, className = "", ...props }: {
-  variant?: 'primary' | 'secondary';
-  children: React.ReactNode;
-  to: string;
-  className?: string;
-}) => (
-  <Link to={to}>
-    <Button 
-      className={`
-        ${variant === 'primary' 
-          ? 'btn-premium hover-lift' 
-          : 'btn-glass hover-scale'
-        } 
-        group relative overflow-hidden
-        ${className}
-      `}
-      {...props}
-    >
-      <span className="relative z-10 flex items-center">
-        {children}
-      </span>
-      {variant === 'primary' && (
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      )}
-    </Button>
-  </Link>
-));
-
-CTAButton.displayName = 'CTAButton';
-
-const OptimizedHeader: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { t } = useLanguage();
-  
-  // Memoized menu toggle handler
-  const toggleMenu = useCallback(() => {
-    setIsMenuOpen(prev => !prev);
-  }, []);
-
-  const closeMenu = useCallback(() => {
-    setIsMenuOpen(false);
-  }, []);
-
-  // Enhanced navigation items
-  const navigationItems = [
-    { label: "Features", href: "/sales", badge: "Nieuw" },
-    { label: "Prijzen", href: "/pricing" },
-    { label: "Klanten", href: "/customer-cases" },
-    { label: "Over Ons", href: "/about" },
+  const publicNavItems = [
+    { label: 'Home', href: '/', icon: Home },
+    { label: 'Pricing', href: '/pricing', icon: Sparkles },
+    { label: 'Over Ons', href: '/about', icon: Info },
+    { label: 'Contact', href: '/contact', icon: Phone },
+    { label: 'Help', href: '/help', icon: HelpCircle },
+    { label: 'Kennis', href: '/knowledge-base', icon: BookOpen },
   ];
 
   return (
-    <>
-      <header className="border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-soft">
-        <div className="container">
-          <div className="flex h-20 items-center justify-between">
-            
-            {/* Enhanced Logo */}
-            <Logo />
-
-            {/* Enhanced Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8" role="navigation">
-              {navigationItems.map((item) => (
-                <div key={item.href} className="relative">
-                  <NavLink to={item.href}>
-                    {item.label}
-                  </NavLink>
-                  {item.badge && (
-                    <Badge 
-                      variant="outline" 
-                      className="absolute -top-2 -right-6 text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white border-none animate-pulse"
-                    >
-                      {item.badge}
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            {/* Enhanced Action Buttons */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <LanguageSwitcher />
-              
-              <CTAButton variant="secondary" to="/auth">
-                Inloggen
-              </CTAButton>
-              
-              <CTAButton variant="primary" to="/auth?tab=signup">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Gratis Starten
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-              </CTAButton>
+    <header className={`sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md ${className}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          
+          {/* Logo */}
+          <NavLink to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
+            <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              AutoblogifyAI
+            </span>
+          </NavLink>
 
-            {/* Enhanced Mobile Menu Button */}
-            <div className="lg:hidden flex items-center space-x-3">
-              <LanguageSwitcher />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMenu}
-                className="relative focus-visible-ring"
-                aria-label="Toggle menu"
-                aria-expanded={isMenuOpen}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            {publicNavItems.map((item) => (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive 
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`
+                }
               >
-                <div className="relative w-6 h-6">
-                  <Menu 
-                    className={`h-5 w-5 absolute transition-all duration-300 ${
-                      isMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'
-                    }`} 
-                  />
-                  <X 
-                    className={`h-5 w-5 absolute transition-all duration-300 ${
-                      isMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'
-                    }`} 
-                  />
-                </div>
-              </Button>
-            </div>
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* User Actions */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 px-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="hidden sm:flex flex-col items-start">
+                      <span className="text-sm font-medium">
+                        {profile?.display_name || user.email?.split('@')[0]}
+                      </span>
+                      {userRole === 'admin' && (
+                        <Badge variant="secondary" className="text-xs px-1 py-0">
+                          <Crown className="h-3 w-3 mr-1" />
+                          Admin
+                        </Badge>
+                      )}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Mijn Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/dashboard" className="flex items-center gap-2 w-full">
+                      <Home className="h-4 w-4" />
+                      Dashboard
+                    </NavLink>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/dashboard/settings" className="flex items-center gap-2 w-full">
+                      <Settings className="h-4 w-4" />
+                      Instellingen
+                    </NavLink>
+                  </DropdownMenuItem>
+                  {userRole === 'admin' && (
+                    <DropdownMenuItem asChild>
+                      <NavLink to="/admin" className="flex items-center gap-2 w-full">
+                        <Crown className="h-4 w-4" />
+                        Admin Panel
+                      </NavLink>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Uitloggen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" asChild>
+                  <NavLink to="/auth">Inloggen</NavLink>
+                </Button>
+                <Button asChild>
+                  <NavLink to="/auth?tab=signup">Registreren</NavLink>
+                </Button>
+              </div>
+            )}
+
+            {/* Mobile Menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <nav className="flex flex-col gap-4 mt-8">
+                  {publicNavItems.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      to={item.href}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </NavLink>
+                  ))}
+                  {!user && (
+                    <>
+                      <hr className="my-4" />
+                      <NavLink
+                        to="/auth"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <User className="h-4 w-4" />
+                        Inloggen
+                      </NavLink>
+                      <NavLink
+                        to="/auth?tab=signup"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Registreren
+                      </NavLink>
+                    </>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-
-        {/* Enhanced Mobile Menu */}
-        <div 
-          className={`lg:hidden border-t bg-background/98 backdrop-blur-md transition-all duration-300 ${
-            isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-          }`}
-        >
-          <nav className="container py-6 space-y-4" role="navigation">
-            {navigationItems.map((item, index) => (
-              <div 
-                key={item.href}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <NavLink 
-                  to={item.href} 
-                  onClick={closeMenu}
-                  className="block py-2 text-lg"
-                >
-                  <div className="flex items-center justify-between">
-                    {item.label}
-                    {item.badge && (
-                      <Badge variant="outline" className="text-xs bg-green-100 text-green-700">
-                        {item.badge}
-                      </Badge>
-                    )}
-                    <ArrowRight className="h-4 w-4 opacity-50" />
-                  </div>
-                </NavLink>
-              </div>
-            ))}
-            
-            <div className="pt-6 border-t space-y-3 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <CTAButton variant="secondary" to="/auth" className="w-full justify-center">
-                Inloggen
-              </CTAButton>
-              <CTAButton variant="primary" to="/auth?tab=signup" className="w-full justify-center">
-                <Rocket className="h-4 w-4 mr-2" />
-                Gratis Starten
-                <Sparkles className="h-4 w-4 ml-2" />
-              </CTAButton>
-            </div>
-          </nav>
-        </div>
-      </header>
-
-      {/* Mobile menu overlay */}
-      {isMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
-      )}
-    </>
+      </div>
+    </header>
   );
 };
 
-export default memo(OptimizedHeader);
+export default OptimizedHeader;

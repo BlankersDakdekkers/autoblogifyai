@@ -10,6 +10,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 // Footer is now handled by OptimizedLayout
 import OptimizedHomeSections from "@/components/OptimizedHomeSections";
+import OptimizedHeader from "@/components/OptimizedHeader";
+import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
@@ -258,6 +260,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-br from-background via-secondary/5 to-accent/5">
+      <OptimizedHeader />
+      
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
       <div className="fixed top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-accent/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none animate-pulse" />
@@ -642,8 +646,7 @@ const Index = () => {
           </div>
         </div>
       </section>
-      
-      {/* Footer is now handled by OptimizedLayout */}
+      <Footer />
     </div>
   );
 };
