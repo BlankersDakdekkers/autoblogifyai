@@ -91,11 +91,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// CRITICAL CACHE BUSTER - TIMESTAMP: 1756066300000
+// LAST MODIFIED: URGENT ROUTING FIX 2025
 const App = () => {
-  // URGENT DEBUG TEST
-  console.error("🚨 URGENT DEBUG: App component rendering NOW! Time:", Date.now());
-  console.error("🚨 Current URL:", window.location.href);
-  console.error("🚨 Current pathname:", window.location.pathname);
+  // SUPER URGENT CACHE BUSTER DEBUG - VERSION 2025.01.24.20.05
+  console.error("🔥🔥🔥 CACHE BUSTER ACTIVE! VERSION 2025.01.24.20.05 🔥🔥🔥");
+  console.error("🔥 TIMESTAMP:", Date.now());
+  console.error("🔥 URL:", window.location.href);
+  console.error("🔥 PATHNAME:", window.location.pathname);
   
   return (
     <LanguageProvider>
@@ -111,7 +114,7 @@ const App = () => {
           >
             <AuthProvider>
               <Routes>
-                {/* EXTREME NOODTEST ZONDER DASHBOARD PREFIX */}
+                {/* CACHE BUSTED ROUTES */}
                 <Route 
                   path="/test123" 
                   element={
@@ -121,22 +124,23 @@ const App = () => {
                       left: 0,
                       width: '100vw',
                       height: '100vh',
-                      background: 'green',
-                      color: 'white',
-                      fontSize: '5rem',
+                      background: 'lime',
+                      color: 'black',
+                      fontSize: '6rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       textAlign: 'center',
+                      fontWeight: 'bold',
                       zIndex: 99999
                     }}>
-                      ✅ ROUTER WERKT! ✅<br/>
-                      TEST123 ROUTE SUCCESVOL!
+                      🔥 CACHE BUSTER! 🔥<br/>
+                      VERSION 20:05<br/>
+                      ROUTE ACTIVE!
                     </div>
                   } 
                 />
                 
-                {/* PROBEER NOG EENS MET DASHBOARD */}
                 <Route 
                   path="/dashboard/cms-integration" 
                   element={
@@ -146,17 +150,19 @@ const App = () => {
                       left: 0,
                       width: '100vw',
                       height: '100vh',
-                      background: 'red',
+                      background: 'magenta',
                       color: 'white',
-                      fontSize: '4rem',
+                      fontSize: '5rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       textAlign: 'center',
+                      fontWeight: 'bold',
                       zIndex: 99999
                     }}>
-                      🆘 DASHBOARD ROUTE WERKT! 🆘<br/>
-                      CMS INTEGRATION GEVONDEN!
+                      🔥 CMS CACHE BUST! 🔥<br/>
+                      VERSION 20:05<br/>
+                      DASHBOARD FIXED!
                     </div>
                   } 
                 />
