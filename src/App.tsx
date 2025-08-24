@@ -117,14 +117,29 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
               
-              {/* CMS Integrations route - WORKING VERSION */}
-              <Route path="/dashboard/cms-integration" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <CMSIntegrations />
-                  </Layout>
-                </ProtectedRoute>
-              } />
+              {/* CMS Integrations route - NEW SYNTAX */}
+              <Route 
+                path="/dashboard/cms-integration" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CMSIntegrations />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Test backup route */}
+              <Route 
+                path="/dashboard/cms-integrations" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CMSIntegrations />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Dashboard routes */}
               <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
