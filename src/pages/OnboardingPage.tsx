@@ -440,19 +440,35 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Welkom bij AutoblogifyAI! 🚀</h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Laten we je account instellen zodat je direct kunt beginnen met het genereren van geweldige content.
-          </p>
+      <div className="container max-w-4xl mx-auto py-4 sm:py-8 px-4">
+        {/* Enhanced Header - Mobile Optimized */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="animate-fade-in">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Welkom bij AutoblogifyAI! 🚀
+            </h1>
+            <p className="text-base sm:text-xl text-muted-foreground mb-4 sm:mb-6 max-w-2xl mx-auto">
+              Laten we je account instellen zodat je direct kunt beginnen met het genereren van geweldige content.
+            </p>
+          </div>
           
-          <div className="max-w-md mx-auto mb-8">
-            <div className="flex justify-between text-sm text-muted-foreground mb-2">
-              <span>Voortgang</span>
-              <span>{Math.round(onboardingProgress)}% compleet</span>
+          {/* Enhanced Progress Bar */}
+          <div className="max-w-md mx-auto mb-6 sm:mb-8 animate-scale-in" style={{ animationDelay: '200ms' }}>
+            <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-2">
+              <span className="font-medium">Voortgang</span>
+              <span className="font-semibold text-primary">{Math.round(onboardingProgress)}% compleet</span>
             </div>
-            <Progress value={onboardingProgress} className="h-3" />
+            <div className="relative">
+              <Progress 
+                value={onboardingProgress} 
+                className="h-2 sm:h-3 bg-gradient-to-r from-muted/50 to-muted/30" 
+              />
+              <div 
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${onboardingProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Stap {currentStep + 1} van {steps.length}</p>
           </div>
         </div>
 

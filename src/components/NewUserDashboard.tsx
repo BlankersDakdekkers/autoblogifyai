@@ -224,24 +224,25 @@ export const NewUserDashboard = () => {
     <div className="space-y-8">
       <WelcomeModal isOpen={showWelcomeModal} onClose={handleWelcomeClose} />
       
-      {/* Welcome Message */}
+      {/* Enhanced Welcome Card - Mobile Optimized */}
       {hasSeenWelcome && (
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="group bg-gradient-to-r from-primary/5 via-background to-accent/5 border-primary/20 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
                   Welkom bij AutoblogifyAI! 
                 </h2>
-                <p className="text-gray-600">
-                  Je hebt <Badge className="bg-blue-100 text-blue-800">{credits} gratis credits</Badge> om te starten. 
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Je hebt <Badge className="bg-primary/10 text-primary border-primary/20 mx-1">{credits} gratis credits</Badge> om te starten. 
                   Tijd om je eerste AI-blog te maken! 🚀
                 </p>
               </div>
               <Button 
                 onClick={() => setShowWelcomeModal(true)}
                 variant="outline"
-                className="border-blue-300"
+                className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200 group-hover:scale-105 w-full sm:w-auto"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
                 Quick Start
@@ -251,18 +252,21 @@ export const NewUserDashboard = () => {
         </Card>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Enhanced Stats Grid - Mobile Optimized */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {demoStats.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
+          <Card key={index} className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-0 bg-gradient-to-br from-card via-card/95 to-card/80 shadow-elegant backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.01] via-transparent to-accent/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardContent className="p-3 sm:p-6 relative">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.description}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
+                  <p className={`text-xl sm:text-2xl font-bold ${stat.color} group-hover:scale-105 transition-transform duration-200`}>
+                    {stat.value}
+                  </p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">{stat.description}</p>
                 </div>
-                <div className={`p-2 rounded-lg bg-gray-100 ${stat.color}`}>
+                <div className={`p-2 rounded-lg bg-gradient-to-br from-muted/50 to-muted/30 ${stat.color} group-hover:scale-110 transition-transform duration-200 ml-2`}>
                   {stat.icon}
                 </div>
               </div>
@@ -271,31 +275,58 @@ export const NewUserDashboard = () => {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <EmptyState
-          icon={<FileText className="h-6 w-6" />}
-          title="Eerste Blog Maken"
-          description="Gebruik onze AI om in minuten een professionele blog te schrijven"
-          actionText="Start AI Generator"
-          onAction={() => navigate('/dashboard/csv-processor')}
-        />
+      {/* Enhanced Quick Actions - Mobile Optimized */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        <Card className="group text-center p-4 sm:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 bg-gradient-to-br from-card via-card/95 to-card/80 shadow-elegant backdrop-blur-sm relative overflow-hidden cursor-pointer"
+              onClick={() => navigate('/dashboard/csv-processor')}>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <CardContent className="space-y-4 p-0 relative">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Eerste Blog Maken</h3>
+              <p className="text-sm text-muted-foreground mb-4">Gebruik onze AI om in minuten een professionele blog te schrijven</p>
+            </div>
+            <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all duration-300 group-hover:scale-105 w-full sm:w-auto">
+              Start AI Generator
+            </Button>
+          </CardContent>
+        </Card>
         
-        <EmptyState
-          icon={<BookOpen className="h-6 w-6" />}
-          title="Bulk Upload"
-          description="Upload een CSV bestand om meerdere blogs tegelijk te genereren"
-          actionText="Upload CSV"
-          onAction={() => navigate('/dashboard/csv-processor')}
-        />
+        <Card className="group text-center p-4 sm:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 bg-gradient-to-br from-card via-card/95 to-card/80 shadow-elegant backdrop-blur-sm relative overflow-hidden cursor-pointer"
+              onClick={() => navigate('/dashboard/csv-processor')}>
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] via-transparent to-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <CardContent className="space-y-4 p-0 relative">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-accent/10 to-primary/10 rounded-xl flex items-center justify-center text-accent group-hover:scale-110 transition-transform duration-300">
+              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-base sm:text-lg mb-2">Bulk Upload</h3>
+              <p className="text-sm text-muted-foreground mb-4">Upload een CSV bestand om meerdere blogs tegelijk te genereren</p>
+            </div>
+            <Button className="bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 transition-all duration-300 group-hover:scale-105 w-full sm:w-auto">
+              Upload CSV
+            </Button>
+          </CardContent>
+        </Card>
         
-        <EmptyState
-          icon={<Globe className="h-6 w-6" />}
-          title="WordPress Koppelen"
-          description="Verbind je WordPress site om direct te kunnen publiceren"
-          actionText="WordPress Instellen"
-          onAction={() => setShowWordPressSetup(true)}
-        />
+        <Card className="group text-center p-4 sm:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 bg-gradient-to-br from-card via-card/95 to-card/80 shadow-elegant backdrop-blur-sm relative overflow-hidden cursor-pointer md:col-span-2 xl:col-span-1"
+              onClick={() => setShowWordPressSetup(true)}>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-accent/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <CardContent className="space-y-4 p-0 relative">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+              <Globe className="h-6 w-6 sm:h-8 sm:w-8" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-base sm:text-lg mb-2">WordPress Koppelen</h3>
+              <p className="text-sm text-muted-foreground mb-4">Verbind je WordPress site om direct te kunnen publiceren</p>
+            </div>
+            <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all duration-300 group-hover:scale-105 w-full sm:w-auto">
+              WordPress Instellen
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Getting Started Tips */}
