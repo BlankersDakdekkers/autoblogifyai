@@ -26,8 +26,8 @@ export const AdminSetup = () => {
         setAdminExists(adminCheck);
         
         if (!adminCheck) {
-          // No admin exists, automatically make this user admin
-          await supabase.rpc('auto_make_first_admin');
+          // No admin exists, manually make this user admin
+          await supabase.rpc('make_self_admin');
           
           toast({
             title: "Automatisch Admin Gemaakt! 👑",

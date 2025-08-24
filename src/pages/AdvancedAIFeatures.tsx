@@ -11,11 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Crown, Brain, Globe, Search, Sparkles, Wand2, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Crown, Brain, Globe, Search, Sparkles, Wand2, Loader2, CheckCircle, XCircle, Lock, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Form schemas
 const contentGenerationSchema = z.object({
@@ -71,6 +72,7 @@ interface KeywordResult {
 }
 
 const AdvancedAIFeatures = () => {
+  const { userRole } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [selectedModel, setSelectedModel] = useState('gpt-5-2025-08-07');
@@ -78,6 +80,9 @@ const AdvancedAIFeatures = () => {
   const [customPersonas, setCustomPersonas] = useState<AIPersona[]>([]);
   const [keywordResults, setKeywordResults] = useState<KeywordResult[]>([]);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+
+  // Check if user has premium access (admin role for now, can be extended)
+  const hasPremiumAccess = userRole === 'admin';
 
   // Form instances
   const contentForm = useForm<z.infer<typeof contentGenerationSchema>>({
@@ -387,6 +392,39 @@ const AdvancedAIFeatures = () => {
     }
   }, [selectedLanguages, selectedModel]);
 
+  // Premium access gate component
+  const PremiumGate = ({ children }: { children: React.ReactNode }) => {
+    if (!hasPremiumAccess) {
+      return (
+        <div className="relative">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+            <Card className="mx-auto max-w-md">
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                  <Lock className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Premium Functionaliteit</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Deze geavanceerde AI-functies zijn alleen beschikbaar voor Premium gebruikers
+                  </p>
+                </div>
+                <Button className="w-full" onClick={() => toast.info('Upgrade naar Premium voor toegang tot deze functies')}>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Upgrade naar Premium
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="opacity-30">
+            {children}
+          </div>
+        </div>
+      );
+    }
+    return <>{children}</>;
+  };
+
   return (
       <div className="container mx-auto p-6 max-w-6xl">
         <div className="flex items-center gap-3 mb-8">
@@ -395,31 +433,32 @@ const AdvancedAIFeatures = () => {
           <h1 className="text-3xl font-bold">Enterprise AI Features</h1>
           <p className="text-muted-foreground">Geavanceerde AI-tools exclusief voor Enterprise klanten</p>
         </div>
-        <Badge variant="secondary" className="ml-auto">
+        <Badge variant={hasPremiumAccess ? "default" : "secondary"} className="ml-auto">
           <Sparkles className="h-4 w-4 mr-1" />
-          Premium
+          {hasPremiumAccess ? "Premium Actief" : "Premium Vereist"}
         </Badge>
       </div>
 
-      <Tabs defaultValue="models" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="models" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            AI Modellen
-          </TabsTrigger>
-          <TabsTrigger value="personas" className="flex items-center gap-2">
-            <Wand2 className="h-4 w-4" />
-            AI Personas
-          </TabsTrigger>
-          <TabsTrigger value="multilingual" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            Meertalig
-          </TabsTrigger>
-          <TabsTrigger value="keywords" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            Keyword Research
-          </TabsTrigger>
-        </TabsList>
+      <PremiumGate>
+        <Tabs defaultValue="models" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="models" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
+              <Brain className="h-4 w-4" />
+              AI Modellen
+            </TabsTrigger>
+            <TabsTrigger value="personas" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
+              <Wand2 className="h-4 w-4" />
+              AI Personas
+            </TabsTrigger>
+            <TabsTrigger value="multilingual" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
+              <Globe className="h-4 w-4" />
+              Meertalig
+            </TabsTrigger>
+            <TabsTrigger value="keywords" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
+              <Search className="h-4 w-4" />
+              Keyword Research
+            </TabsTrigger>
+          </TabsList>
 
         <TabsContent value="models" className="space-y-6">
           <Card>
@@ -854,6 +893,7 @@ const AdvancedAIFeatures = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </PremiumGate>
     </div>
   );
 };
