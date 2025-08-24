@@ -59,266 +59,311 @@ const App = () => {
         <TooltipProvider>
           <BrowserRouter>
             <AuthProvider>
-              <SidebarProvider>
-                <Routes>
-                  {/* Public Routes - Standalone */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/pricing" element={
-                    <div>
+              <Routes>
+                {/* Homepage - Completely standalone without SidebarProvider */}
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<AuthPage />} />
+                
+                {/* Public Routes with header/footer */}
+                <Route path="/pricing" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <PricingPage />
+                    </Suspense>
+                    <PricingPage />
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/about" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/about" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <AboutPage />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AboutPage />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/contact" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/contact" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <ContactPage />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ContactPage />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/help" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/help" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <HelpSupport />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <HelpSupport />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/knowledge-base" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/knowledge-base" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <KnowledgeBase />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <KnowledgeBase />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/course" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/course" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <CoursePage />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CoursePage />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/privacy" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/privacy" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <PrivacyPolicy />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <PrivacyPolicy />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
-                  <Route path="/terms" element={
-                    <div>
+                    </Suspense>
+                  </div>
+                } />
+                <Route path="/terms" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
                       <OptimizedHeader />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <TermsOfService />
-                      </Suspense>
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <TermsOfService />
+                    </Suspense>
+                    <Suspense fallback={<LoadingFallback />}>
                       <Footer />
-                    </div>
-                  } />
+                    </Suspense>
+                  </div>
+                } />
 
-                  {/* Protected Routes with Layout */}
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <Dashboard />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/autoblog" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <ProductionAutoBlogProducer />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/website-builder" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <ProductionWebsiteBuilder />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/ai-website" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <AIWebsiteGenerator />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/analytics" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <AnalyticsPage />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/media" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <MediaPortal />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/resources" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <ResourceCenter />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/cms-integration" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <CMSIntegrations />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/integrations" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <IntegrationsPage />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/webhooks" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <WebhookIntegration />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/templates" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <TemplateEditor />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/blog-management" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <BlogManagement />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/categories" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <CategoryManager />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/dashboard/settings" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <SettingsPage />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/onboarding" element={
-                    <ProtectedRoute>
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OnboardingPage />
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+                {/* Protected Routes with Dashboard Layout - THESE NEED SidebarProvider */}
+                <Route path="/dashboard/*" element={
+                  <SidebarProvider>
+                    <Routes>
+                      <Route path="" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <Dashboard />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="autoblog" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <ProductionAutoBlogProducer />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="website-builder" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <ProductionWebsiteBuilder />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="ai-website" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <AIWebsiteGenerator />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="analytics" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <AnalyticsPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="media" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <MediaPortal />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="resources" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <ResourceCenter />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="cms-integration" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <CMSIntegrations />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="integrations" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <IntegrationsPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="webhooks" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <WebhookIntegration />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="templates" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <TemplateEditor />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="blog-management" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <BlogManagement />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="categories" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <CategoryManager />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="settings" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <SettingsPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                    </Routes>
+                  </SidebarProvider>
+                } />
 
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <AdminDashboard />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/admin/users" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <AdminUsersPage />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/admin/monitoring" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <Suspense fallback={<LoadingFallback />}>
-                        <OptimizedLayout type="dashboard">
-                          <SystemMonitoringPage />
-                        </OptimizedLayout>
-                      </Suspense>
-                    </ProtectedRoute>
-                  } />
+                {/* Admin Routes */}
+                <Route path="/admin/*" element={
+                  <SidebarProvider>
+                    <Routes>
+                      <Route path="" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <AdminDashboard />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="users" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <AdminUsersPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="monitoring" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <SystemMonitoringPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                    </Routes>
+                  </SidebarProvider>
+                } />
 
-                  {/* 404 Route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </SidebarProvider>
+                {/* Standalone routes */}
+                <Route path="/onboarding" element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OnboardingPage />
+                    </Suspense>
+                  </ProtectedRoute>
+                } />
+
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
