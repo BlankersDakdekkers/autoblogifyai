@@ -456,75 +456,77 @@ Met vriendelijke groet,
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-secondary/5">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Modern Header */}
-        <div className="bg-gradient-to-r from-card via-card/95 to-card/90 backdrop-blur-sm rounded-2xl border border-border/50 p-6 mb-8 shadow-lg">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
+      <div className="container mx-auto p-3 sm:p-6 max-w-7xl">
+        {/* Modern Header - Mobile Optimized */}
+        <div className="bg-gradient-to-r from-card via-card/95 to-card/90 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/50 p-3 sm:p-6 mb-4 sm:mb-8 shadow-lg">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative">
-                <div className="p-3 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl">
-                  <Layers className="h-8 w-8 text-primary" />
+                <div className="p-2 sm:p-3 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg sm:rounded-xl">
+                  <Layers className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full animate-pulse"></div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Template Studio
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground truncate">
                   Professionele templates voor maximale conversie
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all duration-300"
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all duration-300"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Nieuw Template
+                    <span className="hidden xs:inline">Nieuw Template</span>
+                    <span className="xs:hidden">Nieuw</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader className="text-center pb-6">
-                    <DialogTitle className="text-2xl font-bold">
+                <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto mx-2">
+                  <DialogHeader className="text-center pb-4 sm:pb-6">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold">
                       Template Wizard
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-sm">
                       Kies een professioneel template of begin helemaal opnieuw
                     </DialogDescription>
                   </DialogHeader>
                   
-                  <div className="space-y-8">
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-6 sm:space-y-8">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                       {Object.entries(templateStarters).map(([category, content]) => (
                         <Card 
                           key={category} 
                           className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
                           onClick={() => startNewTemplate(category, true)}
                         >
-                          <CardContent className="p-6 text-center">
-                            <div className="text-4xl mb-3">
+                          <CardContent className="p-4 sm:p-6 text-center">
+                            <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">
                               {category === 'blog' ? '📝' :
                                category === 'service' ? '🏢' :
                                category === 'landing' ? '🎯' :
                                category === 'email' ? '📧' : '📱'}
                             </div>
-                            <h4 className="font-semibold mb-2">
+                            <h4 className="font-semibold mb-2 text-sm sm:text-base">
                               {category === 'blog' ? 'Blog Post Pro' :
                                category === 'service' ? 'Servicepagina' :
                                category === 'landing' ? 'Landing Page' :
                                category === 'email' ? 'Email Template' : 'Social Media'}
                             </h4>
-                            <p className="text-sm text-muted-foreground mb-4">
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
                               {category === 'blog' ? 'SEO-geoptimaliseerde artikelen' :
                                category === 'service' ? 'Complete servicepagina met contact' :
                                category === 'landing' ? 'High-converting paginas' :
                                category === 'email' ? 'Professionele email templates' : 'Sociale media content'}
                             </p>
-                            <Button size="sm" className="w-full" variant="outline">
+                            <Button size="sm" className="w-full text-xs sm:text-sm" variant="outline">
                               Gebruik Template
                             </Button>
                           </CardContent>
@@ -532,11 +534,12 @@ Met vriendelijke groet,
                       ))}
                     </div>
                     
-                    <div className="text-center border-t pt-6">
+                    <div className="text-center border-t pt-4 sm:pt-6">
                       <Button 
                         variant="ghost"
                         onClick={() => startNewTemplate()}
                         className="w-full max-w-md"
+                        size="sm"
                       >
                         <FileText className="h-4 w-4 mr-2" />
                         Start met Leeg Template
@@ -546,57 +549,66 @@ Met vriendelijke groet,
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
+              <Button variant="outline" size="sm" className="shrink-0">
+                <Download className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Main Interface with Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-fit">
-            <TabsTrigger value="browse" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Bladeren
-            </TabsTrigger>
-            <TabsTrigger value="editor" className="flex items-center gap-2">
-              <Edit className="h-4 w-4" />
-              Editor
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
-          </TabsList>
+        {/* Main Interface with Tabs - Mobile Optimized */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 pb-2 sm:pb-0 sm:relative sm:bg-transparent">
+            <TabsList className="grid w-full grid-cols-3 h-12 sm:h-10 sm:w-fit">
+              <TabsTrigger value="browse" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Search className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Bladeren</span>
+                <span className="xs:hidden">Browse</span>
+              </TabsTrigger>
+              <TabsTrigger value="editor" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Editor</span>
+                <span className="xs:hidden">Edit</span>
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Preview</span>
+                <span className="xs:hidden">View</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          {/* Browse Templates Tab */}
-          <TabsContent value="browse" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-12">
-              {/* Search & Filter Sidebar */}
+          {/* Browse Templates Tab - Mobile Optimized */}
+          <TabsContent value="browse" className="space-y-4 sm:space-y-6">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-12">
+              {/* Search & Filter Sidebar - Mobile Responsive */}
               <div className="lg:col-span-3">
                 <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Filter className="h-5 w-5 text-primary" />
+                  <CardHeader className="pb-3 sm:pb-6">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       Filters
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <div className="space-y-2 sm:space-y-3">
                       <Input
                         placeholder="🔍 Zoek templates..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border-2 focus:border-primary/50"
+                        className="h-10 sm:h-11 border-2 focus:border-primary/50 text-sm"
                       />
                       
                       <Select value={filterCategory} onValueChange={setFilterCategory}>
-                        <SelectTrigger className="border-2">
+                        <SelectTrigger className="h-10 sm:h-11 border-2 text-sm">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-background/95 backdrop-blur-sm">
+                        <SelectContent 
+                          className="bg-background/95 backdrop-blur-sm z-50"
+                          position="popper"
+                          sideOffset={4}
+                        >
                           <SelectItem value="all">🎯 Alle categorieën</SelectItem>
                           <SelectItem value="blog">📝 Blog Posts</SelectItem>
                           <SelectItem value="service">🏢 Dienstenpagina's</SelectItem>
@@ -610,13 +622,13 @@ Met vriendelijke groet,
                 </Card>
               </div>
 
-              {/* Templates Grid */}
+              {/* Templates Grid - Mobile Optimized */}
               <div className="lg:col-span-9">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredTemplates.map((template) => (
                     <Card 
                       key={template.id} 
-                      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-card to-card/80 overflow-hidden ${
+                      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-card to-card/80 overflow-hidden touch-manipulation ${
                         selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
                       }`}
                       onClick={() => {
@@ -624,8 +636,8 @@ Met vriendelijke groet,
                         setActiveTab("preview");
                       }}
                     >
-                      {/* Template Preview Image */}
-                      <div className="relative h-32 bg-gradient-to-br from-muted/30 to-muted/10 overflow-hidden">
+                      {/* Template Preview Image - Mobile Optimized */}
+                      <div className="relative h-24 sm:h-32 bg-gradient-to-br from-muted/30 to-muted/10 overflow-hidden">
                         {template.previewImage ? (
                           <img 
                             src={template.previewImage} 
@@ -635,7 +647,7 @@ Met vriendelijke groet,
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
                             <div className="text-center">
-                              <div className="text-3xl mb-2">
+                              <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">
                                 {template.category === 'blog' ? '📝' :
                                  template.category === 'service' ? '🏢' :
                                  template.category === 'landing' ? '🎯' :
@@ -646,11 +658,11 @@ Met vriendelijke groet,
                           </div>
                         )}
                         
-                        {/* Generate Image Button */}
+                        {/* Generate Image Button - Mobile Optimized */}
                         {!template.previewImage && (
                           <Button
                             size="sm"
-                            className="absolute top-2 right-2 h-7 px-2 text-xs bg-white/90 hover:bg-white text-gray-700 shadow-sm"
+                            className="absolute top-1 sm:top-2 right-1 sm:right-2 h-6 sm:h-7 px-1.5 sm:px-2 text-xs bg-white/90 hover:bg-white text-gray-700 shadow-sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               generateTemplateImage(template);
@@ -658,46 +670,46 @@ Met vriendelijke groet,
                             disabled={generatingImages.has(template.id)}
                           >
                             {generatingImages.has(template.id) ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <Loader2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-spin" />
                             ) : (
-                              <Image className="h-3 w-3" />
+                              <Image className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             )}
                           </Button>
                         )}
 
-                        {/* Premium Badge */}
+                        {/* Premium Badge - Mobile Optimized */}
                         {template.isPremium && (
-                          <div className="absolute top-2 left-2">
-                            <Crown className="h-4 w-4 text-amber-500 bg-white/90 rounded p-0.5" />
+                          <div className="absolute top-1 sm:top-2 left-1 sm:left-2">
+                            <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500 bg-white/90 rounded p-0.5" />
                           </div>
                         )}
 
-                        {/* Rating */}
+                        {/* Rating - Mobile Optimized */}
                         {template.rating && (
-                          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <span>{template.rating}</span>
+                          <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs">{template.rating}</span>
                           </div>
                         )}
                       </div>
 
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                      <CardContent className="p-3 sm:p-4">
+                        <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-1 text-sm sm:text-base">
                           {template.name}
                         </h3>
                         
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2 leading-relaxed">
                           {template.description}
                         </p>
 
-                        <div className="flex flex-wrap gap-1 mb-3">
+                        <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                           {template.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
+                            <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0.5">
                               {tag}
                             </Badge>
                           ))}
                           {template.tags.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                               +{template.tags.length - 2}
                             </Badge>
                           )}
@@ -706,14 +718,14 @@ Met vriendelijke groet,
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {template.usageCount || 0}
+                              <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                              <span className="text-xs">{template.usageCount || 0}</span>
                             </div>
                           </div>
                           
                           <div className="flex items-center gap-1">
-                            <Zap className="h-3 w-3" />
-                            <span>{template.variables?.length || 0} vars</span>
+                            <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                            <span className="text-xs">{template.variables?.length || 0} vars</span>
                           </div>
                         </div>
                       </CardContent>
@@ -724,65 +736,76 @@ Met vriendelijke groet,
             </div>
           </TabsContent>
 
-          {/* Editor Tab */}
-          <TabsContent value="editor" className="space-y-6">
+          {/* Editor Tab - Mobile Optimized */}
+          <TabsContent value="editor" className="space-y-4 sm:space-y-6">
             <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3 sm:pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Edit className="h-5 w-5 text-primary" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Edit className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       Template Editor
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       {editingTemplate.name || "Nieuw template maken"}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setActiveTab("preview")}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      Preview
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveTab("preview")}
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">Preview</span>
                     </Button>
-                    <Button onClick={handleSaveTemplate}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Opslaan
+                    <Button 
+                      onClick={handleSaveTemplate}
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">Opslaan</span>
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-6">
-                <div className="grid gap-6 lg:grid-cols-2">
-                  {/* Template Info */}
-                  <div className="space-y-4">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  {/* Template Info - Mobile Optimized */}
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="template-name">Template Naam</Label>
+                      <Label htmlFor="template-name" className="text-sm font-medium">Template Naam</Label>
                       <Input
                         id="template-name"
                         value={editingTemplate.name || ""}
                         onChange={(e) => setEditingTemplate(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="Bijv. SEO Blog Post - Nederland"
+                        className="h-10 sm:h-11 text-sm"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="template-description">Beschrijving</Label>
+                      <Label htmlFor="template-description" className="text-sm font-medium">Beschrijving</Label>
                       <Textarea
                         id="template-description"
                         value={editingTemplate.description || ""}
                         onChange={(e) => setEditingTemplate(prev => ({ ...prev, description: e.target.value }))}
                         placeholder="Korte beschrijving van wat dit template doet..."
                         rows={3}
+                        className="text-sm resize-none"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="template-category">Categorie</Label>
+                      <Label htmlFor="template-category" className="text-sm font-medium">Categorie</Label>
                       <Select value={editingTemplate.category || "blog"} onValueChange={(value) => setEditingTemplate(prev => ({ ...prev, category: value as any }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-10 sm:h-11">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-50" position="popper" sideOffset={4}>
                           <SelectItem value="blog">📝 Blog Post</SelectItem>
                           <SelectItem value="service">🏢 Servicepagina</SelectItem>
                           <SelectItem value="landing">🎯 Landing Page</SelectItem>
@@ -793,7 +816,7 @@ Met vriendelijke groet,
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="template-tags">Tags (gescheiden door komma's)</Label>
+                      <Label htmlFor="template-tags" className="text-sm font-medium">Tags (gescheiden door komma's)</Label>
                       <Input
                         id="template-tags"
                         value={editingTemplate.tags?.join(', ') || ""}
@@ -802,25 +825,26 @@ Met vriendelijke groet,
                           tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
                         }))}
                         placeholder="seo, lokaal, dienstverlening"
+                        className="h-10 sm:h-11 text-sm"
                       />
                     </div>
                   </div>
 
-                  {/* Variables Panel */}
-                  <div className="space-y-4">
+                  {/* Variables Panel - Mobile Optimized */}
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <Label>Gevonden Variabelen</Label>
-                      <div className="mt-2 p-3 bg-muted/50 rounded-lg min-h-[100px]">
+                      <Label className="text-sm font-medium">Gevonden Variabelen</Label>
+                      <div className="mt-2 p-3 bg-muted/50 rounded-lg min-h-[80px] sm:min-h-[100px]">
                         {extractVariables(editingTemplate.content || "").length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
                             {extractVariables(editingTemplate.content || "").map(variable => (
-                              <Badge key={variable} variant="secondary" className="text-xs">
+                              <Badge key={variable} variant="secondary" className="text-xs px-1.5 py-0.5">
                                 {variable}
                               </Badge>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             Geen variabelen gevonden. Gebruik {"{{"} {"}"} syntax om variabelen toe te voegen.
                           </p>
                         )}
@@ -829,9 +853,9 @@ Met vriendelijke groet,
 
                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                       <div className="flex items-start gap-2">
-                        <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5" />
+                        <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-blue-900">Variabelen Tips</p>
+                          <p className="text-xs sm:text-sm font-medium text-blue-900">Variabelen Tips</p>
                           <p className="text-xs text-blue-700 mt-1">
                             Gebruik {"{{"} {"}"} om dynamische content toe te voegen. Bijv: {"{{"}title{"}}"}
                           </p>
@@ -841,64 +865,66 @@ Met vriendelijke groet,
                   </div>
                 </div>
 
-                {/* Content Editor */}
+                {/* Content Editor - Mobile Optimized */}
                 <div className="space-y-2">
-                  <Label htmlFor="template-content">Template Content</Label>
+                  <Label htmlFor="template-content" className="text-sm font-medium">Template Content</Label>
                   <Textarea
                     id="template-content"
                     value={editingTemplate.content || ""}
                     onChange={(e) => setEditingTemplate(prev => ({ ...prev, content: e.target.value }))}
                     placeholder="Voer hier je template content in..."
-                    className="min-h-[400px] font-mono text-sm"
+                    className="min-h-[300px] sm:min-h-[400px] font-mono text-xs sm:text-sm resize-none"
                   />
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Preview Tab */}
-          <TabsContent value="preview" className="space-y-6">
+          {/* Preview Tab - Mobile Optimized */}
+          <TabsContent value="preview" className="space-y-4 sm:space-y-6">
             <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3 sm:pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="h-5 w-5 text-primary" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       Template Preview
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       {selectedTemplate?.name || editingTemplate.name || "Selecteer een template"}
                     </CardDescription>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Button
                       variant={previewMode ? "default" : "outline"}
                       size="sm"
                       onClick={() => setPreviewMode(!previewMode)}
+                      className="w-full sm:w-auto"
                     >
                       {previewMode ? (
                         <>
-                          <Eye className="h-4 w-4 mr-1" />
-                          Sample Data
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="text-xs sm:text-sm">Sample Data</span>
                         </>
                       ) : (
                         <>
-                          <Code className="h-4 w-4 mr-1" />
-                          Variabelen
+                          <Code className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="text-xs sm:text-sm">Variabelen</span>
                         </>
                       )}
                     </Button>
                     
                     {selectedTemplate && (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 sm:gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleUseTemplate(selectedTemplate)}
+                          className="flex-1 sm:flex-none"
                         >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Kopiëren
+                          <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="text-xs sm:text-sm">Kopiëren</span>
                         </Button>
                         <Button
                           size="sm"
@@ -907,9 +933,10 @@ Met vriendelijke groet,
                             setIsEditing(true);
                             setActiveTab("editor");
                           }}
+                          className="flex-1 sm:flex-none"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Bewerken
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="text-xs sm:text-sm">Bewerken</span>
                         </Button>
                       </div>
                     )}
@@ -920,12 +947,12 @@ Met vriendelijke groet,
               <CardContent className="p-0">
                 <div className="relative">
                   {/* Mobile-optimized preview container */}
-                  <div className="border-0 bg-white rounded-lg shadow-inner min-h-[500px] max-h-[70vh] overflow-y-auto">
+                  <div className="border-0 bg-white rounded-lg shadow-inner min-h-[400px] sm:min-h-[500px] max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
                     {(selectedTemplate?.content || editingTemplate.content) ? (
-                      <div className="p-4 sm:p-6">
+                      <div className="p-3 sm:p-4 lg:p-6">
                         {/* Preview content met mobile-first styling */}
                         <div 
-                          className="text-sm sm:text-base leading-relaxed max-w-none space-y-3"
+                          className="text-xs sm:text-sm lg:text-base leading-relaxed max-w-none space-y-2 sm:space-y-3"
                           style={{
                             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                             lineHeight: '1.6'
@@ -936,12 +963,12 @@ Met vriendelijke groet,
                         />
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-20 px-4">
-                        <div className="relative mb-6">
-                          <Eye className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400/20 rounded-full animate-pulse"></div>
+                      <div className="flex flex-col items-center justify-center h-full text-center py-12 sm:py-20 px-4">
+                        <div className="relative mb-4 sm:mb-6">
+                          <Eye className="h-8 w-8 sm:h-12 sm:w-12 lg:h-16 lg:w-16 text-muted-foreground/50" />
+                          <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-amber-400/20 rounded-full animate-pulse"></div>
                         </div>
-                        <h3 className="text-base sm:text-lg font-medium text-muted-foreground mb-2">
+                        <h3 className="text-sm sm:text-base lg:text-lg font-medium text-muted-foreground mb-2">
                           Geen template geselecteerd
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground max-w-xs">
@@ -952,7 +979,7 @@ Met vriendelijke groet,
                   </div>
 
                   {/* Sticky tip bar voor mobile */}
-                  <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-t from-muted/80 to-transparent p-3 border-t border-border/50 backdrop-blur-sm">
+                  <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-t from-muted/80 to-transparent p-2 sm:p-3 border-t border-border/50 backdrop-blur-sm">
                     <div className="flex items-center gap-2 text-xs">
                       <Lightbulb className="h-3 w-3 text-amber-600 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
