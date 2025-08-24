@@ -42,6 +42,7 @@ const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const CoursePage = lazy(() => import("./pages/CoursePage"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const WordPressTestPilot = lazy(() => import("./pages/WordPressTestPilot"));
 const OptimizedHeader = lazy(() => import("./components/OptimizedHeader"));
 const Footer = lazy(() => import("./components/Footer"));
 
@@ -317,6 +318,16 @@ const App = () => {
                           <Suspense fallback={<LoadingFallback />}>
                             <OptimizedLayout type="dashboard">
                               <SettingsPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="wordpress-testpilot" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <WordPressTestPilot />
                             </OptimizedLayout>
                           </Suspense>
                         </ProtectedRoute>

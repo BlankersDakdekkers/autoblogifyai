@@ -400,6 +400,21 @@ const Index = () => {
                 <Play className="mr-3 h-5 w-5 flex-shrink-0 group-hover:animate-bounce" />
                 <span>🎬 Zie €180k case study (2 min)</span>
               </Button>
+              
+              {user && (
+                <Button 
+                  size="lg" 
+                  className="w-full text-lg md:text-xl px-6 md:px-12 py-4 md:py-6 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 text-white hover:from-blue-400 hover:via-blue-500 hover:to-blue-400 shadow-2xl font-bold group transition-all duration-300 min-h-[70px] md:min-h-[80px] touch-manipulation rounded-2xl transform hover:scale-105 border-2 border-blue-400"
+                  onClick={() => navigate('/dashboard/wordpress-testpilot')}
+                >
+                  <Zap className="mr-3 h-5 w-5 flex-shrink-0 group-hover:animate-bounce" />
+                  <span className="text-center leading-tight">
+                    <span className="block">🧪 Start WordPress Testpilot</span>
+                    <span className="block text-sm opacity-90">Test de volledige workflow gratis</span>
+                  </span>
+                  <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </Button>
+              )}
             </div>
 
             {/* Enhanced Trust Indicators with Social Proof */}
