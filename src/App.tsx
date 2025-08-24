@@ -108,60 +108,34 @@ const App = () => {
             }}
           >
             <AuthProvider>
-              <Routes>
-                <Route path="/" element={<><SimpleHeader /><Index /></>} />
-                <Route path="/auth" element={<AuthPage />} />
-                
-                {/* EMERGENCY TEST ROUTE */}
-                <Route 
-                  path="/dashboard/cms-integration" 
-                  element={
-                    <div style={{
-                      padding: '4rem', 
-                      background: 'red', 
-                      color: 'white', 
-                      fontSize: '3rem',
-                      textAlign: 'center',
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      zIndex: 9999
-                    }}>
-                      🚨 NOODROUTE ACTIEF! 🚨<br/>
-                      Als je dit ziet werkt routing!<br/>
-                      URL: {window.location.pathname}
-                    </div>
-                  } 
-                />
-                
-                <Route 
-                  path="/dashboard/cms-integrations" 
-                  element={
-                    <div style={{
-                      padding: '4rem', 
-                      background: 'blue', 
-                      color: 'white', 
-                      fontSize: '3rem',
-                      textAlign: 'center',
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      zIndex: 9999
-                    }}>
-                      🚨 BACKUP NOODROUTE ACTIEF! 🚨<br/>
-                      URL: {window.location.pathname}
-                    </div>
-                  } 
-                />
-                
-                <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+            <Routes>
+              {/* ALLEEN NOODROUTE - ALLE ANDEREN WEGGEHAALD */}
+              <Route 
+                path="/dashboard/cms-integration" 
+                element={
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'red',
+                    color: 'white',
+                    fontSize: '4rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    zIndex: 99999
+                  }}>
+                    🆘 LAATSTE TEST! 🆘<br/>
+                    ROUTE WERKT EINDELIJK!
+                  </div>
+                } 
+              />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
