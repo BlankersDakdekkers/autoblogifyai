@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ResponsiveContainer, ResponsiveGrid } from "@/components/ui/responsive-components";
+import { useIsMobile } from "@/utils/responsive";
 import { 
   CheckCircle, 
   Circle, 
@@ -376,7 +378,7 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
 
   if (showSuccessMetrics) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+      <ResponsiveContainer className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center">
         <Card className="max-w-3xl w-full">
           <CardHeader className="text-center">
             <div className="mx-auto w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mb-4">
@@ -388,7 +390,7 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-            <div className="grid md:grid-cols-3 gap-6">
+            <ResponsiveGrid columns={{ xs: 1, md: 3 }} gap="md">
               <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
                 <Timer className="h-10 w-10 text-green-600 mx-auto mb-3" />
                 <div className="text-3xl font-bold text-green-700">95%</div>
@@ -407,7 +409,7 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
                 <div className="text-sm text-purple-600 font-medium">Artikelen per maand</div>
                 <div className="text-xs text-purple-500 mt-1">volledig geautomatiseerd</div>
               </div>
-            </div>
+            </ResponsiveGrid>
             
             <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-8 rounded-xl text-center border border-primary/20">
               <div className="flex items-center justify-center gap-2 mb-3">
@@ -434,13 +436,13 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
             </div>
           </CardContent>
         </Card>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <div className="container max-w-4xl mx-auto py-4 sm:py-8 px-4">
+    <ResponsiveContainer className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <div className="py-4 sm:py-8">
         {/* Enhanced Header - Mobile Optimized */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="animate-fade-in">
@@ -472,7 +474,11 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
           </div>
         </div>
 
-        <div className="space-y-6">
+        <ResponsiveGrid 
+          columns={{ xs: 1, lg: 1 }}
+          gap="md"
+          className="max-w-4xl mx-auto"
+        >
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             const isActive = index === currentStep;
@@ -591,22 +597,22 @@ Leidingproblemen kunnen op elk moment ontstaan. Onze ervaren loodgieters staan *
               </Card>
             );
           })}
-        </div>
 
-        {currentStep >= steps.length && (
-          <div className="text-center mt-8">
-            <Button 
-              onClick={completeOnboarding} 
-              size="lg" 
-              className="text-lg px-8 py-4"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Onboarding Afronden
-            </Button>
-          </div>
-        )}
+          {currentStep >= steps.length && (
+            <div className="text-center mt-8">
+              <Button 
+                onClick={completeOnboarding} 
+                size="lg" 
+                className="text-lg px-8 py-4"
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                Onboarding Afronden
+              </Button>
+            </div>
+          )}
+        </ResponsiveGrid>
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 };
 
