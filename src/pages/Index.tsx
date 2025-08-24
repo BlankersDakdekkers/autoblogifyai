@@ -266,7 +266,7 @@ const Index = () => {
       <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-primary/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none animate-pulse" />
 
       {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-4 md:pt-8 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden">
+      <section className="relative pt-0 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden min-h-screen">
         {/* Header Navigation - Integrated in Hero */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <div className="container mx-auto px-4">
@@ -363,7 +363,7 @@ const Index = () => {
         <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
         
-        <div className="container relative z-10 px-4">
+        <div className="container relative z-10 px-4 pt-20">
           <div className="max-w-5xl mx-auto text-center text-white">
             {/* Enhanced Social Proof Badge */}
             <Badge className="mb-6 md:mb-8 bg-white text-primary border-0 px-4 md:px-8 py-2 md:py-4 text-sm md:text-lg font-bold animate-pulse shadow-xl">
