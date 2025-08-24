@@ -91,14 +91,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// CRITICAL CACHE BUSTER - TIMESTAMP: 1756066300000
-// LAST MODIFIED: URGENT ROUTING FIX 2025
+// BRAND NEW CLEAN APP COMPONENT - BUILD TIMESTAMP: 2025.01.24.20.08
 const App = () => {
-  // SUPER URGENT CACHE BUSTER DEBUG - VERSION 2025.01.24.20.05
-  console.error("🔥🔥🔥 CACHE BUSTER ACTIVE! VERSION 2025.01.24.20.05 🔥🔥🔥");
-  console.error("🔥 TIMESTAMP:", Date.now());
-  console.error("🔥 URL:", window.location.href);
-  console.error("🔥 PATHNAME:", window.location.pathname);
+  // ULTRA CLEAN VERSION - SHOULD WORK NOW
+  console.warn("🆘 BRAND NEW APP COMPONENT LOADED! TIMESTAMP:", Date.now());
   
   return (
     <LanguageProvider>
@@ -114,59 +110,57 @@ const App = () => {
           >
             <AuthProvider>
               <Routes>
-                {/* CACHE BUSTED ROUTES */}
-                <Route 
-                  path="/test123" 
-                  element={
-                    <div style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      background: 'lime',
-                      color: 'black',
-                      fontSize: '6rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      zIndex: 99999
-                    }}>
-                      🔥 CACHE BUSTER! 🔥<br/>
-                      VERSION 20:05<br/>
-                      ROUTE ACTIVE!
-                    </div>
-                  } 
-                />
+                <Route path="/" element={<><SimpleHeader /><Index /></>} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
+                <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
+                <Route path="/customer-cases" element={<><SimpleHeader /><CustomerCases /></>} />
+                <Route path="/about" element={<><SimpleHeader /><AboutPage /></>} />
+                <Route path="/contact" element={<><SimpleHeader /><ContactPage /></>} />
+                <Route path="/terms" element={<><SimpleHeader /><TermsOfService /></>} />
+                <Route path="/privacy" element={<><SimpleHeader /><PrivacyPolicy /></>} />
+                <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
                 
-                <Route 
-                  path="/dashboard/cms-integration" 
-                  element={
-                    <div style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      background: 'magenta',
-                      color: 'white',
-                      fontSize: '5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      zIndex: 99999
-                    }}>
-                      🔥 CMS CACHE BUST! 🔥<br/>
-                      VERSION 20:05<br/>
-                      DASHBOARD FIXED!
-                    </div>
-                  } 
-                />
+                {/* CMS INTEGRATION ROUTE - FRESH START */}
+                <Route path="/dashboard/cms-integration" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CMSIntegrations />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
                 
+                {/* All other dashboard routes */}
+                <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/websites" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/deployment" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/academy" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/ai-generator" element={<ProtectedRoute><Layout><AIWebsiteGenerator /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/website-builder" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/analytics" element={<ProtectedRoute><Layout><AnalyticsPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/integrations" element={<ProtectedRoute><Layout><IntegrationsPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/notifications" element={<ProtectedRoute><Layout><NotificationSystem /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/media" element={<ProtectedRoute><Layout><MediaPortal /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/help" element={<ProtectedRoute><Layout><HelpSupport /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/achievements" element={<ProtectedRoute><Layout><AchievementsPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/course" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/affiliate" element={<ProtectedRoute><Layout><AffiliatePage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/content-features" element={<ProtectedRoute><Layout><ContentFeatures /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/category-manager" element={<ProtectedRoute><Layout><CategoryManager /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/template-editor" element={<ProtectedRoute><Layout><TemplateEditor /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><AdminUsersPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
+                <Route path="/dashboard/admin/resources" element={<ProtectedRoute requiredRole="admin"><Layout><AdminResourceManager /></Layout></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>
