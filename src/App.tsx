@@ -60,8 +60,18 @@ const App = () => {
           <BrowserRouter>
             <AuthProvider>
               <Routes>
-                {/* Homepage - Completely standalone without SidebarProvider */}
-                <Route path="/" element={<Index />} />
+                {/* Homepage - With header/footer */}
+                <Route path="/" element={
+                  <div>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OptimizedHeader />
+                    </Suspense>
+                    <Index />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Footer />
+                    </Suspense>
+                  </div>
+                } />
                 <Route path="/auth" element={<AuthPage />} />
                 
                 {/* Public Routes with header/footer */}

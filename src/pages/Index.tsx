@@ -266,104 +266,10 @@ const Index = () => {
       <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-primary/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none animate-pulse" />
 
       {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-0 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden min-h-screen">
-        {/* Header Navigation - Integrated in Hero */}
-        <div className="absolute top-0 left-0 right-0 z-50">
-          <div className="container mx-auto px-4">
-            <div className="flex h-16 items-center justify-between">
-              {/* Logo */}
-              <NavLink to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <span className="font-bold text-xl text-white">
-                  AutoblogifyAI
-                </span>
-              </NavLink>
-
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center gap-6">
-                <NavLink to="/pricing" className="text-white/90 hover:text-white transition-colors font-medium">
-                  Pricing
-                </NavLink>
-                <NavLink to="/about" className="text-white/90 hover:text-white transition-colors font-medium">
-                  Over Ons
-                </NavLink>
-                <NavLink to="/contact" className="text-white/90 hover:text-white transition-colors font-medium">
-                  Contact
-                </NavLink>
-                <NavLink to="/help" className="text-white/90 hover:text-white transition-colors font-medium">
-                  Help
-                </NavLink>
-              </nav>
-
-              {/* User Actions */}
-              <div className="flex items-center gap-3">
-                {user ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-white/90 text-sm hidden sm:block">
-                      {profile?.display_name || user.email?.split('@')[0]}
-                    </span>
-                    <Button variant="secondary" asChild className="bg-white/20 border-white/30 text-white hover:bg-white/30">
-                      <NavLink to="/dashboard">Dashboard</NavLink>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" asChild className="text-white hover:bg-white/20 border-white/30">
-                      <NavLink to="/auth">Inloggen</NavLink>
-                    </Button>
-                    <Button asChild className="bg-white text-primary hover:bg-white/90">
-                      <NavLink to="/auth?tab=signup">Registreren</NavLink>
-                    </Button>
-                  </div>
-                )}
-
-                {/* Mobile Menu */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/20">
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <nav className="flex flex-col gap-4 mt-8">
-                      <NavLink to="/pricing" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                        Pricing
-                      </NavLink>
-                      <NavLink to="/about" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                        Over Ons
-                      </NavLink>
-                      <NavLink to="/contact" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                        Contact
-                      </NavLink>
-                      <NavLink to="/help" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                        Help
-                      </NavLink>
-                      {!user && (
-                        <>
-                          <hr className="my-4" />
-                          <NavLink to="/auth" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                            Inloggen
-                          </NavLink>
-                          <NavLink to="/auth?tab=signup" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                            Registreren
-                          </NavLink>
-                        </>
-                      )}
-                    </nav>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <section className="relative pt-16 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden min-h-screen">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
         
-        <div className="container relative z-10 px-4 pt-20">
+        <div className="container relative z-10 px-4 pt-8">
           <div className="max-w-5xl mx-auto text-center text-white">
             {/* Enhanced Social Proof Badge */}
             <Badge className="mb-6 md:mb-8 bg-white text-primary border-0 px-4 md:px-8 py-2 md:py-4 text-sm md:text-lg font-bold animate-pulse shadow-xl">
