@@ -143,7 +143,7 @@ const App = () => (
               <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/cms-integration" element={<ProtectedRoute><Layout><CMSIntegrations /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/cms-integration" element={<ProtectedRoute><Layout><div className="p-6"><h1 className="text-2xl font-bold text-green-600">✅ CMS INTEGRATION WERKT!</h1><p>Dit is een test om te zien of de route werkt.</p></div></Layout></ProtectedRoute>} />
               <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
