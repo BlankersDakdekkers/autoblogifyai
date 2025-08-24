@@ -57,65 +57,61 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-// Professional metric card with real-time updates
-const ProfessionalMetricCard = memo(({ 
+// Modern Live Performance Metrics Card
+const LiveMetricCard = memo(({ 
   title, 
   value, 
-  previousValue,
+  subtitle,
   change, 
   icon: Icon, 
   trend = 'up',
-  color = 'primary',
-  description,
+  color = 'blue',
+  efficiency,
   isLoading = false,
   onClick,
-  comparison
+  details
 }: {
   title: string;
   value: number | string;
-  previousValue?: number;
+  subtitle?: string;
   change?: string;
   icon: React.ComponentType<{ className?: string }>;
   trend?: 'up' | 'down' | 'neutral';
-  color?: 'primary' | 'green' | 'blue' | 'purple' | 'orange' | 'red';
-  description?: string;
+  color?: 'blue' | 'green' | 'purple' | 'orange';
+  efficiency?: string;
   isLoading?: boolean;
   onClick?: () => void;
-  comparison?: { label: string; value: string; trend: 'up' | 'down' | 'neutral' };
+  details?: string;
 }) => {
-  const colorMap = {
-    primary: 'from-primary to-primary/80',
-    green: 'from-green-500 to-green-600',
-    blue: 'from-blue-500 to-blue-600',
-    purple: 'from-purple-500 to-purple-600',
-    orange: 'from-orange-500 to-orange-600',
-    red: 'from-red-500 to-red-600'
+  const colorClasses = {
+    blue: 'bg-blue-50 border-blue-100 text-blue-900',
+    green: 'bg-green-50 border-green-100 text-green-900', 
+    purple: 'bg-purple-50 border-purple-100 text-purple-900',
+    orange: 'bg-orange-50 border-orange-100 text-orange-900'
   };
 
-  const trendColors = {
-    up: 'text-green-700 bg-green-100 border-green-200',
-    down: 'text-red-700 bg-red-100 border-red-200',
-    neutral: 'text-gray-700 bg-gray-100 border-gray-200'
+  const iconColors = {
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500', 
+    orange: 'bg-orange-500'
   };
 
-  const shadowMap = {
-    primary: 'shadow-primary/20',
-    green: 'shadow-green-500/20',
-    blue: 'shadow-blue-500/20',
-    purple: 'shadow-purple-500/20',
-    orange: 'shadow-orange-500/20',
-    red: 'shadow-red-500/20'
+  const changeColors = {
+    up: 'text-green-600 bg-green-50',
+    down: 'text-red-600 bg-red-50',
+    neutral: 'text-gray-600 bg-gray-50'
   };
 
   if (isLoading) {
     return (
-      <Card className="hover-scale transition-all duration-300">
+      <Card className="animate-pulse">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-3 w-32" />
+          <div className="flex items-start justify-between">
+            <div className="space-y-3 flex-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-3 w-40" />
             </div>
             <Skeleton className="h-12 w-12 rounded-full" />
           </div>
@@ -125,180 +121,137 @@ const ProfessionalMetricCard = memo(({
   }
 
   return (
-    <Card 
-      className={`group relative overflow-hidden hover-scale transition-all duration-300 hover:shadow-xl ${shadowMap[color]} border-0 bg-gradient-to-br from-card/90 to-card/70 backdrop-blur cursor-pointer`}
-      onClick={onClick}
-    >
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <CardContent className="p-6 relative z-10">
-        <div className="flex items-center justify-between">
+    <Card className={`border-2 hover-scale transition-all duration-300 hover:shadow-lg ${colorClasses[color]} cursor-pointer`} onClick={onClick}>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-medium opacity-70">
                 {title}
               </p>
-              {comparison && (
-                <Badge variant="outline" className="text-xs">
-                  {comparison.label}
-                </Badge>
-              )}
+              <span className="text-xs opacity-50">vs vorige week</span>
             </div>
             
             <div className="flex items-baseline gap-2">
-              {typeof value === 'number' ? (
-                <div className="text-2xl font-bold">
-                  <AnimatedCounter value={value.toString()} />
-                </div>
-              ) : (
-                <span className="text-2xl font-bold">{value}</span>
-              )}
-              
-              {previousValue && typeof value === 'number' && (
-                <div className="text-xs text-muted-foreground">
-                  {previousValue > 0 && (
-                    <span>
-                      {((value - previousValue) / previousValue * 100).toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-              )}
+              <span className="text-3xl font-bold">
+                {typeof value === 'number' ? <AnimatedCounter value={value.toString()} /> : value}
+              </span>
+              <span className="text-sm opacity-60">{subtitle}</span>
             </div>
             
-            {description && (
-              <p className="text-xs text-muted-foreground leading-tight">
-                {description}
+            {subtitle && (
+              <p className="text-xs opacity-60 leading-tight">
+                {subtitle}
               </p>
             )}
-            
-            {comparison && (
-              <div className="flex items-center gap-1 text-xs">
-                <span className="text-muted-foreground">{comparison.label}:</span>
-                <Badge className={`text-xs ${trendColors[comparison.trend]}`}>
-                  {comparison.value}
+
+            {efficiency && (
+              <div className="flex items-center gap-2 mt-3">
+                <span className="text-xs opacity-60">efficiency:</span>
+                <Badge className="text-xs bg-green-100 text-green-700">
+                  {efficiency}
                 </Badge>
+              </div>
+            )}
+            
+            {change && (
+              <div className="flex items-center gap-2 mt-2">
+                <Badge className={`text-xs px-2 py-1 ${changeColors[trend]}`}>
+                  {trend === 'up' && '+'}
+                  {trend === 'down' && '-'}
+                  {change}
+                </Badge>
+                {details && (
+                  <button className="text-xs opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1">
+                    Details
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             )}
           </div>
           
-          <div className={`relative p-4 rounded-full bg-gradient-to-br ${colorMap[color]} shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+          <div className={`p-3 rounded-full ${iconColors[color]} relative`}>
             <Icon className="h-6 w-6 text-white" />
             {trend === 'up' && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             )}
           </div>
         </div>
-        
-        {change && (
-          <div className="mt-4 flex items-center justify-between">
-            <Badge className={`text-xs border ${trendColors[trend]}`}>
-              {trend === 'up' && '↗'} {trend === 'down' && '↘'} {change}
-            </Badge>
-            
-            {onClick && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors">
-                <span>Details</span>
-                <ArrowRight className="h-3 w-3" />
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
 });
 
-ProfessionalMetricCard.displayName = 'ProfessionalMetricCard';
+LiveMetricCard.displayName = 'LiveMetricCard';
 
-// Enhanced quick action card
-const EnhancedQuickActionCard = memo(({ 
+// Modern Quick Action Tool Card
+const QuickActionCard = memo(({ 
   title, 
   description, 
   icon: Icon, 
   href, 
-  color = 'primary',
   badge,
   isNew = false,
   isPremium = false,
   estimatedTime,
-  difficulty = 'easy'
+  status = 'Makkelijk'
 }: {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
-  color?: string;
   badge?: string;
   isNew?: boolean;
   isPremium?: boolean;
   estimatedTime?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  status?: string;
 }) => {
-  const difficultyColors = {
-    easy: 'text-green-600 bg-green-50',
-    medium: 'text-orange-600 bg-orange-50',
-    hard: 'text-red-600 bg-red-50'
+  const statusColors = {
+    'Makkelijk': 'text-green-600 bg-green-50',
+    'Gemiddeld': 'text-orange-600 bg-orange-50',
+    'Moeilijk': 'text-red-600 bg-red-50'
   };
 
   return (
-    <Card className="group relative overflow-hidden hover-scale transition-all duration-300 hover:shadow-xl border-0 bg-gradient-to-br from-card to-card/80">
-      {isNew && (
-        <div className="absolute top-2 right-2 z-10">
-          <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs">
-            Nieuw
-          </Badge>
-        </div>
-      )}
-      
-      {isPremium && (
-        <div className="absolute top-2 left-2 z-10">
-          <Crown className="h-4 w-4 text-amber-500" />
-        </div>
-      )}
-      
-      <CardContent className="p-6">
+    <Card className="group hover-scale transition-all duration-300 hover:shadow-md border border-gray-100 bg-white">
+      <CardContent className="p-5">
         <Link to={href} className="block">
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-300">
-                <Icon className="h-6 w-6 text-primary" />
-              </div>
-              
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold group-hover:text-primary transition-colors">
-                    {title}
-                  </h3>
-                  {badge && (
-                    <Badge variant="secondary" className="text-xs">
-                      {badge}
-                    </Badge>
-                  )}
-                </div>
-                
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {description}
-                </p>
-                
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  {estimatedTime && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{estimatedTime}</span>
-                    </div>
-                  )}
-                  
-                  <Badge className={`text-xs ${difficultyColors[difficulty]}`}>
-                    {difficulty === 'easy' && 'Makkelijk'}
-                    {difficulty === 'medium' && 'Gemiddeld'}  
-                    {difficulty === 'hard' && 'Moeilijk'}
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-gray-50 group-hover:bg-primary/10 transition-colors">
+              <Icon className="h-5 w-5 text-primary" />
+            </div>
+            
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                  {title}
+                </h3>
+                {isNew && (
+                  <Badge className="bg-green-500 text-white text-xs px-2">
+                    Nieuw
                   </Badge>
-                </div>
+                )}
+                {isPremium && (
+                  <Crown className="h-4 w-4 text-amber-500" />
+                )}
               </div>
               
-              <div className="flex items-center gap-1 text-muted-foreground group-hover:text-primary transition-colors">
-                <ArrowRight className="h-4 w-4" />
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {description}
+              </p>
+              
+              <div className="flex items-center justify-between mt-3">
+                {estimatedTime && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Clock className="h-3 w-3" />
+                    <span>{estimatedTime}</span>
+                  </div>
+                )}
+                
+                <Badge className={`text-xs px-2 py-1 ${statusColors[status as keyof typeof statusColors] || statusColors['Makkelijk']}`}>
+                  {status}
+                </Badge>
               </div>
             </div>
           </div>
@@ -308,7 +261,7 @@ const EnhancedQuickActionCard = memo(({
   );
 });
 
-EnhancedQuickActionCard.displayName = 'EnhancedQuickActionCard';
+QuickActionCard.displayName = 'QuickActionCard';
 
 // Real-time activity feed
 const ActivityFeed = memo(() => {
@@ -578,43 +531,44 @@ export const ProductionDashboard = memo(() => {
     {
       title: 'Actieve Artikelen',
       value: 247,
-      previousValue: 235,
-      change: '+12 deze week',
+      subtitle: 'AI gegenereerde content live', 
+      change: '+5.1%',
       icon: FileText,
       trend: 'up' as const,
-      color: 'primary' as const,
-      description: 'AI gegenereerde content live',
-      comparison: { label: 'vs vorige week', value: '+5.1%', trend: 'up' as const }
+      color: 'blue' as const,
+      efficiency: '94%',
+      details: 'Details →'
     },
     {
       title: 'Maandelijks Verkeer',
       value: '52.3K',
-      change: '+28% vs vorige maand',
+      subtitle: 'Organische bezoekers (Google Analytics)',
+      change: '+28%',
       icon: TrendingUp,
       trend: 'up' as const,
       color: 'green' as const,
-      description: 'Organische bezoekers (Google Analytics)',
-      comparison: { label: 'CTR', value: '3.8%', trend: 'up' as const }
+      details: 'Details →'
     },
     {
       title: 'Tijdsbesparing',
       value: '127 uur',
+      subtitle: '€6,350 waarde vs handmatig schrijven',
       change: 'Deze maand',
       icon: Timer,
       trend: 'up' as const,
-      color: 'blue' as const,
-      description: '€6,350 waarde vs handmatig schrijven',
-      comparison: { label: 'efficiency', value: '94%', trend: 'up' as const }
+      color: 'purple' as const,
+      efficiency: '94%',
+      details: 'Details →'
     },
     {
       title: 'ROI Score',
       value: '847%',
-      change: '+12% deze maand',
+      subtitle: 'Return on Investment berekening',
+      change: '+12%',
       icon: Award,
       trend: 'up' as const,
-      color: 'purple' as const,
-      description: 'Return on Investment berekening',
-      comparison: { label: 'industry avg', value: '+340%', trend: 'up' as const }
+      color: 'orange' as const,
+      details: 'Details →'
     }
   ]);
 
@@ -626,7 +580,7 @@ export const ProductionDashboard = memo(() => {
       href: '/dashboard/csv-processor',
       badge: 'Meest gebruikt',
       estimatedTime: '2-5 min',
-      difficulty: 'easy' as const,
+      status: 'Makkelijk',
       isNew: false
     },
     {
@@ -635,7 +589,7 @@ export const ProductionDashboard = memo(() => {
       icon: BarChart3,
       href: '/dashboard/analytics',
       estimatedTime: '5-10 min',
-      difficulty: 'easy' as const
+      status: 'Makkelijk'
     },
     {
       title: 'Enterprise AI Features',
@@ -644,7 +598,7 @@ export const ProductionDashboard = memo(() => {
       href: '/dashboard/advanced-ai',
       isPremium: true,
       estimatedTime: '10-30 min',
-      difficulty: 'medium' as const,
+      status: 'Gemiddeld',
       isNew: true
     },
     {
@@ -653,7 +607,7 @@ export const ProductionDashboard = memo(() => {
       icon: Target,
       href: '/dashboard/keywords',
       estimatedTime: '15-25 min',
-      difficulty: 'medium' as const
+      status: 'Gemiddeld'
     },
     {
       title: 'WordPress Integratie',
@@ -661,7 +615,7 @@ export const ProductionDashboard = memo(() => {
       icon: Globe,
       href: '/dashboard/cms-integration',
       estimatedTime: '5-15 min',
-      difficulty: 'easy' as const
+      status: 'Makkelijk'
     },
     {
       title: 'Template Designer',
@@ -669,7 +623,7 @@ export const ProductionDashboard = memo(() => {
       icon: Zap,
       href: '/dashboard/template-editor',
       estimatedTime: '20-45 min',
-      difficulty: 'hard' as const
+      status: 'Moeilijk'
     }
   ];
 
@@ -788,7 +742,7 @@ export const ProductionDashboard = memo(() => {
           
           <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="md">
             {metrics.map((metric, index) => (
-              <ProfessionalMetricCard 
+              <LiveMetricCard 
                 key={metric.title} 
                 {...metric}
                 onClick={() => navigate('/dashboard/analytics')}
@@ -811,7 +765,7 @@ export const ProductionDashboard = memo(() => {
           
           <ResponsiveGrid columns={{ xs: 1, md: 2, lg: 3 }} gap="md">
             {quickActions.map((action, index) => (
-              <EnhancedQuickActionCard key={action.title} {...action} />
+              <QuickActionCard key={action.title} {...action} />
             ))}
           </ResponsiveGrid>
         </div>
