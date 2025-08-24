@@ -12,7 +12,6 @@ import { Link, useNavigate, NavLink } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 // Footer is now handled by OptimizedLayout
 import OptimizedHomeSections from "@/components/OptimizedHomeSections";
-import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
@@ -737,7 +736,7 @@ const Index = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div>
   );
 };
