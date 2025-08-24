@@ -172,9 +172,10 @@ export const NewUserDashboard = () => {
     // Check if user has seen welcome modal
     const welcomeSeen = localStorage.getItem(`welcome_seen_${user?.id}`);
     if (!welcomeSeen && user) {
+      // Reduce delay to show modal faster
       setTimeout(() => {
         setShowWelcomeModal(true);
-      }, 1000); // Show after 1 second
+      }, 500); // Reduced from 1000ms to 500ms
     } else {
       setHasSeenWelcome(true);
     }

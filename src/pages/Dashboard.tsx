@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, FileText, Globe, Upload, Settings, BarChart3
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { AdminSetup } from "@/components/AdminSetup";
 import { NewUserDashboard } from "@/components/NewUserDashboard";
@@ -14,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Dashboard Overview Component for existing users
 const DashboardOverview = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dashboardStats, setDashboardStats] = useState({
     totalPosts: 0,
     publishedPosts: 0,
@@ -29,44 +31,38 @@ const DashboardOverview = () => {
     try {
       setLoading(true);
       
-      // Fetch all user's blog posts
-      const { data: blogPosts, error: blogError } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      // Optimize database queries - run in parallel and limit data
+      const [blogPostsResponse, knowledgeItemsResponse] = await Promise.all([
+        supabase
+          .from('blog_posts')
+          .select('id, title, status, created_at, word_count, city')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10), // Limit to recent posts only
+        
+        supabase
+          .from('knowledge_items')
+          .select('id, title, status, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      if (blogError) throw blogError;
+      if (blogPostsResponse.error) throw blogPostsResponse.error;
+      if (knowledgeItemsResponse.error) throw knowledgeItemsResponse.error;
 
-      // Fetch knowledge items
-      const { data: knowledgeItems, error: knowledgeError } = await supabase
-        .from('knowledge_items')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const blogPosts = blogPostsResponse.data || [];
+      const knowledgeItems = knowledgeItemsResponse.data || [];
 
-      if (knowledgeError) throw knowledgeError;
-
-      // Calculate stats
-      const totalPosts = (blogPosts?.length || 0) + (knowledgeItems?.length || 0);
-      const publishedBlogPosts = blogPosts?.filter(post => post.status === 'published').length || 0;
-      const publishedKnowledgeItems = knowledgeItems?.filter(item => item.status === 'published').length || 0;
+      // Calculate stats efficiently
+      const totalPosts = blogPosts.length + knowledgeItems.length;
+      const publishedBlogPosts = blogPosts.filter(post => post.status === 'published').length;
+      const publishedKnowledgeItems = knowledgeItems.filter(item => item.status === 'published').length;
       const totalPublished = publishedBlogPosts + publishedKnowledgeItems;
       
-      // Calculate average word count
-      const blogWordsTotal = (blogPosts || []).reduce((acc, post) => {
-        const content = post.body_markdown || '';
-        return acc + content.split(' ').length;
-      }, 0);
-      
-      const knowledgeWordsTotal = (knowledgeItems || []).reduce((acc, item) => {
-        const content = item.content || '';
-        return acc + content.split(' ').length;
-      }, 0);
-      
-      const totalWords = blogWordsTotal + knowledgeWordsTotal;
-      const averageWords = totalPosts > 0 ? Math.round(totalWords / totalPosts) : 0;
+      // Use pre-calculated word_count from database instead of recalculating
+      const totalWords = blogPosts.reduce((acc, post) => acc + (post.word_count || 0), 0);
+      const averageWords = totalPosts > 0 ? Math.round(totalWords / blogPosts.length) : 0;
 
       // Calculate SEO score (simplified)
       const seoScore = totalPosts > 0 ? Math.min(94, 60 + (totalPublished * 3)) : 0;
@@ -78,8 +74,8 @@ const DashboardOverview = () => {
         seoScore
       });
 
-      // Format recent posts from both sources
-      const recentBlogPosts = (blogPosts || []).slice(0, 3).map(post => ({
+      // Format recent posts efficiently
+      const recentBlogPosts = blogPosts.slice(0, 3).map(post => ({
         id: post.id,
         title: post.title,
         status: post.status === 'published' ? 'Gepubliceerd' : 'Concept',
@@ -89,7 +85,7 @@ const DashboardOverview = () => {
         created_at: post.created_at
       }));
 
-      const recentKnowledgeItems = (knowledgeItems || []).slice(0, 2).map(item => ({
+      const recentKnowledgeItems = knowledgeItems.slice(0, 2).map(item => ({
         id: item.id,
         title: item.title,
         status: item.status === 'published' ? 'Gepubliceerd' : 'Concept',
@@ -264,7 +260,7 @@ const DashboardOverview = () => {
                       variant="ghost" 
                       size="sm" 
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      onClick={() => window.open(post.type === 'blog' ? '/dashboard/blogs' : '/dashboard/knowledge-base', '_blank')}
+                      onClick={() => navigate(post.type === 'blog' ? '/dashboard/blogs' : '/dashboard/knowledge-base')}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -318,20 +314,21 @@ const Dashboard = () => {
     }
   }, [toast, refreshCredits]);
 
-  // Check if user has any blog posts
+  // Check if user has any blog posts - optimize query
   useEffect(() => {
     const checkForContent = async () => {
       if (!user) return;
       
       try {
-        const { data, error } = await supabase
+        // Use count instead of fetching data for faster performance
+        const { count, error } = await supabase
           .from('blog_posts')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .limit(1);
         
         if (error) throw error;
-        setHasBlogPosts(data && data.length > 0);
+        setHasBlogPosts((count || 0) > 0);
       } catch (error) {
         console.error('Error checking for blog posts:', error);
         setHasBlogPosts(false);
