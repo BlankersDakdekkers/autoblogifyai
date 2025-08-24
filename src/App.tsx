@@ -92,8 +92,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  console.log("🔍 App component is rendering");
-  console.log("🔍 Current location:", window.location.pathname);
+  // URGENT DEBUG TEST
+  console.error("🚨 URGENT DEBUG: App component rendering NOW! Time:", Date.now());
+  console.error("🚨 Current URL:", window.location.href);
+  console.error("🚨 Current pathname:", window.location.pathname);
   
   return (
     <LanguageProvider>
@@ -108,59 +110,59 @@ const App = () => {
             }}
           >
             <AuthProvider>
-            <Routes>
-              {/* EXTREME NOODTEST ZONDER DASHBOARD PREFIX */}
-              <Route 
-                path="/test123" 
-                element={
-                  <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    background: 'green',
-                    color: 'white',
-                    fontSize: '5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    zIndex: 99999
-                  }}>
-                    ✅ ROUTER WERKT! ✅<br/>
-                    TEST123 ROUTE SUCCESVOL!
-                  </div>
-                } 
-              />
-              
-              {/* PROBEER NOG EENS MET DASHBOARD */}
-              <Route 
-                path="/dashboard/cms-integration" 
-                element={
-                  <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    background: 'red',
-                    color: 'white',
-                    fontSize: '4rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    zIndex: 99999
-                  }}>
-                    🆘 DASHBOARD ROUTE WERKT! 🆘<br/>
-                    CMS INTEGRATION GEVONDEN!
-                  </div>
-                } 
-              />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+              <Routes>
+                {/* EXTREME NOODTEST ZONDER DASHBOARD PREFIX */}
+                <Route 
+                  path="/test123" 
+                  element={
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      background: 'green',
+                      color: 'white',
+                      fontSize: '5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      zIndex: 99999
+                    }}>
+                      ✅ ROUTER WERKT! ✅<br/>
+                      TEST123 ROUTE SUCCESVOL!
+                    </div>
+                  } 
+                />
+                
+                {/* PROBEER NOG EENS MET DASHBOARD */}
+                <Route 
+                  path="/dashboard/cms-integration" 
+                  element={
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      background: 'red',
+                      color: 'white',
+                      fontSize: '4rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      zIndex: 99999
+                    }}>
+                      🆘 DASHBOARD ROUTE WERKT! 🆘<br/>
+                      CMS INTEGRATION GEVONDEN!
+                    </div>
+                  } 
+                />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
