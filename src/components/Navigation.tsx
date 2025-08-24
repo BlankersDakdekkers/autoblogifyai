@@ -179,7 +179,7 @@ export const useNavigationSections = (): NavigationSection[] => {
       },
       { 
         title: "CMS Integraties", 
-        url: "/dashboard/cms-integrations", 
+        url: "/dashboard/cms-integration", 
         icon: Globe,
         description: "WordPress, Drupal, Strapi en meer"
       },
