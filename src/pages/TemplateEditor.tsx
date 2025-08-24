@@ -349,25 +349,30 @@ Met vriendelijke groet,
     if (withSampleData) {
       Object.entries(sampleData).forEach(([key, value]) => {
         const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
-        previewContent = previewContent.replace(regex, `<span class="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-medium">${value}</span>`);
+        previewContent = previewContent.replace(regex, `${value}`);
       });
       
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md border border-dashed border-orange-300">Ontbreekt: $1</span>');
+      // Voor ontbrekende variabelen: toon de variabele naam discreet
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="inline-block bg-amber-50 text-amber-700 text-xs px-2 py-1 rounded border border-amber-200 font-mono">{{$1}}</span>');
     } else {
-      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-md font-mono text-xs">{{$1}}</span>');
+      previewContent = previewContent.replace(/\{\{([^}]+)\}\}/g, '<span class="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 font-mono text-xs">{{$1}}</span>');
     }
     
-    // Convert markdown-style formatting
+    // Convert markdown-style formatting voor betere mobile weergave
     previewContent = previewContent
-      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-foreground border-b pb-2">$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mb-3 text-foreground mt-6">$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mb-2 text-foreground mt-4">$1</h3>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-xl sm:text-2xl font-bold mb-4 text-foreground border-b border-border pb-2 leading-tight">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-lg sm:text-xl font-semibold mb-3 text-foreground mt-6 leading-tight">$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 class="text-base sm:text-lg font-medium mb-2 text-foreground mt-4 leading-tight">$1</h3>')
       .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-      .replace(/^- (.+)$/gm, '<li class="ml-6 mb-1 list-disc">$1</li>')
-      .replace(/^✅ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-green-50 rounded"><span class="text-green-600 font-medium">✅</span> <span>$1</span></div>')
-      .replace(/^❌ (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-red-50 rounded"><span class="text-red-600 font-medium">❌</span> <span>$1</span></div>')
-      .replace(/👆 (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-2 bg-blue-50 rounded"><span class="text-blue-600 font-medium">👆</span> <span>$1</span></div>')
+      .replace(/\*(.+?)\*/g, '<em class="italic text-muted-foreground">$1</em>')
+      .replace(/^- (.+)$/gm, '<li class="ml-4 mb-1 list-disc text-sm leading-relaxed">$1</li>')
+      .replace(/^✅ (.+)$/gm, '<div class="flex items-start gap-2 mb-2 p-3 bg-green-50/80 border border-green-100 rounded-lg"><span class="text-green-600 font-medium flex-shrink-0 mt-0.5">✅</span> <span class="text-sm leading-relaxed">$1</span></div>')
+      .replace(/^❌ (.+)$/gm, '<div class="flex items-start gap-2 mb-2 p-3 bg-red-50/80 border border-red-100 rounded-lg"><span class="text-red-600 font-medium flex-shrink-0 mt-0.5">❌</span> <span class="text-sm leading-relaxed">$1</span></div>')
+      .replace(/👆 (.+)$/gm, '<div class="flex items-start gap-2 mb-2 p-3 bg-blue-50/80 border border-blue-100 rounded-lg"><span class="text-blue-600 font-medium flex-shrink-0 mt-0.5">👆</span> <span class="text-sm leading-relaxed">$1</span></div>')
+      .replace(/💡 (.+)$/gm, '<div class="flex items-start gap-2 mb-2 p-3 bg-amber-50/80 border border-amber-100 rounded-lg"><span class="text-amber-600 font-medium flex-shrink-0 mt-0.5">💡</span> <span class="text-sm leading-relaxed">$1</span></div>')
+      .replace(/🔥 (.+)$/gm, '<div class="flex items-start gap-2 mb-2 p-3 bg-orange-50/80 border border-orange-100 rounded-lg"><span class="text-orange-600 font-medium flex-shrink-0 mt-0.5">🔥</span> <span class="text-sm leading-relaxed">$1</span></div>')
+      .replace(/📞 (.+)$/gm, '<div class="flex items-center gap-2 mb-2 p-3 bg-primary/5 border border-primary/20 rounded-lg text-primary font-medium"><span class="flex-shrink-0">📞</span> <span class="text-sm">$1</span></div>')
+      .replace(/\[ (.+) \]/g, '<span class="inline-block bg-blue-500 text-white text-xs px-2 py-1 rounded font-medium">$1</span>')
       .replace(/\n\n/g, '<div class="mb-4"></div>')
       .replace(/\n/g, '<br/>');
     
@@ -829,39 +834,53 @@ Met vriendelijke groet,
                 </div>
               </CardHeader>
               
-              <CardContent>
-                <div className="border rounded-lg p-6 bg-muted/30 min-h-[500px] max-h-[600px] overflow-y-auto">
-                  {(selectedTemplate?.content || editingTemplate.content) ? (
-                    <div 
-                      className="prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ 
-                        __html: renderPreview(selectedTemplate?.content || editingTemplate.content || "", previewMode) 
-                      }}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                      <Eye className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                      <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                        Geen template geselecteerd
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Selecteer een template uit de bibliotheek of maak een nieuw template
-                      </p>
-                    </div>
-                  )}
-                </div>
+              <CardContent className="p-0">
+                <div className="relative">
+                  {/* Mobile-optimized preview container */}
+                  <div className="border-0 bg-white rounded-lg shadow-inner min-h-[500px] max-h-[70vh] overflow-y-auto">
+                    {(selectedTemplate?.content || editingTemplate.content) ? (
+                      <div className="p-4 sm:p-6">
+                        {/* Preview content met mobile-first styling */}
+                        <div 
+                          className="text-sm sm:text-base leading-relaxed max-w-none space-y-3"
+                          style={{
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                            lineHeight: '1.6'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: renderPreview(selectedTemplate?.content || editingTemplate.content || "", previewMode) 
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-20 px-4">
+                        <div className="relative mb-6">
+                          <Eye className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400/20 rounded-full animate-pulse"></div>
+                        </div>
+                        <h3 className="text-base sm:text-lg font-medium text-muted-foreground mb-2">
+                          Geen template geselecteerd
+                        </h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-xs">
+                          Selecteer een template uit de bibliotheek of maak een nieuw template
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="mt-4 text-xs bg-muted/50 p-3 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-muted-foreground">Preview Tips:</p>
-                      <p className="text-muted-foreground mt-1">
-                        {previewMode ? 
-                          "✨ Je ziet nu hoe de template eruit ziet met echte sample data" : 
-                          "🔤 Variabelen worden getoond zoals ze in de template staan"
-                        }
-                      </p>
+                  {/* Sticky tip bar voor mobile */}
+                  <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-t from-muted/80 to-transparent p-3 border-t border-border/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Lightbulb className="h-3 w-3 text-amber-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-muted-foreground truncate">
+                          {previewMode ? "✨ Voorbeeld met sample data" : "🔤 Template variabelen"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-muted-foreground font-medium">Live</span>
+                      </div>
                     </div>
                   </div>
                 </div>
