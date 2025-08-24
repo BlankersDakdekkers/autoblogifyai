@@ -37,6 +37,7 @@ import { ProcessingProgress } from "@/components/ProcessingProgress";
 import { useCSVProcessor } from "@/hooks/useCSVProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBlogPosts } from "@/hooks/useOptimizedQueries";
+import BlogViewModal from "@/components/BlogViewModal";
 
 interface BlogPost {
   id: string;
@@ -698,27 +699,51 @@ const CSVProcessor = () => {
                               )}
                             </div>
                             
-                            {/* Actions */}
+                            {/* Actions and Thumbnail */}
                             <div className="flex sm:flex-col gap-2 shrink-0">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPost(post);
-                                  setShowPostViewer(true);
-                                }}
-                                className="flex-1 sm:flex-initial gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-                              >
-                                <Eye className="h-4 w-4" />
-                                <span className="hidden sm:inline">Bekijken</span>
-                              </Button>
+                              <BlogViewModal post={{
+                                id: post.id,
+                                title: post.title,
+                                slug: post.slug || '',
+                                status: post.status,
+                                publish_date: post.created_at,
+                                summary: post.meta_description || '',
+                                author: post.author,
+                                city: '',
+                                canonical_url: '',
+                                word_count: post.word_count,
+                                created_at: post.created_at,
+                                meta_title: post.meta_title,
+                                meta_description: post.meta_description,
+                                hero_image_url: post.hero_image_url,
+                                hero_image_alt: post.hero_image_alt,
+                                body_markdown: post.body_markdown,
+                                tags: post.tags,
+                                faq_json: post.faq_json,
+                                cta_heading: post.cta_heading,
+                                cta_subtext: post.cta_subtext
+                              }}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="flex-1 sm:flex-initial gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  <span className="hidden sm:inline">Bekijken</span>
+                                </Button>
+                              </BlogViewModal>
                               {post.hero_image_url && (
-                                <div className="hidden sm:block w-16 h-12 rounded overflow-hidden bg-muted">
+                                <div className="hidden sm:block w-16 h-12 rounded overflow-hidden bg-muted border border-border/50 shadow-sm hover:shadow-md transition-shadow">
                                   <img 
                                     src={post.hero_image_url} 
                                     alt={post.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                                     loading="lazy"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      console.warn('Failed to load thumbnail:', post.hero_image_url);
+                                    }}
                                   />
                                 </div>
                               )}

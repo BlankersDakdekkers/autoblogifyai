@@ -181,7 +181,7 @@ const BlogViewModal = ({ post, children }: BlogViewModalProps) => {
             )}
 
             {/* Content */}
-            {post.body_markdown && (
+            {post.body_markdown ? (
               <article className="prose prose-sm md:prose-base max-w-none prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground prose-strong:text-foreground prose-a:text-primary prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground">
                 <ReactMarkdown
                   components={{
@@ -198,6 +198,12 @@ const BlogViewModal = ({ post, children }: BlogViewModalProps) => {
                   {post.body_markdown}
                 </ReactMarkdown>
               </article>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Geen content beschikbaar voor deze post</p>
+                <p className="text-sm mt-2">De blog post content moet nog worden gegenereerd</p>
+              </div>
             )}
 
             {/* CTA Section */}
