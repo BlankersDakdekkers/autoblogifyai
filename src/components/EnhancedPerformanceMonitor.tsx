@@ -52,7 +52,7 @@ export const EnhancedPerformanceMonitor = () => {
     const collectMetrics = () => {
       // Navigation timing
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      const loadTime = navigation?.loadEventEnd - navigation?.navigationStart || 0;
+      const loadTime = navigation?.duration || 0;
 
       // Memory usage (if available)
       const memoryInfo = (performance as any)?.memory;
