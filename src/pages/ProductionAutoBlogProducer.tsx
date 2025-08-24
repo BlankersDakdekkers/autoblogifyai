@@ -107,7 +107,10 @@ const ProductionAutoBlogProducer = () => {
         .limit(20);
       
       if (error) throw error;
-      setBlogPosts(data || []);
+      setBlogPosts((data || []).map((post: any) => ({
+        ...post,
+        status: post.status as "draft" | "publish" | "scheduled"
+      })));
     } catch (error) {
       console.error('Error loading blog posts:', error);
     } finally {

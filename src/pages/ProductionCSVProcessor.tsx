@@ -84,9 +84,9 @@ const ProductionCSVProcessor = () => {
     if (!user?.id) return;
     
     const channel = supabase
-      .channel('processing_jobs')
+      .channel('csv_processing_jobs')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'processing_jobs', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'csv_processing_jobs', filter: `user_id=eq.${user.id}` },
         (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const job = payload.new as ProcessingJob;
@@ -153,19 +153,28 @@ const ProductionCSVProcessor = () => {
     
     try {
       const { data, error } = await supabase
-        .from('processing_jobs')
+        .from('csv_processing_jobs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
       
       if (error) throw error;
-      setJobs(data || []);
+      setJobs((data || []).map((job: any) => ({
+        ...job,
+        progress: job.processed_rows && job.total_rows ? (job.processed_rows / job.total_rows) * 100 : 0,
+        csv_url: job.csv_url || ''
+      })));
       
-      // Check for active job
-      const activeJob = data?.find(job => job.status === 'processing');
+      // Check for active job  
+      const activeJob = data?.find((job: any) => job.status === 'processing');
       if (activeJob) {
-        setCurrentJob(activeJob);
+        setCurrentJob({
+          ...activeJob,
+          progress: activeJob.processed_rows && activeJob.total_rows ? (activeJob.processed_rows / activeJob.total_rows) * 100 : 0,
+          csv_url: activeJob.csv_url || '',
+          status: activeJob.status as "processing" | "completed" | "failed" | "pending"
+        });
         setIsProcessing(true);
       }
     } catch (error) {
@@ -184,7 +193,7 @@ const ProductionCSVProcessor = () => {
         .eq('user_id', user.id);
       
       const { data: jobsData } = await supabase
-        .from('processing_jobs')
+        .from('csv_processing_jobs')
         .select('status, created_at')
         .eq('user_id', user.id);
       
@@ -284,7 +293,7 @@ const ProductionCSVProcessor = () => {
     
     try {
       const { error } = await supabase
-        .from('processing_jobs')
+        .from('csv_processing_jobs')
         .update({ status: 'failed' })
         .eq('id', currentJob.id);
       
