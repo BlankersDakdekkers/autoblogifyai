@@ -143,13 +143,13 @@ const PricingPage = () => {
       price: "€147",
       period: "/maand",
       originalPrice: "€297",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Perfect voor kleine bedrijven",
       icon: Rocket,
       popular: false,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "📝 Tot 100 AI blogposts per maand",
         "🎨 10 premium templates",
         "🔍 Basis SEO optimalisatie", 
@@ -165,13 +165,13 @@ const PricingPage = () => {
       price: "€297",
       period: "/maand",
       originalPrice: "€597",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Voor groeiende bedrijven",
       icon: Zap,
       popular: true,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "🚀 Onbeperkte AI blogposts",
         "🎨 25+ premium templates",
         "🎯 Geavanceerde lokale SEO",
@@ -189,13 +189,13 @@ const PricingPage = () => {
       price: "€597",
       period: "/maand",
       originalPrice: "€1197",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Voor grote organisaties",
       icon: Crown,
       popular: false,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "💎 Alles van Professional",
         "🧠 GPT-4o/Claude Opus toegang - Meest geavanceerde AI modellen",
         "🎭 Custom AI personas - Train je eigen schrijfstijl en merkvoice", 
@@ -221,10 +221,10 @@ const PricingPage = () => {
       <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-16 animate-fade-in">
-          <Badge className="mb-8 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-8 py-4 text-base font-bold animate-pulse shadow-xl hover:shadow-2xl transition-all duration-300">
-            <Star className="h-6 w-6 mr-3 fill-current animate-spin" />
-            🔥 BEPERKTE TIJD: 14 Dagen Gratis + 50% Korting
-          </Badge>
+            <Badge className="mb-8 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-8 py-4 text-base font-bold animate-pulse shadow-xl hover:shadow-2xl transition-all duration-300">
+              <Star className="h-6 w-6 mr-3 fill-current animate-spin" />
+              🚨 BEPERKTE TIJD: 5 Dagen Gratis + 67% Korting
+            </Badge>
           <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 leading-tight">
             Schaal je content met 
             <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent block mt-4 animate-scale-in drop-shadow-lg">
@@ -424,7 +424,7 @@ const PricingPage = () => {
             <h4 className="text-3xl font-bold mb-4 text-foreground">Start je gratis trial vandaag!</h4>
             <p className="text-lg text-muted-foreground mb-6">Geen risico, geen verplichtingen. Ervaar de kracht van AI-gestuurde content.</p>
             <div className="flex items-center justify-center gap-4 text-sm text-green-600 font-semibold">
-              <span>✅ 14 dagen gratis</span>
+              <span>✅ 5 dagen gratis</span>
               <span>✅ Geen creditcard</span>
               <span>✅ Direct opzegbaar</span>
             </div>

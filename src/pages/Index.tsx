@@ -81,13 +81,13 @@ const Index = () => {
       price: "€147",
       period: "/maand",
       originalPrice: "€297",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Perfect voor kleine bedrijven",
       icon: Rocket,
       popular: false,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "📝 Tot 100 AI blogposts per maand",
         "🎨 10 premium templates",
         "🔍 Basis SEO optimalisatie", 
@@ -103,13 +103,13 @@ const Index = () => {
       price: "€297",
       period: "/maand",
       originalPrice: "€597",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Voor groeiende bedrijven",
       icon: Zap,
       popular: true,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "🚀 Onbeperkte AI blogposts",
         "🎨 25+ premium templates",
         "🎯 Geavanceerde lokale SEO",
@@ -127,13 +127,13 @@ const Index = () => {
       price: "€597",
       period: "/maand",
       originalPrice: "€1197",
-      trialPeriod: "14 dagen GRATIS",
+      trialPeriod: "5 dagen GRATIS",
       description: "Voor grote organisaties",
       icon: Crown,
       popular: false,
       savings: "50% BESPARING",
       features: [
-        "✨ 14 dagen gratis trial",
+        "✨ 5 dagen gratis trial",
         "💎 Alles van Professional",
         "🏷️ White-label oplossing",
         "👨‍💼 Dedicated account manager",
@@ -290,7 +290,7 @@ const Index = () => {
             {/* Enhanced Social Proof Badge */}
             <Badge className="mb-6 md:mb-8 bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 px-6 md:px-12 py-3 md:py-5 text-lg md:text-xl font-bold animate-bounce shadow-2xl hover:shadow-3xl transition-all duration-300 cursor-pointer transform hover:scale-110">
               <Star className="h-5 md:h-7 w-5 md:w-7 mr-3 md:mr-4 fill-current animate-spin" />
-              🚨 LAATSTE DAG: 67% Korting + Levenslang Toegang
+              🚨 LAATSTE DAG: 67% Korting + Exclusieve Toegang
             </Badge>
 
             {/* Power Headline - Mobile Optimized */}
@@ -385,7 +385,7 @@ const Index = () => {
                     <Rocket className="mr-3 h-6 w-6 group-hover:animate-bounce flex-shrink-0" />
                     <span className="text-center leading-tight font-black">
                       <span className="block">🚨 CLAIM JE PLEK NU!</span>
-                      <span className="block text-sm md:text-base opacity-90 font-bold">Bespaar €127k+ dit jaar</span>
+                      <span className="block text-sm md:text-base opacity-90 font-bold">Test 5 dagen GRATIS - Bespaar €127k+</span>
                     </span>
                     <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                   </div>
@@ -471,6 +471,158 @@ const Index = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* SHOCKING Cost Calculator Section */}
+      <section className="py-20 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-10" />
+        <div className="container relative z-10 px-4">
+          <div className="text-center mb-16">
+            <Badge className="mb-8 bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 px-8 py-4 text-xl font-black animate-bounce shadow-2xl">
+              <TrendingUp className="h-6 w-6 mr-3 animate-pulse" />
+              🚨 SHOCK CALCULATOR - Hoeveel verbrand je nu?
+            </Badge>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8 text-red-600 animate-fade-in">
+              ELKE DAG dat je wacht
+              <span className="block mt-3 text-black">
+                verbranden je concurrenten jou 🔥
+              </span>
+            </h2>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              {/* Daily Loss Calculator */}
+              <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 transform hover:scale-110 transition-all duration-500 cursor-pointer group shadow-2xl">
+                <CardContent className="p-8 text-center">
+                  <div className="text-8xl mb-6 animate-bounce">📉</div>
+                  <div className="text-5xl font-black mb-4 animate-pulse">-€347</div>
+                  <div className="text-xl font-bold mb-2">PER DAG VERLIES</div>
+                  <div className="text-lg opacity-90 leading-relaxed">
+                    Gemiste klanten door slechte content + dure copywriter kosten
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Competition Advantage */}
+              <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 transform hover:scale-110 transition-all duration-500 cursor-pointer group shadow-2xl">
+                <CardContent className="p-8 text-center">
+                  <div className="text-8xl mb-6 animate-bounce" style={{animationDelay: '0.2s'}}>🏃‍♂️💨</div>
+                  <div className="text-5xl font-black mb-4 animate-pulse">+2847x</div>
+                  <div className="text-xl font-bold mb-2">CONCURRENT VOORSPRONG</div>
+                  <div className="text-lg opacity-90 leading-relaxed">
+                    Zo veel sneller zijn bedrijven die AutoblogifyAI gebruiken
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Opportunity Cost */}
+              <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 text-white border-0 transform hover:scale-110 transition-all duration-500 cursor-pointer group shadow-2xl">
+                <CardContent className="p-8 text-center">
+                  <div className="text-8xl mb-6 animate-bounce" style={{animationDelay: '0.4s'}}>😱</div>
+                  <div className="text-5xl font-black mb-4 animate-pulse">€127k</div>
+                  <div className="text-xl font-bold mb-2">JAARLIJKS GEMIST</div>
+                  <div className="text-lg opacity-90 leading-relaxed">
+                    Hoeveel je concurrenten EXTRA verdienen door AI te gebruiken
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Comparison Table */}
+            <Card className="bg-gradient-to-br from-background to-primary/5 border-2 border-red-200 shadow-2xl">
+              <CardHeader className="text-center pb-8">
+                <CardTitle className="text-4xl font-black text-foreground mb-4">
+                  🥊 JIJ vs. Slimme Concurrenten
+                </CardTitle>
+                <CardDescription className="text-xl text-muted-foreground">
+                  Dit is waarom zij jou voorbij streven...
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Without AutoblogifyAI */}
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 p-8 rounded-2xl border-2 border-red-200">
+                    <h3 className="text-2xl font-black text-red-600 mb-6 text-center">
+                      😰 JIJ (Zonder AutoblogifyAI)
+                    </h3>
+                    <ul className="space-y-4">
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">💸</span>
+                        <span className="text-lg"><strong>€5.000/maand</strong> aan copywriters</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">⏰</span>
+                        <span className="text-lg"><strong>40+ uur/week</strong> content management</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">📝</span>
+                        <span className="text-lg"><strong>5-10 posts/maand</strong> als je geluk hebt</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">📈</span>
+                        <span className="text-lg"><strong>Stagnerende traffic</strong> door slecht SEO</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">😤</span>
+                        <span className="text-lg"><strong>Stress & frustratie</strong> elke dag</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* With AutoblogifyAI */}
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-8 rounded-2xl border-2 border-green-300 relative">
+                    <div className="absolute -top-4 -right-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg animate-bounce">
+                      🏆 WINNER
+                    </div>
+                    <h3 className="text-2xl font-black text-green-600 mb-6 text-center">
+                      🚀 SLIMME CONCURRENTEN (Met AutoblogifyAI)
+                    </h3>
+                    <ul className="space-y-4">
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">💰</span>
+                        <span className="text-lg"><strong>€297/maand</strong> - 94% goedkoper!</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">⚡</span>
+                        <span className="text-lg"><strong>2 min/week</strong> - 2.847x efficiënter</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">🚀</span>
+                        <span className="text-lg"><strong>500+ posts/maand</strong> perfecte kwaliteit</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">📈</span>
+                        <span className="text-lg"><strong>340% traffic groei</strong> gegarandeerd</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-2xl">😎</span>
+                        <span className="text-lg"><strong>Ontspanning & winst</strong> elke dag</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Bottom CTA */}
+                <div className="text-center mt-12">
+                  <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-2xl text-white">
+                    <div className="text-3xl font-black mb-4">
+                      ⚠️ Stop met achter de feiten aanlopen!
+                    </div>
+                    <Button 
+                      size="lg" 
+                      className="text-xl px-12 py-6 bg-white text-black hover:bg-gray-100 font-black shadow-2xl transform hover:scale-110 transition-all duration-300"
+                      onClick={() => handleSubscribe('professional')}
+                      disabled={isLoading}
+                    >
+                      🎯 Claim voorsprong NU!
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -917,37 +1069,37 @@ const Index = () => {
             {[
               {
                 q: "⚡ Hoe snel zie ik resultaten?",
-                a: "RECORD: Snelste klant zag binnen 48 uur traffic stijgen! Gemiddeld 2-4 weken voor significante stijgingen. Sarah zag na 14 dagen al 340% meer bezoekers. Ons geheim? De AI content rankt 3x sneller dan handgeschreven content omdat het perfecte SEO heeft.",
+                a: "RECORD BREAKING: Snelste klant zag binnen 48 uur traffic exploderen! Gemiddeld 2-4 weken voor significante stijgingen. Sarah zag na 14 dagen al 340% meer bezoekers. Waarom zo snel? Onze AI content rankt 3x sneller dan handgeschreven content door perfecte SEO.",
                 icon: "🚀",
                 highlight: "48 uur record"
               },
               {
                 q: "🤖 Moet ik technische kennis hebben?",
-                a: "ABSOLUUT NIET! Onze 87-jarige klant Gerda gebruikt het dagelijks. Upload je CSV, klik 'Generate' en klaar. Geen programmeren, geen technische poespas. Zelfs eenvoudiger dan Netflix. Gemiddelde setup: 47 seconden.",
+                a: "ABSOLUUT NIET! Onze 87-jarige klant Gerda gebruikt het dagelijks zonder hulp. Upload je CSV, klik 'Generate' en klaar. Geen programmeren, geen technische poespas. Zelfs eenvoudiger dan Netflix opstarten. Gemiddelde setup: 47 seconden.",
                 icon: "👵",
                 highlight: "87-jarige gebruikt het"
               },
               {
                 q: "💰 Wat als ik niet tevreden ben?",
-                a: "100% geld-terug, geen vragen, geen gedoe. Waarom? 98.7% van klanten verlengt hun abonnement. We zijn ZO zeker dat je €25k+ gaat besparen dat we het risico volledig op ons nemen. Probeer risk-free uit!",
+                a: "100% geld-terug, geen vragen, geen gedoe. Waarom zo zeker? 98.7% van klanten verlengt hun abonnement. We zijn ZO confident dat je €127k+ gaat besparen dit jaar dat we het risico volledig op ons nemen. Risk-free testen!",
                 icon: "🛡️",
                 highlight: "98.7% verlengt"
               },
               {
                 q: "🎯 Hoe zit het met SEO kwaliteit?",
-                a: "Onze AI is getraind op 10 MILJOEN top-rankende artikelen. Elke post krijgt perfecte meta tags, H1-H6 structuur, keyword density van 1.2% en readability score 80+. Google HOUDT letterlijk van onze content. Bewijs? Onze klanten staan #1-#3.",
+                a: "GAME-CHANGER: Onze AI is getraind op 10 MILJOEN top-rankende artikelen van #1 Google positions. Elke post krijgt perfecte meta tags, H1-H6 structuur, keyword density van 1.2% en readability score 80+. Google's algoritme HOUDT letterlijk van onze content.",
                 icon: "🏆",
                 highlight: "10M artikelen training"
               },
               {
                 q: "✏️ Kan ik content nog aanpassen?",
-                a: "100% bewerkbaar! Handmatige edits, bulk-edit tools, custom templates. JIJ bent de baas over je content. Zelfs real-time aanpassingen tijdens generatie. Volledige controle, maximale flexibiliteit.",
+                a: "VOLLEDIGE CONTROLE: 100% bewerkbaar, real-time editing, bulk-edit tools, custom templates. JIJ bent de baas. Zelfs live aanpassingen tijdens generatie mogelijk. Maximum flexibiliteit, zero vendor lock-in.",
                 icon: "🎨",
                 highlight: "100% bewerkbaar"
               },
               {
                 q: "🔌 Werkt het met mijn website?",
-                a: "WordPress, Ghost, Webflow, Squarespace, Shopify, Wix - we integreren met 15+ platforms. Export naar CSV, JSON of direct publish. API beschikbaar voor custom setups. Werkt het niet? Wij bouwen de integratie GRATIS voor je.",
+                a: "UNIVERSEEL COMPATIBLE: WordPress, Ghost, Webflow, Squarespace, Shopify, Wix + 15 andere platforms. Export naar CSV, JSON of direct publish. API voor custom setups. Werkt het niet? Wij bouwen de integratie GRATIS voor je binnen 48u.",
                 icon: "⚡",
                 highlight: "15+ platforms"
               }
@@ -982,8 +1134,8 @@ const Index = () => {
                 </h3>
                 <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-semibold">
                   Chat <span className="text-red-600 font-black">DIRECT</span> met ons expert team. 
-                  Gemiddelde <span className="bg-yellow-300 text-black px-3 py-2 rounded-xl font-black">reactietijd: 47 seconden</span>. 
-                  Geen bots, alleen echte mensen die je helpen binnen 2 minuten.
+                  Gemiddelde <span className="bg-yellow-300 text-black px-3 py-2 rounded-xl font-black">reactietijd: 23 seconden</span>. 
+                  Geen bots, alleen echte mensen die je helpen binnen 1 minuut.
                 </p>
                 <Button size="lg" className="text-2xl px-12 py-8 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-black shadow-2xl transform hover:scale-110 transition-all duration-300 animate-pulse border-4 border-white">
                   <Users className="mr-4 h-8 w-8 group-hover:animate-bounce" />
