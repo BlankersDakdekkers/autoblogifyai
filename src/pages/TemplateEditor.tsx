@@ -1,70 +1,48 @@
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { 
-  FileText, 
-  Eye, 
-  Save, 
-  Copy, 
-  Download,
-  Upload,
-  Edit,
-  Plus,
-  Wand2,
-  Code,
-  Settings,
-  Trash2,
-  Star,
-  Crown,
-  HelpCircle,
-  Lightbulb,
-  CheckCircle,
-  Target,
-  ArrowLeft,
-  ArrowRight,
-  Zap,
-  Palette,
-  Layers,
-  Search,
-  Filter,
-  Maximize2
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Search, Filter, Plus, Edit, Eye, Copy, Download, Layers, FileText, 
+  Code, Lightbulb, Star, Users, Zap, Clock, Crown, Image, Loader2, Save
+} from 'lucide-react';
 
 interface Template {
   id: string;
   name: string;
   description: string;
-  category: "blog" | "service" | "landing" | "email" | "social";
+  category: 'blog' | 'service' | 'landing' | 'email' | 'social';
   content: string;
   variables: string[];
   tags: string[];
   isPublic: boolean;
   isPremium: boolean;
-  usageCount: number;
-  rating: number;
-  author: string;
-  createdAt: string;
+  usageCount?: number;
+  rating?: number;
+  author?: string;
+  createdAt?: string;
+  previewImage?: string;
 }
 
 const TemplateEditor = () => {
-  const { toast } = useToast();
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [previewMode, setPreviewMode] = useState(true);
+  const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({});
-  const [activeTab, setActiveTab] = useState("browse");
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [previewMode, setPreviewMode] = useState<boolean>(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Partial<Template>>({});
+  const [generatingImages, setGeneratingImages] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   // Template starters
   const templateStarters = {
@@ -271,7 +249,7 @@ Met vriendelijke groet,
     step_2_title: "Transparante offerte op maat",
     step_2_description: "Na de inspectie ontvangt u binnen 2 werkdagen een gedetailleerde offerte waarin alle werkzaamheden en materialen duidelijk staan vermeld.",
     step_3_title: "Vakkundige uitvoering",
-    step_3_description: "Na akkoord voeren onze ervaren vakmensen de dakrenovatie uit volgens planning, waarbij u dagelijks wordt geïnformeerd over de voortgang.",
+    step_3_description: "Na akkoord voeren onze ervaren vakmensen de dakrenovatie uit volgens planning, waarbij u dagelijks wordt geïnformerd over de voortgang.",
     
     // Reviews
     review_1_text: "Excellent werk geleverd! Binnen de afgesproken tijd en budget is ons dak perfect gerenoveerd. Zeer tevreden met de kwaliteit en service.",
@@ -377,6 +355,48 @@ Met vriendelijke groet,
       .replace(/\n/g, '<br/>');
     
     return previewContent;
+  };
+
+  const generateTemplateImage = async (template: Template) => {
+    setGeneratingImages(prev => new Set(prev).add(template.id));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-template-images', {
+        body: {
+          templateType: template.category,
+          templateName: template.name,
+          prompt: `Professional ${template.category} template preview: ${template.description}. Modern web design, clean layout, high quality, photorealistic.`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        // Update template with generated image
+        // In een echte app zou je dit opslaan in je database
+        template.previewImage = data.image;
+        
+        toast({
+          title: "Afbeelding gegenereerd!",
+          description: `Voorbeeld afbeelding voor "${template.name}" is aangemaakt.`
+        });
+      } else {
+        throw new Error(data.error || 'Failed to generate image');
+      }
+    } catch (error) {
+      console.error('Error generating template image:', error);
+      toast({
+        title: "Fout bij genereren",
+        description: "Kon geen voorbeeld afbeelding maken. Probeer het later opnieuw.",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(template.id);
+        return newSet;
+      });
+    }
   };
 
   const startNewTemplate = (category?: string, withStarter: boolean = false) => {
@@ -596,7 +616,7 @@ Met vriendelijke groet,
                   {filteredTemplates.map((template) => (
                     <Card 
                       key={template.id} 
-                      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-card to-card/80 ${
+                      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-card to-card/80 overflow-hidden ${
                         selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
                       }`}
                       onClick={() => {
@@ -604,33 +624,96 @@ Met vriendelijke groet,
                         setActiveTab("preview");
                       }}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <Badge 
-                            variant={template.isPremium ? "default" : "secondary"} 
-                            className="text-xs"
-                          >
-                            {template.category}
-                            {template.isPremium && <Crown className="h-3 w-3 ml-1" />}
-                          </Badge>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                            <span className="text-xs">{template.rating}</span>
+                      {/* Template Preview Image */}
+                      <div className="relative h-32 bg-gradient-to-br from-muted/30 to-muted/10 overflow-hidden">
+                        {template.previewImage ? (
+                          <img 
+                            src={template.previewImage} 
+                            alt={`Preview van ${template.name}`}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+                            <div className="text-center">
+                              <div className="text-3xl mb-2">
+                                {template.category === 'blog' ? '📝' :
+                                 template.category === 'service' ? '🏢' :
+                                 template.category === 'landing' ? '🎯' :
+                                 template.category === 'email' ? '📧' : '📱'}
+                              </div>
+                              <p className="text-xs text-muted-foreground">Preview</p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
-                        <h4 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                        {/* Generate Image Button */}
+                        {!template.previewImage && (
+                          <Button
+                            size="sm"
+                            className="absolute top-2 right-2 h-7 px-2 text-xs bg-white/90 hover:bg-white text-gray-700 shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              generateTemplateImage(template);
+                            }}
+                            disabled={generatingImages.has(template.id)}
+                          >
+                            {generatingImages.has(template.id) ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Image className="h-3 w-3" />
+                            )}
+                          </Button>
+                        )}
+
+                        {/* Premium Badge */}
+                        {template.isPremium && (
+                          <div className="absolute top-2 left-2">
+                            <Crown className="h-4 w-4 text-amber-500 bg-white/90 rounded p-0.5" />
+                          </div>
+                        )}
+
+                        {/* Rating */}
+                        {template.rating && (
+                          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            <span>{template.rating}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-1">
                           {template.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                        </h3>
+                        
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-relaxed">
                           {template.description}
                         </p>
-                        
+
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {template.tags.slice(0, 2).map(tag => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {template.tags.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{template.tags.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{template.usageCount} gebruikt</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {template.usageCount || 0}
+                            </div>
+                          </div>
+                          
                           <div className="flex items-center gap-1">
                             <Zap className="h-3 w-3" />
-                            {template.variables.length} variabelen
+                            <span>{template.variables?.length || 0} vars</span>
                           </div>
                         </div>
                       </CardContent>
