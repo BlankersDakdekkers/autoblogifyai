@@ -103,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Optimize credits refresh to prevent blocking
   const refreshCredits = async () => {
     if (!session?.access_token) {
       console.log('No session token available for credits refresh');
@@ -112,11 +113,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Refreshing credits...');
       
-      const { data, error } = await supabase.functions.invoke('check-credits', {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Credits refresh timeout')), 10000)
+      );
+      
+      const creditsPromise = supabase.functions.invoke('check-credits', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
+      
+      const { data, error } = await Promise.race([creditsPromise, timeoutPromise]) as any;
       
       if (!error && data) {
         console.log('Credits refreshed:', data);
@@ -126,14 +134,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Handle session expiry gracefully
         if (error.message?.includes('SESSION_EXPIRED') || 
-            error.message?.includes('session_not_found')) {
-          console.log('Session expired during credits refresh');
-          // Don't show error toast for session expiry during background refresh
+            error.message?.includes('session_not_found') ||
+            error.message?.includes('timeout')) {
+          console.log('Session expired or timeout during credits refresh');
+          // Set default credits for failed refresh
+          setCredits(0);
           return;
         }
       }
     } catch (error) {
       console.error('Error refreshing credits:', error);
+      // Set default credits on error
+      setCredits(0);
     }
   };
 
@@ -157,20 +169,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Always fetch profile and credits for authenticated users
-          try {
-            await fetchProfile(session.user.id);
-            await refreshCredits();
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-          }
+          // Don't wait for profile and credits - set loading to false first
+          setLoading(false);
+          
+          // Fetch profile and credits in background
+          setTimeout(async () => {
+            try {
+              await fetchProfile(session.user.id);
+              // Don't wait for credits - let it load in background
+              refreshCredits().catch(console.error);
+            } catch (error) {
+              console.error('Error fetching user data:', error);
+            }
+          }, 0);
         } else {
           setProfile(null);
           setUserRole(null);
           setCredits(0);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -193,15 +210,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          try {
-            await fetchProfile(session.user.id);
-            await refreshCredits();
-          } catch (error) {
-            console.error('Error initializing user data:', error);
-          }
+          // Set loading to false first, then fetch data in background
+          setLoading(false);
+          
+          setTimeout(async () => {
+            try {
+              await fetchProfile(session.user.id);
+              refreshCredits().catch(console.error);
+            } catch (error) {
+              console.error('Error initializing user data:', error);
+            }
+          }, 0);
+        } else {
+          setLoading(false);
         }
-        
-        setLoading(false);
       } catch (error) {
         console.error('Auth initialization error:', error);
         setLoading(false);

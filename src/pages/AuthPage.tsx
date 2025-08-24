@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 
 const AuthPage = () => {
   const { user, signIn, signUp, loading } = useAuth();
@@ -25,26 +25,55 @@ const AuthPage = () => {
     displayName: '' 
   });
 
-  // Redirect if already logged in
+  // Improved redirect logic - redirect immediately if user exists
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
+      console.log('User authenticated, redirecting to dashboard');
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
     }
-  }, [user, loading, navigate, location]);
+  }, [user, navigate, location]);
+
+  // Show loading state only when initial auth is loading and no user is present
+  if (loading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20">
+        <div className="text-center animate-fade-in">
+          <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Authenticatie laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is authenticated but still on auth page, show redirecting message
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20">
+        <div className="text-center animate-fade-in">
+          <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Doorverwijzen naar dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const { error } = await signIn(loginForm.email, loginForm.password);
-    
-    if (!error) {
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+    try {
+      const { error } = await signIn(loginForm.email, loginForm.password);
+      
+      if (!error) {
+        // Don't navigate here - let the useEffect handle it when user state updates
+        console.log('Login successful, waiting for user state update');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -56,22 +85,22 @@ const AuthPage = () => {
     
     setIsSubmitting(true);
     
-    const { error } = await signUp(
-      signupForm.email, 
-      signupForm.password, 
-      signupForm.displayName
-    );
-    
-    setIsSubmitting(false);
+    try {
+      const { error } = await signUp(
+        signupForm.email, 
+        signupForm.password, 
+        signupForm.displayName
+      );
+      
+      if (!error) {
+        console.log('Signup successful');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
