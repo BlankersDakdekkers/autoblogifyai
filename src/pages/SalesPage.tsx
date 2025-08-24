@@ -256,13 +256,16 @@ const SalesPage = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Starter Plan */}
-            <Card>
+            <Card className="relative">
+              <div className="absolute -top-2 -right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                🔥 POPULAIR
+              </div>
               <CardHeader>
                 <CardTitle>Starter</CardTitle>
                 <CardDescription>Perfect voor beginners</CardDescription>
                 <div className="text-3xl font-bold">
-                  <span className="line-through text-muted-foreground">€49</span>
-                  <span className="text-primary ml-2">€24</span>
+                  <span className="line-through text-muted-foreground">€147</span>
+                  <span className="text-primary ml-2">€72</span>
                   <span className="text-sm font-normal">/maand</span>
                 </div>
               </CardHeader>
@@ -270,7 +273,7 @@ const SalesPage = () => {
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
-                    50 blogposts per maand
+                    100 blogposts per maand
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
@@ -280,22 +283,29 @@ const SalesPage = () => {
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
                     Email support
                   </li>
+                  <li className="flex items-center">
+                    <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
+                    Analytics dashboard
+                  </li>
                 </ul>
                 <Button className="w-full">Start Gratis Trial</Button>
               </CardContent>
             </Card>
 
             {/* Professional Plan - Most Popular */}
-            <Card className="border-primary shadow-xl scale-105">
+            <Card className="border-primary shadow-xl scale-105 relative">
+              <div className="absolute -top-4 -right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-bounce shadow-lg">
+                💎 BEST VALUE
+              </div>
               <div className="bg-primary text-primary-foreground text-center py-2 rounded-t-lg">
-                <Badge variant="secondary">MEEST POPULAIR</Badge>
+                <Badge variant="secondary">MEEST POPULAIR - 87% kiest dit</Badge>
               </div>
               <CardHeader>
                 <CardTitle>Professional</CardTitle>
                 <CardDescription>Voor serieuze ondernemers</CardDescription>
                 <div className="text-3xl font-bold">
-                  <span className="line-through text-muted-foreground">€149</span>
-                  <span className="text-primary ml-2">€74</span>
+                  <span className="line-through text-muted-foreground">€447</span>
+                  <span className="text-primary ml-2">€222</span>
                   <span className="text-sm font-normal">/maand</span>
                 </div>
               </CardHeader>
@@ -307,15 +317,19 @@ const SalesPage = () => {
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
-                    Advanced AI SEO
+                    Advanced AI SEO + GPT-4
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
-                    Priority support
+                    Priority support (24/7)
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
                     White-label oplossing
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
+                    ROI tracking & reports
                   </li>
                 </ul>
                 <Button className="w-full bg-primary">Start Gratis Trial</Button>
@@ -323,13 +337,16 @@ const SalesPage = () => {
             </Card>
 
             {/* Enterprise Plan */}
-            <Card>
+            <Card className="relative">
+              <div className="absolute -top-2 -left-2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                🚀 ENTERPRISE
+              </div>
               <CardHeader>
                 <CardTitle>Enterprise</CardTitle>
                 <CardDescription>Voor agencies & teams</CardDescription>
                 <div className="text-3xl font-bold">
-                  <span className="line-through text-muted-foreground">€399</span>
-                  <span className="text-primary ml-2">€199</span>
+                  <span className="line-through text-muted-foreground">€1197</span>
+                  <span className="text-primary ml-2">€597</span>
                   <span className="text-sm font-normal">/maand</span>
                 </div>
               </CardHeader>
@@ -345,11 +362,15 @@ const SalesPage = () => {
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
-                    Dedicated support
+                    Dedicated account manager
                   </li>
                   <li className="flex items-center">
                     <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
-                    Custom integraties
+                    Custom integraties & API
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle2 className="h-4 w-4 text-primary mr-2" />
+                    Enterprise security
                   </li>
                 </ul>
                 <Button className="w-full" variant="outline">Start Gratis Trial</Button>

@@ -78,9 +78,9 @@ const Index = () => {
     {
       id: "starter",
       name: "Starter",
-      price: "€49",
+      price: "€147",
       period: "/maand",
-      originalPrice: "€99",
+      originalPrice: "€297",
       trialPeriod: "14 dagen GRATIS",
       description: "Perfect voor kleine bedrijven",
       icon: Rocket,
@@ -88,20 +88,21 @@ const Index = () => {
       savings: "50% BESPARING",
       features: [
         "✨ 14 dagen gratis trial",
-        "📝 Tot 50 AI blogposts per maand",
-        "🎨 5 premium templates",
+        "📝 Tot 100 AI blogposts per maand",
+        "🎨 10 premium templates",
         "🔍 Basis SEO optimalisatie", 
         "📧 Email ondersteuning",
         "🔄 Automatische verlenging na trial",
-        "💳 Geen setup kosten"
+        "💳 Geen setup kosten",
+        "🚀 2x sneller dan concurrentie"
       ]
     },
     {
       id: "professional", 
       name: "Professional",
-      price: "€99",
+      price: "€297",
       period: "/maand",
-      originalPrice: "€199",
+      originalPrice: "€597",
       trialPeriod: "14 dagen GRATIS",
       description: "Voor groeiende bedrijven",
       icon: Zap,
@@ -110,20 +111,22 @@ const Index = () => {
       features: [
         "✨ 14 dagen gratis trial",
         "🚀 Onbeperkte AI blogposts",
-        "🎨 15+ premium templates",
+        "🎨 25+ premium templates",
         "🎯 Geavanceerde lokale SEO",
-        "⚡ Priority support",
+        "⚡ Priority support (24/7)",
         "🔗 Alle integraties",
         "🔄 Automatische verlenging na trial",
-        "📊 Geavanceerde analytics"
+        "📊 Geavanceerde analytics",
+        "🧠 GPT-4 & Claude toegang",
+        "💰 ROI tracking & rapportage"
       ]
     },
     {
       id: "enterprise",
       name: "Enterprise", 
-      price: "€199",
+      price: "€597",
       period: "/maand",
-      originalPrice: "€399",
+      originalPrice: "€1197",
       trialPeriod: "14 dagen GRATIS",
       description: "Voor grote organisaties",
       icon: Crown,
@@ -135,9 +138,11 @@ const Index = () => {
         "🏷️ White-label oplossing",
         "👨‍💼 Dedicated account manager",
         "🤖 Custom AI training",
-        "🔌 API toegang",
+        "🔌 API toegang & webhooks",
         "🔄 Automatische verlenging na trial",
-        "🛡️ Enterprise security"
+        "🛡️ Enterprise security",
+        "🌍 Multi-tenant architectuur",
+        "📈 Custom integrations"
       ]
     }
   ];

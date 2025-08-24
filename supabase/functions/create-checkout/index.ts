@@ -92,19 +92,19 @@ serve(async (req) => {
     // Pricing plans
     const pricingPlans = {
       starter: {
-        amount: 4900,
+        amount: 14700,
         name: "AutoblogifyAI Starter",
-        description: "Tot 50 AI blogposts per maand + basis templates"
+        description: "Tot 100 AI blogposts per maand + 10 premium templates + analytics"
       },
       professional: {
-        amount: 9900,
+        amount: 29700,
         name: "AutoblogifyAI Professional",
-        description: "Onbeperkte AI content + premium templates + lokale SEO"
+        description: "Onbeperkte AI content + GPT-4 toegang + 24/7 support + ROI tracking"
       },
       enterprise: {
-        amount: 19900,
+        amount: 59700,
         name: "AutoblogifyAI Enterprise", 
-        description: "Alles + bulk processing + priority support + custom integraties"
+        description: "Alles + custom AI personas + dedicated manager + API toegang + enterprise security"
       }
     };
 
