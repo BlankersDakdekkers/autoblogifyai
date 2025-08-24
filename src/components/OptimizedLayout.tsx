@@ -18,32 +18,30 @@ const DashboardLayout = memo(({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className={cn(
-            "h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-            "sticky top-0 z-50 px-4 transition-all duration-300"
-          )}>
-            <SidebarTrigger className="hover-scale" />
-            <div className="ml-4 flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-glow rounded-md flex items-center justify-center">
-                <span className="text-xs font-bold text-primary-foreground">AI</span>
-              </div>
-              <h1 className="font-semibold text-foreground">AutoblogifyAI Dashboard</h1>
+    <div className="min-h-screen flex w-full bg-background">
+      <AppSidebar />
+      <div className="flex-1 flex flex-col">
+        <header className={cn(
+          "h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "sticky top-0 z-50 px-4 transition-all duration-300"
+        )}>
+          <SidebarTrigger className="hover-scale" />
+          <div className="ml-4 flex items-center gap-2">
+            <div className="w-6 h-6 bg-gradient-to-br from-primary to-primary-glow rounded-md flex items-center justify-center">
+              <span className="text-xs font-bold text-primary-foreground">AI</span>
             </div>
-          </header>
-          <main className="flex-1 overflow-auto bg-muted/30">
-            <div className="container mx-auto p-4 animate-fade-in">
-              <Suspense fallback={<LoadingFallback />}>
-                {children}
-              </Suspense>
-            </div>
-          </main>
-        </div>
+            <h1 className="font-semibold text-foreground">AutoblogifyAI Dashboard</h1>
+          </div>
+        </header>
+        <main className="flex-1 overflow-auto bg-muted/30">
+          <div className="container mx-auto p-4 animate-fade-in">
+            <Suspense fallback={<LoadingFallback />}>
+              {children}
+            </Suspense>
+          </div>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 });
 
