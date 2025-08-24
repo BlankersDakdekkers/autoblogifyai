@@ -158,6 +158,99 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_integrations: {
+        Row: {
+          api_credentials: Json
+          cms_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          name: string
+          site_url: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_credentials: Json
+          cms_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          name: string
+          site_url: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_credentials?: Json
+          cms_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          name?: string
+          site_url?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cms_publish_history: {
+        Row: {
+          blog_post_id: string
+          cms_integration_id: string
+          cms_post_id: string | null
+          cms_post_url: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          published_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          blog_post_id: string
+          cms_integration_id: string
+          cms_post_id?: string | null
+          cms_post_url?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          published_at?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          blog_post_id?: string
+          cms_integration_id?: string
+          cms_post_id?: string | null
+          cms_post_url?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          published_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_publish_history_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_publish_history_cms_integration_id_fkey"
+            columns: ["cms_integration_id"]
+            isOneToOne: false
+            referencedRelation: "cms_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       csv_processing_jobs: {
         Row: {
           created_at: string

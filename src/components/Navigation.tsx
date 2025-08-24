@@ -178,6 +178,12 @@ export const useNavigationSections = (): NavigationSection[] => {
         description: "API's en externe services"
       },
       { 
+        title: "CMS Integraties", 
+        url: "/dashboard/cms-integrations", 
+        icon: Globe,
+        description: "WordPress, Drupal, Strapi en meer"
+      },
+      { 
         title: "Webhooks", 
         url: "/dashboard/webhooks", 
         icon: Zap,
