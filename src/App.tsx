@@ -108,83 +108,21 @@ const App = () => (
                <Route path="/" element={<><SimpleHeader /><Index /></>} />
                <Route path="/auth" element={<AuthPage />} />
                
-               {/* CMS ROUTES - MOVED TO TOP FOR PRIORITY */}
+               {/* ULTRA SIMPLE TEST ROUTE */}
                <Route 
                  path="/dashboard/cms-integration" 
                  element={
-                   <ProtectedRoute>
-                     <Layout>
-                       <div className="p-8 bg-green-50 border-4 border-green-500">
-                         <h1 className="text-4xl font-bold text-green-600">✅ TOP PRIORITY ROUTE WERKT!</h1>
-                         <p className="text-lg">Als je dit ziet, werkt de routing!</p>
-                         <p className="text-sm">URL: /dashboard/cms-integration</p>
-                       </div>
-                     </Layout>
-                   </ProtectedRoute>
+                   <div style={{padding: '2rem', background: 'red', color: 'white', fontSize: '2rem'}}>
+                     🚨 ROUTE FOUND! Dit werkt als je dit ziet!
+                   </div>
                  } 
                />
                
-               <Route 
-                 path="/dashboard/cms-integrations" 
-                 element={
-                   <ProtectedRoute>
-                     <Layout>
-                       <div className="p-8 bg-blue-50 border-4 border-blue-500">
-                         <h1 className="text-4xl font-bold text-blue-600">✅ BACKUP ROUTE WERKT!</h1>
-                         <p className="text-lg">Backup route met S aan het eind</p>
-                         <p className="text-sm">URL: /dashboard/cms-integrations</p>
-                       </div>
-                     </Layout>
-                   </ProtectedRoute>
-                 } 
-               />
+               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
                
-               <Route path="/sales" element={<><SimpleHeader /><SalesPage /></>} />
-              <Route path="/pricing" element={<><SimpleHeader /><PricingPage /></>} />
-              <Route path="/customer-cases" element={<><SimpleHeader /><CustomerCases /></>} />
-              <Route path="/about" element={<><SimpleHeader /><AboutPage /></>} />
-              <Route path="/contact" element={<><SimpleHeader /><ContactPage /></>} />
-              <Route path="/terms" element={<><SimpleHeader /><TermsOfService /></>} />
-              <Route path="/privacy" element={<><SimpleHeader /><PrivacyPolicy /></>} />
-              <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-              
-               {/* Dashboard routes */}
-              <Route path="/dashboard/keywords" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/blogs" element={<ProtectedRoute><Layout><BlogManagement /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/websites" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/deployment" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/academy" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/pricing" element={<ProtectedRoute><Layout><PricingPage /></Layout></ProtectedRoute>} />
-              
-              {/* Standalone pages */}
-              <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/ai-generator" element={<ProtectedRoute><Layout><AIWebsiteGenerator /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/website-builder" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/analytics" element={<ProtectedRoute><Layout><AnalyticsPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/integrations" element={<ProtectedRoute><Layout><IntegrationsPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/notifications" element={<ProtectedRoute><Layout><NotificationSystem /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/media" element={<ProtectedRoute><Layout><MediaPortal /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/help" element={<ProtectedRoute><Layout><HelpSupport /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/achievements" element={<ProtectedRoute><Layout><AchievementsPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/course" element={<ProtectedRoute><Layout><CoursePage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/affiliate" element={<ProtectedRoute><Layout><AffiliatePage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/content-features" element={<ProtectedRoute><Layout><ContentFeatures /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/category-manager" element={<ProtectedRoute><Layout><CategoryManager /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/template-editor" element={<ProtectedRoute><Layout><TemplateEditor /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
-              
-              <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/resources" element={<ProtectedRoute><Layout><ResourceCenter /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAIFeatures /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/users" element={<ProtectedRoute requiredRole="admin"><Layout><AdminUsersPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/customers" element={<ProtectedRoute requiredRole="admin"><Layout><AdminCustomerPortal /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><Layout><SystemMonitoringPage /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/resources" element={<ProtectedRoute requiredRole="admin"><Layout><AdminResourceManager /></Layout></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+               {/* ALLE ANDERE ROUTES TIJDELIJK UITGESCHAKELD VOOR TEST */}
+               <Route path="*" element={<NotFound />} />
+             </Routes>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
