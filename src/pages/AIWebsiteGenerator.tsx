@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,9 +67,11 @@ interface WebsiteRequest {
 
 const AIWebsiteGenerator = () => {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("generator");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
-  const [activeTab, setActiveTab] = useState("generator");
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [isCheckingBackend, setIsCheckingBackend] = useState(true);
   const [websiteRequest, setWebsiteRequest] = useState<WebsiteRequest>({
     name: "",
     description: "",
@@ -117,6 +120,32 @@ const AIWebsiteGenerator = () => {
     { id: "other", name: "Anders", icon: MoreHorizontal }
   ];
 
+  // Check backend connection status
+  useEffect(() => {
+    const checkBackendConnection = async () => {
+      try {
+        setIsCheckingBackend(true);
+        
+        // Test Supabase connection
+        const { data, error } = await supabase.from('profiles').select('id').limit(1);
+        
+        if (!error) {
+          setIsBackendConnected(true);
+        } else {
+          console.log('Backend connection test failed:', error.message);
+          setIsBackendConnected(false);
+        }
+      } catch (error) {
+        console.log('Backend connection error:', error);
+        setIsBackendConnected(false);
+      } finally {
+        setIsCheckingBackend(false);
+      }
+    };
+
+    checkBackendConnection();
+  }, []);
+
   const handleFeatureToggle = (featureId: string, checked: boolean) => {
     setWebsiteRequest(prev => ({
       ...prev,
@@ -131,6 +160,15 @@ const AIWebsiteGenerator = () => {
       toast({
         title: "⚠️ Ontbrekende informatie",
         description: "Vul minimaal de website naam en beschrijving in",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isBackendConnected) {
+      toast({
+        title: "🔧 Backend Vereist",
+        description: "Verbind eerst Supabase voor AI generatie functionaliteit",
         variant: "destructive"
       });
       return;
@@ -203,17 +241,39 @@ const AIWebsiteGenerator = () => {
           </div>
         </div>
 
-        {/* Setup Required Alert */}
-        <Alert className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 backdrop-blur-sm shadow-lg">
-          <AlertCircle className="h-6 w-6 text-orange-600" />
-          <div>
-            <h4 className="font-bold text-orange-800 text-lg mb-2">🔧 Backend Setup Vereist</h4>
-            <AlertDescription className="text-orange-700 text-base">
-              Voor volledige AI generatie en WordPress publicatie moet je eerst de backend connecteren. 
-              <span className="font-semibold"> Klik op de groene Supabase knop rechtsboven.</span>
-            </AlertDescription>
-          </div>
-        </Alert>
+        {/* Conditional Backend Status Alert */}
+        {isCheckingBackend ? (
+          <Alert className="max-w-4xl mx-auto border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 backdrop-blur-sm shadow-lg">
+            <Clock className="h-6 w-6 text-blue-600 animate-spin" />
+            <div>
+              <h4 className="font-bold text-blue-800 text-lg mb-2">🔍 Backend Status Controleren...</h4>
+              <AlertDescription className="text-blue-700 text-base">
+                Verbinding met Supabase wordt gecontroleerd...
+              </AlertDescription>
+            </div>
+          </Alert>
+        ) : !isBackendConnected ? (
+          <Alert className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 backdrop-blur-sm shadow-lg">
+            <AlertCircle className="h-6 w-6 text-orange-600" />
+            <div>
+              <h4 className="font-bold text-orange-800 text-lg mb-2">🔧 Backend Setup Vereist</h4>
+              <AlertDescription className="text-orange-700 text-base">
+                Voor volledige AI generatie en WordPress publicatie moet je eerst de backend connecteren. 
+                <span className="font-semibold"> Klik op de groene Supabase knop rechtsboven.</span>
+              </AlertDescription>
+            </div>
+          </Alert>
+        ) : (
+          <Alert className="max-w-4xl mx-auto border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 backdrop-blur-sm shadow-lg">
+            <CheckCircle className="h-6 w-6 text-green-600" />
+            <div>
+              <h4 className="font-bold text-green-800 text-lg mb-2">✅ Backend Verbonden</h4>
+              <AlertDescription className="text-green-700 text-base">
+                Supabase backend is succesvol verbonden. Alle AI functies zijn beschikbaar!
+              </AlertDescription>
+            </div>
+          </Alert>
+        )}
 
         {/* Main Interface */}
         <div className="max-w-7xl mx-auto">
