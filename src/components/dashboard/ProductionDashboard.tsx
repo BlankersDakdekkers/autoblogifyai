@@ -263,6 +263,213 @@ const QuickActionCard = memo(({
 
 QuickActionCard.displayName = 'QuickActionCard';
 
+// Enhanced Analytics Section with Tabs
+const EnhancedAnalyticsSection = memo(() => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [timeframe, setTimeframe] = useState('week');
+
+  const analyticsData = {
+    overview: {
+      views: 24500,
+      clicks: 1820, 
+      conversions: 156,
+      revenue: 3420
+    },
+    performance: [
+      {
+        label: 'Gemiddelde generatietijd',
+        value: '2.1s',
+        target: '< 3s',
+        status: 'excellent',
+        change: '18% sneller dan vorige week',
+        trend: 'up'
+      },
+      {
+        label: 'Success rate', 
+        value: '99.2%',
+        target: '> 95%',
+        status: 'excellent',
+        change: '+0.5% verbetering',
+        trend: 'up'
+      },
+      {
+        label: 'Content kwaliteit score',
+        value: '4.9/5',
+        target: '> 4.5',
+        status: 'excellent', 
+        change: '+0.2 punten',
+        trend: 'up'
+      },
+      {
+        label: 'SEO compliance',
+        value: '96%',
+        target: '> 90%',
+        status: 'excellent',
+        change: 'Stabiel',
+        trend: 'neutral'
+      }
+    ]
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'excellent': return 'text-green-700 bg-green-50 border-green-200';
+      case 'good': return 'text-blue-700 bg-blue-50 border-blue-200';
+      case 'warning': return 'text-orange-700 bg-orange-50 border-orange-200';
+      default: return 'text-gray-700 bg-gray-50 border-gray-200';
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'up': return <TrendingUp className="h-3 w-3 text-green-600" />;
+      case 'down': return <TrendingUp className="h-3 w-3 text-red-600 rotate-180" />;
+      default: return <div className="h-3 w-3 rounded-full bg-gray-400" />;
+    }
+  };
+
+  return (
+    <Card className="border-0 bg-gradient-to-br from-white to-gray-50/50">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <BarChart3 className="h-5 w-5 text-blue-600" />
+            Volledige Analytics
+          </CardTitle>
+          <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+            <Activity className="h-3 w-3 mr-1" />
+            Real-time data
+          </Badge>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+            <TabsTrigger value="overview" className="text-sm">Overzicht</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
+            <TabsTrigger value="activity" className="text-sm">Activiteit</TabsTrigger>
+            <TabsTrigger value="insights" className="text-sm">Inzichten</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-6 space-y-4">
+            {/* Analytics Overview Section */}
+            <div className="bg-blue-50/30 rounded-lg p-4 border border-blue-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <h3 className="font-semibold text-blue-900">Analytics Overview</h3>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant={timeframe === 'week' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeframe('week')}
+                    className="text-xs px-3 py-1 h-7"
+                  >
+                    Week
+                  </Button>
+                  <Button
+                    variant={timeframe === 'month' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTimeframe('month')}
+                    className="text-xs px-3 py-1 h-7"
+                  >
+                    Maand
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-sm text-blue-600 mb-1">Views</div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    <AnimatedCounter value="24.5" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-blue-600 mb-1">Clicks</div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    <AnimatedCounter value="1.8" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-blue-600 mb-1">Conversions</div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    <AnimatedCounter value="156" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-blue-600 mb-1">Revenue</div>
+                  <div className="text-2xl font-bold text-blue-900">€3.4</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Insights */}
+            <div className="bg-green-50/30 rounded-lg p-4 border border-green-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <h3 className="font-semibold text-green-900">Performance Insights</h3>
+                <Badge className="bg-green-100 text-green-700 text-xs">
+                  Uitstekend
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {analyticsData.performance.map((metric, index) => (
+                  <div key={index} className="flex items-center justify-between py-3 border-b border-green-100 last:border-0">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-green-900">{metric.label}</span>
+                        <span className="text-xs text-green-600">Target: {metric.target}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        {getTrendIcon(metric.trend)}
+                        <span>{metric.change}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`font-semibold ${getStatusColor(metric.status)}`}>
+                        {metric.value}
+                      </Badge>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <div className="text-center py-8 text-gray-500">
+              <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Gedetailleerde analytics komen hier...</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-6">
+            <div className="text-center py-8 text-gray-500">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Activiteit feed komt hier...</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="insights" className="mt-6">
+            <div className="text-center py-8 text-gray-500">
+              <Lightbulb className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>AI insights komen hier...</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+});
+
+EnhancedAnalyticsSection.displayName = 'EnhancedAnalyticsSection';
+
 // Real-time activity feed
 const ActivityFeed = memo(() => {
   const [activities, setActivities] = useState([
@@ -407,114 +614,6 @@ const PerformanceInsights = memo(() => {
 });
 
 PerformanceInsights.displayName = 'PerformanceInsights';
-
-// Analytics overview widget
-const AnalyticsOverview = memo(() => {
-  const [timeframe, setTimeframe] = useState('week');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const analyticsData = {
-    week: {
-      views: 24500,
-      clicks: 1820,
-      conversions: 156,
-      revenue: 3420
-    },
-    month: {
-      views: 98200,
-      clicks: 7240,
-      conversions: 624,
-      revenue: 13680
-    }
-  };
-
-  const currentData = analyticsData[timeframe as keyof typeof analyticsData];
-
-  return (
-    <Card className="border-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border-blue-100">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base text-blue-800">
-            <BarChart3 className="h-5 w-5" />
-            Analytics Overview
-          </CardTitle>
-          <div className="flex gap-1">
-            <Button
-              variant={timeframe === 'week' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeframe('week')}
-              className="text-xs h-7"
-            >
-              Week
-            </Button>
-            <Button
-              variant={timeframe === 'month' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeframe('month')}
-              className="text-xs h-7"
-            >
-              Maand
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveGrid columns={{ xs: 2, sm: 4 }} gap="sm">
-          <div className="text-center p-3 bg-white/50 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Eye className="h-4 w-4 text-blue-600" />
-              <span className="text-xs text-blue-600 font-medium">Views</span>
-            </div>
-            <div className="text-lg font-bold text-blue-800">
-              <AnimatedCounter value={currentData.views.toLocaleString()} />
-            </div>
-          </div>
-          
-          <div className="text-center p-3 bg-white/50 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <ExternalLink className="h-4 w-4 text-green-600" />
-              <span className="text-xs text-green-600 font-medium">Clicks</span>
-            </div>
-            <div className="text-lg font-bold text-green-800">
-              <AnimatedCounter value={currentData.clicks.toLocaleString()} />
-            </div>
-          </div>
-          
-          <div className="text-center p-3 bg-white/50 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Target className="h-4 w-4 text-purple-600" />
-              <span className="text-xs text-purple-600 font-medium">Conversies</span>
-            </div>
-            <div className="text-lg font-bold text-purple-800">
-              <AnimatedCounter value={currentData.conversions.toString()} />
-            </div>
-          </div>
-          
-          <div className="text-center p-3 bg-white/50 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <DollarSign className="h-4 w-4 text-orange-600" />
-              <span className="text-xs text-orange-600 font-medium">Revenue</span>
-            </div>
-            <div className="text-lg font-bold text-orange-800">
-              €<AnimatedCounter value={currentData.revenue.toLocaleString()} />
-            </div>
-          </div>
-        </ResponsiveGrid>
-        
-        <div className="mt-4 text-center">
-          <Link to="/dashboard/analytics">
-            <Button variant="outline" size="sm" className="w-full">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Volledige Analytics
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-AnalyticsOverview.displayName = 'AnalyticsOverview';
 
 // Main production dashboard component
 export const ProductionDashboard = memo(() => {
@@ -770,110 +869,18 @@ export const ProductionDashboard = memo(() => {
           </ResponsiveGrid>
         </div>
 
-        {/* Dashboard Tabs for Advanced Views */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overzicht</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="activity">Activiteit</TabsTrigger>
-            <TabsTrigger value="insights">Inzichten</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview" className="space-y-6">
-            <ResponsiveGrid columns={{ xs: 1, lg: 2 }} gap="md">
-              <AnalyticsOverview />
-              <PerformanceInsights />
-            </ResponsiveGrid>
-          </TabsContent>
-          
-          <TabsContent value="analytics" className="space-y-6">
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Voor gedetailleerde analytics, ga naar de{' '}
-                <Link to="/dashboard/analytics" className="font-medium underline">
-                  volledige Analytics pagina
-                </Link>
-              </AlertDescription>
-            </Alert>
-            <AnalyticsOverview />
-          </TabsContent>
-          
-          <TabsContent value="activity" className="space-y-6">
-            <ResponsiveGrid columns={{ xs: 1, lg: 2 }} gap="md">
-              <ActivityFeed />
-              <Card className="border-0 bg-gradient-to-br from-card to-card/80">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    Geplande Taken
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                      <Clock className="h-4 w-4 text-orange-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">SEO Audit</p>
-                        <p className="text-xs text-muted-foreground">Morgen 09:00</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                      <RefreshCw className="h-4 w-4 text-blue-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Content Sync</p>
-                        <p className="text-xs text-muted-foreground">Dagelijks 14:00</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ResponsiveGrid>
-          </TabsContent>
-          
-          <TabsContent value="insights" className="space-y-6">
-            <ResponsiveGrid columns={{ xs: 1, lg: 2 }} gap="md">
-              <PerformanceInsights />
-              <Card className="border-0 bg-gradient-to-br from-amber-50/50 to-orange-50/50 border-amber-100">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-amber-800">
-                    <Lightbulb className="h-5 w-5" />
-                    AI Aanbevelingen
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-white/50 rounded-lg border border-amber-200">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-amber-100 rounded-full">
-                        <Target className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-amber-800">SEO Optimalisatie</h4>
-                        <p className="text-sm text-amber-700">
-                          Voeg meer long-tail keywords toe voor betere rankings
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-white/50 rounded-lg border border-amber-200">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-amber-100 rounded-full">
-                        <Clock className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-amber-800">Publicatie Timing</h4>
-                        <p className="text-sm text-amber-700">
-                          Publiceer tussen 09:00-11:00 voor 23% meer engagement
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ResponsiveGrid>
-          </TabsContent>
-        </Tabs>
+        {/* Enhanced Analytics Section */}
+        <div className="space-y-4">
+          <div className="lg:col-span-2">
+            <EnhancedAnalyticsSection />
+          </div>
+        </div>
+
+        {/* Additional Dashboard sections */}
+        <ResponsiveGrid columns={{ xs: 1, lg: 2 }} gap="md">
+          <ActivityFeed />
+          <PerformanceInsights />
+        </ResponsiveGrid>
 
         {/* System Status Footer */}
         <Card className="border-dashed border-2 border-muted-foreground/20 bg-muted/5">
