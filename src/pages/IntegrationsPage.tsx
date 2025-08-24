@@ -282,41 +282,47 @@ const IntegrationsPage = () => {
   };
 
   const IntegrationCard = ({ integration, integrationData }: any) => (
-    <Card className="group hover:shadow-md transition-shadow">
-      <CardHeader>
+    <Card className="group hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-border/50 hover:border-primary/30 hover:scale-105">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <integration.icon className="h-6 w-6 text-primary" />
+          <div className="flex items-center space-x-4">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 group-hover:from-primary/30 group-hover:to-accent/20 transition-all duration-300 border border-primary/20">
+              <integration.icon className="h-8 w-8 text-primary group-hover:animate-pulse" />
             </div>
             <div>
-              <CardTitle className="text-lg">{integration.name}</CardTitle>
-              <CardDescription>{integration.description}</CardDescription>
+              <CardTitle className="text-xl group-hover:text-primary transition-colors">{integration.name}</CardTitle>
+              <CardDescription className="text-sm group-hover:text-muted-foreground/80 transition-colors">
+                {integration.description}
+              </CardDescription>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {getStatusIcon(integrationData.status)}
             {getStatusBadge(integrationData.status)}
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium">Features:</Label>
-            <div className="flex flex-wrap gap-1 mt-1">
+            <Label className="text-sm font-semibold text-foreground mb-2 block">Features:</Label>
+            <div className="flex flex-wrap gap-2">
               {integration.features.map((feature: string) => (
-                <Badge key={feature} variant="outline" className="text-xs">
+                <Badge 
+                  key={feature} 
+                  variant="outline" 
+                  className="text-xs border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+                >
                   {feature}
                 </Badge>
               ))}
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2 border-t border-border/50">
             {integrationData.connected ? (
               <>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300">
                   <Settings className="h-4 w-4 mr-2" />
                   Configureren
                 </Button>
@@ -324,16 +330,18 @@ const IntegrationsPage = () => {
                   variant="destructive" 
                   size="sm"
                   onClick={() => handleDisconnect(integration.id)}
+                  className="hover:bg-destructive/90 transition-all duration-300"
                 >
                   Loskoppelen
                 </Button>
               </>
             ) : (
               <Button 
-                className="flex-1" 
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300" 
                 size="sm"
                 onClick={() => handleConnect(integration.id)}
               >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
                 Verbinden
               </Button>
             )}
@@ -344,64 +352,106 @@ const IntegrationsPage = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Integraties</h2>
-        <p className="text-muted-foreground">
-          Verbind externe services om AutoblogifyAI krachtig te maken
-        </p>
+    <div className="p-6 space-y-8 bg-gradient-to-br from-background via-secondary/5 to-accent/5 min-h-screen">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
+      
+      {/* Enhanced Header */}
+      <div className="relative">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20">
+            <Settings className="w-8 h-8 text-primary animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Integraties
+            </h2>
+            <p className="text-lg text-muted-foreground mt-1">
+              Verbind externe services om AutoblogifyAI krachtig te maken
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Status Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actieve Integraties</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+      {/* Enhanced Status Overview */}
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium group-hover:text-primary transition-colors">Actieve Integraties</CardTitle>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-300">
+              <CheckCircle2 className="h-5 w-5 text-primary group-hover:animate-pulse" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold text-primary animate-fade-in">
               {Object.values(integrations).filter(i => i.connected).length}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1">
               van {Object.keys(integrations).length} beschikbaar
             </p>
+            <div className="mt-2 w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-500"
+                style={{ width: `${(Object.values(integrations).filter(i => i.connected).length / Object.keys(integrations).length) * 100}%` }}
+              />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Backend Services</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:shadow-lg group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium group-hover:text-green-600 transition-colors">Backend Services</CardTitle>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-green-500/10 group-hover:from-green-500/30 group-hover:to-green-500/20 transition-all duration-300">
+              <Database className="h-5 w-5 text-green-600 group-hover:animate-pulse" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Actief</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-green-600 animate-fade-in">Actief</div>
+            <p className="text-sm text-muted-foreground mt-1">
               Supabase verbonden
             </p>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-xs text-green-600">Live status</span>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">AI Services</CardTitle>
-            <Chrome className="h-4 w-4 text-muted-foreground" />
+
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300 hover:shadow-lg group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium group-hover:text-orange-600 transition-colors">AI Services</CardTitle>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-500/10 group-hover:from-orange-500/30 group-hover:to-orange-500/20 transition-all duration-300">
+              <Chrome className="h-5 w-5 text-orange-600 group-hover:animate-pulse" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">Setup</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-orange-600 animate-fade-in">Setup</div>
+            <p className="text-sm text-muted-foreground mt-1">
               API keys configureren
             </p>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-xs text-orange-600">Configuratie vereist</span>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Webhooks</CardTitle>
-            <Webhook className="h-4 w-4 text-muted-foreground" />
+
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-accent/20 hover:border-accent/40 transition-all duration-300 hover:shadow-lg group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium group-hover:text-accent transition-colors">Webhooks</CardTitle>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 group-hover:from-accent/30 group-hover:to-accent/20 transition-all duration-300">
+              <Webhook className="h-5 w-5 text-accent group-hover:animate-pulse" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-accent animate-fade-in">3</div>
+            <p className="text-sm text-muted-foreground mt-1">
               actieve endpoints
             </p>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+              <span className="text-xs text-accent">Realtime data</span>
+            </div>
           </CardContent>
         </Card>
       </div>

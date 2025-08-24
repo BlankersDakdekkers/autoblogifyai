@@ -153,77 +153,101 @@ const ProjectsOverview = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-6 h-6 text-primary" />
-            <h1 className="text-3xl font-bold">Projecten Overzicht</h1>
+    <div className="space-y-8 p-6 bg-gradient-to-br from-background via-secondary/5 to-accent/5 min-h-screen">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
+      
+      {/* Enhanced Header */}
+      <div className="relative">
+        <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20">
+                <FolderOpen className="w-8 h-8 text-primary animate-pulse" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Projecten Overzicht
+                </h1>
+                <p className="text-lg text-muted-foreground mt-1">
+                  Beheer al je websites, blogs en contentcampagnes in één dashboard
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            Beheer al je websites, blogs en contentcampagnes
-          </p>
+          <Button className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3">
+            <Plus className="w-5 h-5" />
+            Nieuw Project
+          </Button>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Nieuw Project
-        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg group">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Totaal Projecten</p>
-                <p className="text-2xl font-bold">{projects.length}</p>
+                <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">Totaal Projecten</p>
+                <p className="text-3xl font-bold text-primary animate-fade-in">{projects.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">+12% deze maand</p>
               </div>
-              <FolderOpen className="w-8 h-8 text-muted-foreground" />
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-300">
+                <FolderOpen className="w-8 h-8 text-primary group-hover:animate-pulse" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-accent/20 hover:border-accent/40 transition-all duration-300 hover:shadow-lg group">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Actieve Projecten</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm text-muted-foreground group-hover:text-accent transition-colors">Actieve Projecten</p>
+                <p className="text-3xl font-bold text-accent animate-fade-in">
                   {projects.filter(p => p.status === 'active').length}
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">Live status</p>
               </div>
-              <Globe className="w-8 h-8 text-muted-foreground" />
+              <div className="p-3 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 group-hover:from-accent/30 group-hover:to-accent/20 transition-all duration-300">
+                <Globe className="w-8 h-8 text-accent group-hover:animate-pulse" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:shadow-lg group">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Totaal Posts</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm text-muted-foreground group-hover:text-secondary transition-colors">Totaal Posts</p>
+                <p className="text-3xl font-bold text-secondary animate-fade-in">
                   {projects.reduce((sum, p) => sum + p.posts_count, 0)}
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">+245 deze maand</p>
               </div>
-              <FileText className="w-8 h-8 text-muted-foreground" />
+              <div className="p-3 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 group-hover:from-secondary/30 group-hover:to-secondary/20 transition-all duration-300">
+                <FileText className="w-8 h-8 text-secondary group-hover:animate-pulse" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
+        <Card className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:shadow-lg group">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Deze Maand</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm text-muted-foreground group-hover:text-green-600 transition-colors">Deze Maand</p>
+                <p className="text-3xl font-bold text-green-600 animate-fade-in">
                   {projects.filter(p => 
                     new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
                   ).length}
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">Nieuwe projecten</p>
               </div>
-              <Calendar className="w-8 h-8 text-muted-foreground" />
+              <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/10 group-hover:from-green-500/30 group-hover:to-green-500/20 transition-all duration-300">
+                <Calendar className="w-8 h-8 text-green-600 group-hover:animate-pulse" />
+              </div>
             </div>
           </CardContent>
         </Card>

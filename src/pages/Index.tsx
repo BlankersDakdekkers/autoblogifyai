@@ -31,6 +31,12 @@ const Index = () => {
   const [subscription, setSubscription] = useState<Subscription>({ subscribed: false });
   const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 30 });
   const [checkoutProgress, setCheckoutProgress] = useState(0);
+  const [liveStats, setLiveStats] = useState({
+    users: 2847,
+    posts: 15634,
+    words: 2847365,
+    satisfaction: 98.7
+  });
 
   const testimonials = [
     {
@@ -251,11 +257,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-background">
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-background via-secondary/5 to-accent/5">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="fixed top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none" />
+      <div className="fixed top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-accent/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none animate-pulse" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-primary/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none animate-pulse" />
 
       {/* Hero Section - Mobile Optimized */}
       <section className="relative pt-16 md:pt-20 pb-20 md:pb-32 bg-gradient-to-br from-primary via-primary to-primary/90 overflow-hidden">
@@ -350,21 +356,31 @@ const Index = () => {
       </section>
 
       {/* Enhanced Social Proof Stats - Mobile Optimized */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-secondary/30 to-secondary/50 relative">
+      <section className="py-12 md:py-20 bg-gradient-to-br from-secondary/20 via-background to-accent/10 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5" />
         <div className="container relative z-10 px-4">
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2 md:mb-4">Vertrouwd door 2.500+ succesvolle bedrijven</h2>
-            <p className="text-lg md:text-xl text-muted-foreground">Proven resultaten die spreken voor zich</p>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Vertrouwd door 2.500+ succesvolle bedrijven
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground">Realtime resultaten die spreken voor zich</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
                 <div key={index} className="text-center group">
-                  <div className="bg-background rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform group-hover:scale-105 border border-border">
-                    <IconComponent className="h-8 md:h-12 w-8 md:w-12 text-primary mx-auto mb-2 md:mb-4 group-hover:animate-pulse" />
-                    <div className="text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">{stat.number}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
+                  <div className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110 border border-border/50 hover:border-primary/20 hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5">
+                    <div className="relative">
+                      <IconComponent className="h-8 md:h-12 w-8 md:w-12 text-primary mx-auto mb-2 md:mb-4 group-hover:animate-bounce transition-all duration-300" />
+                      <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl group-hover:bg-primary/20 transition-all duration-300" />
+                    </div>
+                    <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1 md:mb-2 animate-fade-in">
+                      {stat.number}
+                    </div>
+                    <div className="text-xs md:text-sm text-muted-foreground font-medium group-hover:text-foreground transition-colors duration-300">
+                      {stat.label}
+                    </div>
                   </div>
                 </div>
               );

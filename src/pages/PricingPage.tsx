@@ -207,42 +207,47 @@ const PricingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10 relative overflow-hidden">
-      {/* Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-accent/5 relative overflow-hidden">
+      {/* Enhanced Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      <div className="fixed top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none" />
+      <div className="fixed top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-accent/5 rounded-full blur-3xl translate-x-96 translate-y-60 pointer-events-none animate-pulse" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-primary/5 rounded-full blur-3xl -translate-x-96 -translate-y-60 pointer-events-none animate-pulse" />
+      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-accent/5 to-primary/5 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2 pointer-events-none animate-pulse" />
       
       <div className="container mx-auto px-4 py-16 relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-12 animate-fade-in">
-          <Badge className="mb-6 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-6 py-3 text-base font-bold animate-pulse shadow-lg">
-            <Star className="h-5 w-5 mr-2 fill-current" />
+        {/* Enhanced Hero Section */}
+        <div className="text-center mb-16 animate-fade-in">
+          <Badge className="mb-8 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 px-8 py-4 text-base font-bold animate-pulse shadow-xl hover:shadow-2xl transition-all duration-300">
+            <Star className="h-6 w-6 mr-3 fill-current animate-spin" />
             🔥 BEPERKTE TIJD: 14 Dagen Gratis + 50% Korting
           </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 leading-tight">
             Schaal je content met 
-            <span className="bg-gradient-to-r from-primary via-purple-600 to-primary/80 bg-clip-text text-transparent block mt-2 animate-scale-in">
+            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent block mt-4 animate-scale-in drop-shadow-lg">
               AutoblogifyAI
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-8 leading-relaxed">
-            Van handmatige blog posts naar geautomatiseerde content productie. <strong className="text-foreground bg-gradient-to-r from-primary/10 to-purple-600/10 px-2 py-1 rounded">Start vandaag gratis</strong> en ervaar de kracht van AI.
+          <p className="text-xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-12 leading-relaxed">
+            Van handmatige blog posts naar geautomatiseerde content productie. 
+            <strong className="text-foreground bg-gradient-to-r from-primary/20 to-accent/20 px-3 py-2 rounded-lg mx-2 border border-primary/20">
+              Start vandaag gratis
+            </strong> 
+            en ervaar de kracht van AI.
           </p>
           
-          {/* Social Proof */}
-          <div className="flex flex-wrap items-center justify-center gap-8 mb-12 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <Users className="h-5 w-5 text-primary" />
-              <span className="font-semibold">2,500+ tevreden klanten</span>
+          {/* Enhanced Social Proof */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mb-12 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 bg-gradient-to-r from-background/95 to-background/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-primary/20 hover:border-primary/40 group">
+              <Users className="h-6 w-6 text-primary group-hover:animate-pulse" />
+              <span className="font-bold text-lg group-hover:text-primary transition-colors">2,500+ tevreden klanten</span>
             </div>
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="font-semibold">500% meer content output</span>
+            <div className="flex items-center gap-3 bg-gradient-to-r from-background/95 to-background/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-accent/20 hover:border-accent/40 group">
+              <TrendingUp className="h-6 w-6 text-accent group-hover:animate-pulse" />
+              <span className="font-bold text-lg group-hover:text-accent transition-colors">500% meer content output</span>
             </div>
-            <div className="flex items-center gap-2 hover-scale bg-white/50 px-4 py-2 rounded-full shadow-sm">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="font-semibold">30-dagen geld terug</span>
+            <div className="flex items-center gap-3 bg-gradient-to-r from-background/95 to-background/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-secondary/20 hover:border-secondary/40 group">
+              <Shield className="h-6 w-6 text-secondary group-hover:animate-pulse" />
+              <span className="font-bold text-lg group-hover:text-secondary transition-colors">30-dagen geld terug</span>
             </div>
           </div>
         </div>
