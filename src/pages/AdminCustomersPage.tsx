@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Users, Search, MoreHorizontal, CreditCard, Calendar, Crown, Coins, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Users, Search, MoreHorizontal, CreditCard, Calendar, Crown, Coins, Eye, Plus, Download, Filter, RefreshCw, UserPlus, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,8 +18,8 @@ interface CustomerData {
   email: string;
   display_name?: string;
   created_at: string;
-  last_sign_in_at?: string;
-  email_confirmed_at?: string;
+  updated_at?: string;
+  onboarding_completed?: boolean;
   role?: string;
   // Subscription data
   subscribed?: boolean;
@@ -29,114 +32,45 @@ interface CustomerData {
   last_credit_update?: string;
 }
 
+interface Analytics {
+  totalCustomers: number;
+  activeSubscribers: number;
+  totalCreditsRemaining: number;
+  totalCreditsUsed: number;
+  recentSignups: number;
+  conversionRate: string;
+}
+
 const AdminCustomersPage = () => {
   const { toast } = useToast();
   const [customers, setCustomers] = useState<CustomerData[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterSubscription, setFilterSubscription] = useState<string>("all");
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
+  const [creditsToAdd, setCreditsToAdd] = useState<number>(0);
+  const [newRole, setNewRole] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     fetchCustomers();
+    fetchAnalytics();
   }, []);
 
   const fetchCustomers = async () => {
     try {
       setLoading(true);
       
-      // Fetch users with their profiles, subscriptions, and credits
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          created_at,
-          updated_at
-        `);
+      const { data, error } = await supabase.functions.invoke('customer-management', {
+        method: 'GET'
+      });
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        toast({
-          title: "Fout bij ophalen profielen",
-          description: "Kon profielgegevens niet ophalen",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
 
-      // Fetch subscribers data
-      const { data: subscribers, error: subscribersError } = await supabase
-        .from('subscribers')
-        .select(`
-          user_id,
-          email,
-          stripe_customer_id,
-          subscribed,
-          subscription_tier,
-          subscription_end,
-          created_at,
-          updated_at
-        `);
-
-      if (subscribersError) {
-        console.error('Error fetching subscribers:', subscribersError);
-      }
-
-      // Fetch user credits
-      const { data: userCredits, error: creditsError } = await supabase
-        .from('user_credits')
-        .select(`
-          user_id,
-          credits_remaining,
-          total_credits_used,
-          last_credit_update
-        `);
-
-      if (creditsError) {
-        console.error('Error fetching credits:', creditsError);
-      }
-
-      // Fetch user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select(`
-          user_id,
-          role
-        `);
-
-      if (rolesError) {
-        console.error('Error fetching roles:', rolesError);
-      }
-
-      // Create maps for easy lookup
-      const subscribersMap = new Map(subscribers?.map(s => [s.user_id, s]) || []);
-      const creditsMap = new Map(userCredits?.map(c => [c.user_id, c]) || []);
-      const rolesMap = new Map(userRoles?.map(r => [r.user_id, r.role]) || []);
-
-      // Combine all data
-      const combinedData: CustomerData[] = profiles?.map(profile => {
-        const subscription = subscribersMap.get(profile.user_id);
-        const credits = creditsMap.get(profile.user_id);
-        const role = rolesMap.get(profile.user_id);
-
-        return {
-          id: profile.user_id,
-          email: subscription?.email || 'Onbekend',
-          display_name: profile.display_name,
-          created_at: profile.created_at,
-          role: role || 'user',
-          // Subscription data
-          subscribed: subscription?.subscribed || false,
-          subscription_tier: subscription?.subscription_tier,
-          subscription_end: subscription?.subscription_end,
-          stripe_customer_id: subscription?.stripe_customer_id,
-          // Credits data
-          credits_remaining: credits?.credits_remaining || 0,
-          total_credits_used: credits?.total_credits_used || 0,
-          last_credit_update: credits?.last_credit_update,
-        };
-      }) || [];
-
-      setCustomers(combinedData);
+      setCustomers(data.customers || []);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -149,10 +83,166 @@ const AdminCustomersPage = () => {
     }
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (customer.display_name && customer.display_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const fetchAnalytics = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-management', {
+        method: 'GET',
+        body: {},
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (error) throw error;
+
+      setAnalytics(data.analytics);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+  };
+
+  const handleAddCredits = async () => {
+    if (!selectedCustomer || creditsToAdd <= 0) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('customer-management', {
+        method: 'POST',
+        body: {
+          action: 'add_credits',
+          userId: selectedCustomer.id,
+          credits: creditsToAdd
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Credits toegevoegd",
+        description: `${creditsToAdd} credits toegevoegd aan ${selectedCustomer.email}`,
+      });
+
+      setCreditsToAdd(0);
+      setSelectedCustomer(null);
+      fetchCustomers();
+    } catch (error) {
+      toast({
+        title: "Fout",
+        description: "Kon credits niet toevoegen",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedCustomer || !newRole) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('customer-management', {
+        method: 'POST',
+        body: {
+          action: 'update_role',
+          userId: selectedCustomer.id,
+          role: newRole
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Rol bijgewerkt",
+        description: `Rol van ${selectedCustomer.email} bijgewerkt naar ${newRole}`,
+      });
+
+      setNewRole("");
+      setSelectedCustomer(null);
+      fetchCustomers();
+    } catch (error) {
+      toast({
+        title: "Fout",
+        description: "Kon rol niet bijwerken",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-management', {
+        method: 'POST',
+        body: { action: 'export_customers' }
+      });
+
+      if (error) throw error;
+
+      // Create and download CSV
+      const csvContent = data.csvData.map((row: any) => 
+        Object.values(row).join(',')
+      ).join('\n');
+      
+      const headers = Object.keys(data.csvData[0] || {}).join(',');
+      const fullCsv = headers + '\n' + csvContent;
+      
+      const blob = new Blob([fullCsv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export voltooid",
+        description: "Klantgegevens zijn gedownload als CSV",
+      });
+    } catch (error) {
+      toast({
+        title: "Export mislukt",
+        description: "Kon klantgegevens niet exporteren",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredAndSortedCustomers = customers
+    .filter(customer => {
+      const matchesSearch = customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (customer.display_name && customer.display_name.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesRole = filterRole === "all" || customer.role === filterRole;
+      
+      const matchesSubscription = filterSubscription === "all" || 
+        (filterSubscription === "subscribed" && customer.subscribed) ||
+        (filterSubscription === "free" && !customer.subscribed);
+      
+      return matchesSearch && matchesRole && matchesSubscription;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'email':
+          aValue = a.email;
+          bValue = b.email;
+          break;
+        case 'credits':
+          aValue = a.credits_remaining || 0;
+          bValue = b.credits_remaining || 0;
+          break;
+        case 'subscription':
+          aValue = a.subscribed ? 1 : 0;
+          bValue = b.subscribed ? 1 : 0;
+          break;
+        default:
+          aValue = a.created_at;
+          bValue = b.created_at;
+      }
+      
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
 
   const getSubscriptionBadgeVariant = (subscribed: boolean, tier?: string) => {
     if (!subscribed) return 'outline';
@@ -206,8 +296,8 @@ const AdminCustomersPage = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Totaal Klanten</CardTitle>
@@ -217,21 +307,21 @@ const AdminCustomersPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                {customers.length}
+                {analytics?.totalCustomers || customers.length}
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Betalende Klanten</CardTitle>
+              <CardTitle className="text-sm font-medium">Actieve Abonnees</CardTitle>
               <div className="p-2 rounded-lg bg-accent/10">
                 <CreditCard className="h-4 w-4 text-accent" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
-                {customers.filter(c => c.subscribed).length}
+                {analytics?.activeSubscribers || customers.filter(c => c.subscribed).length}
               </div>
             </CardContent>
           </Card>
@@ -252,42 +342,128 @@ const AdminCustomersPage = () => {
 
           <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totaal Credits</CardTitle>
+              <CardTitle className="text-sm font-medium">Credits Resterend</CardTitle>
               <div className="p-2 rounded-lg bg-primary/10">
                 <Coins className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                {customers.reduce((sum, c) => sum + (c.credits_remaining || 0), 0)}
+                {analytics?.totalCreditsRemaining || customers.reduce((sum, c) => sum + (c.credits_remaining || 0), 0)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Conversie Ratio</CardTitle>
+              <div className="p-2 rounded-lg bg-accent/10">
+                <UserPlus className="h-4 w-4 text-accent" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+                {analytics?.conversionRate || '0.00'}%
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Nieuwe (30d)</CardTitle>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Calendar className="h-4 w-4 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                {analytics?.recentSignups || 0}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Customers Table */}
+        {/* Enhanced Customers Table */}
         <Card className="border-0 bg-gradient-to-br from-card to-card/50 shadow-elegant animate-fade-in" style={{ animationDelay: '200ms' }}>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="p-1 rounded bg-primary/10">
-                    <Users className="h-4 w-4 text-primary" />
-                  </div>
-                  Alle Klanten
-                </CardTitle>
-                <CardDescription>
-                  Overzicht van alle klanten met abonnement- en creditinformatie
-                </CardDescription>
+            <div className="flex flex-col space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="p-1 rounded bg-primary/10">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    Klanten Beheer
+                  </CardTitle>
+                  <CardDescription>
+                    Geavanceerd overzicht met filtering, sortering en bulk acties
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={fetchCustomers}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Vernieuwen
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleExport}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Exporteren
+                  </Button>
+                </div>
               </div>
-              <div className="relative w-full sm:w-80">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Zoek klanten..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+              
+              {/* Filters and Search */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Zoek op email of naam..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                
+                <Select value={filterRole} onValueChange={setFilterRole}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Rol filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle rollen</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="user">Gebruiker</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={filterSubscription} onValueChange={setFilterSubscription}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Abonnement filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle abonnementen</SelectItem>
+                    <SelectItem value="subscribed">Betalend</SelectItem>
+                    <SelectItem value="free">Gratis</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Sorteer op" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created_at">Datum</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="credits">Credits</SelectItem>
+                    <SelectItem value="subscription">Abonnement</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                >
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -305,7 +481,7 @@ const AdminCustomersPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCustomers.map((customer) => (
+                  {filteredAndSortedCustomers.map((customer) => (
                     <TableRow key={customer.id} className="hover:bg-gradient-to-r hover:from-muted/30 hover:to-transparent">
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
@@ -363,9 +539,29 @@ const AdminCustomersPage = () => {
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuLabel>Acties</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setSelectedCustomer(customer)}
+                            >
                               <Eye className="mr-2 h-4 w-4" />
                               Bekijk details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedCustomer(customer);
+                                setCreditsToAdd(10);
+                              }}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Credits toevoegen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedCustomer(customer);
+                                setNewRole(customer.role || 'user');
+                              }}
+                            >
+                              <Settings className="mr-2 h-4 w-4" />
+                              Rol wijzigen
                             </DropdownMenuItem>
                             {customer.stripe_customer_id && (
                               <DropdownMenuItem>
@@ -383,6 +579,163 @@ const AdminCustomersPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Customer Detail/Action Dialogs */}
+        {selectedCustomer && (
+          <>
+            {/* Add Credits Dialog */}
+            <Dialog open={creditsToAdd > 0} onOpenChange={() => setCreditsToAdd(0)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Credits Toevoegen</DialogTitle>
+                  <DialogDescription>
+                    Credits toevoegen aan {selectedCustomer.email}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Aantal Credits</Label>
+                    <Input
+                      type="number"
+                      value={creditsToAdd}
+                      onChange={(e) => setCreditsToAdd(Number(e.target.value))}
+                      min="1"
+                    />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Huidige credits: {selectedCustomer.credits_remaining || 0}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreditsToAdd(0)}>
+                    Annuleren
+                  </Button>
+                  <Button onClick={handleAddCredits}>
+                    Credits Toevoegen
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Update Role Dialog */}
+            <Dialog open={!!newRole} onOpenChange={() => setNewRole("")}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Rol Wijzigen</DialogTitle>
+                  <DialogDescription>
+                    Rol wijzigen voor {selectedCustomer.email}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Nieuwe Rol</Label>
+                    <Select value={newRole} onValueChange={setNewRole}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">Gebruiker</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Huidige rol: {selectedCustomer.role || 'user'}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setNewRole("")}>
+                    Annuleren
+                  </Button>
+                  <Button onClick={handleUpdateRole}>
+                    Rol Bijwerken
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Customer Details Dialog */}
+            <Dialog open={selectedCustomer && !creditsToAdd && !newRole} onOpenChange={() => setSelectedCustomer(null)}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Klant Details</DialogTitle>
+                  <DialogDescription>
+                    Uitgebreide informatie over {selectedCustomer.email}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Email</Label>
+                      <div className="text-sm text-muted-foreground">{selectedCustomer.email}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Weergavenaam</Label>
+                      <div className="text-sm text-muted-foreground">{selectedCustomer.display_name || 'Niet ingesteld'}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Rol</Label>
+                      <Badge variant={getRoleBadgeVariant(selectedCustomer.role || 'user')}>
+                        {selectedCustomer.role || 'user'}
+                      </Badge>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Geregistreerd</Label>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(selectedCustomer.created_at).toLocaleDateString('nl-NL')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Abonnement Informatie</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Status</Label>
+                        <div className="mt-1">
+                          <Badge variant={getSubscriptionBadgeVariant(selectedCustomer.subscribed || false, selectedCustomer.subscription_tier)}>
+                            {selectedCustomer.subscribed ? selectedCustomer.subscription_tier || 'Actief' : 'Gratis'}
+                          </Badge>
+                        </div>
+                      </div>
+                      {selectedCustomer.subscription_end && (
+                        <div>
+                          <Label className="text-sm font-medium">Verloopt op</Label>
+                          <div className="text-sm text-muted-foreground">
+                            {new Date(selectedCustomer.subscription_end).toLocaleDateString('nl-NL')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Credits Informatie</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Resterend</Label>
+                        <div className="text-sm text-muted-foreground font-mono">
+                          {selectedCustomer.credits_remaining || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Totaal Gebruikt</Label>
+                        <div className="text-sm text-muted-foreground font-mono">
+                          {selectedCustomer.total_credits_used || 0}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSelectedCustomer(null)}>
+                    Sluiten
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
     </div>
   );
