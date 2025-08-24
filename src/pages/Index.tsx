@@ -394,6 +394,132 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 bg-gradient-to-br from-accent/5 to-secondary/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="container relative z-10 px-4">
+          <div className="text-center mb-16">
+            <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-blue-200 px-6 py-3 text-lg font-bold">
+              <Zap className="h-5 w-5 mr-2 animate-pulse" />
+              Zo simpel werkt het
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Van Google Sheet naar SEO Succes
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              In 3 eenvoudige stappen transformeer je jouw content strategie
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                step: "01",
+                title: "Upload je CSV",
+                description: "Sleep je Google Sheets CSV bestand in onze interface. Onze AI herkent automatisch alle kolommen en structureert je data.",
+                icon: "📄",
+                gradient: "from-blue-500 to-purple-600"
+              },
+              {
+                step: "02", 
+                title: "AI doet het werk",
+                description: "Onze geavanceerde AI (GPT-4) schrijft SEO-geoptimaliseerde blogposts gebaseerd op jouw data. Inclusief meta tags, FAQ's en CTA's.",
+                icon: "🤖",
+                gradient: "from-purple-500 to-pink-600"
+              },
+              {
+                step: "03",
+                title: "Publiceer & groei",
+                description: "Export je content direct naar WordPress, Ghost of elk ander CMS. Zie je organic traffic binnen 30 dagen exploderen.",
+                icon: "🚀",
+                gradient: "from-pink-500 to-red-600"
+              }
+            ].map((item, index) => (
+              <Card key={index} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 bg-gradient-to-br from-background to-secondary/5">
+                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.gradient}`} />
+                <CardContent className="p-8 text-center">
+                  <div className="text-6xl mb-6 animate-scale-in" style={{animationDelay: `${index * 0.2}s`}}>
+                    {item.icon}
+                  </div>
+                  <div className={`text-4xl font-bold mb-4 bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`}>
+                    {item.step}
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-foreground">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-br from-background via-primary/5 to-accent/5 relative">
+        <div className="container relative z-10 px-4">
+          <div className="text-center mb-16">
+            <Badge className="mb-6 bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border-green-200 px-6 py-3 text-lg font-bold">
+              <Star className="h-5 w-5 mr-2 fill-current animate-pulse" />
+              Wat onze klanten zeggen
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Bewezen Resultaten
+            </h2>
+            <div className="flex justify-center items-center gap-2 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-8 w-8 text-yellow-400 fill-current animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
+              ))}
+              <span className="text-2xl font-bold text-muted-foreground ml-3">4.9/5 (2,847 reviews)</span>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-background to-primary/5">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-bl-full flex items-center justify-center">
+                  <span className="text-2xl">⭐</span>
+                </div>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <blockquote className="text-lg font-medium mb-6 text-foreground italic">
+                    "{testimonial.content}"
+                  </blockquote>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="font-bold text-foreground">{testimonial.name}</div>
+                      <div className="text-sm text-muted-foreground">{testimonial.company}</div>
+                      <div className="text-sm font-semibold text-primary mt-1">{testimonial.result}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Live Demo CTA */}
+          <div className="text-center">
+            <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-8 rounded-2xl border border-primary/20 max-w-4xl mx-auto">
+              <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                Zie het in actie! 🎬
+              </h3>
+              <p className="text-lg text-muted-foreground mb-6">
+                Bekijk hoe Sarah in 2 minuten 150+ blogposts genereerde
+              </p>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2 border-primary/50 hover:bg-primary hover:text-white group">
+                <Play className="mr-2 h-6 w-6 group-hover:animate-bounce" />
+                Bekijk 2-minuten Demo
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Revolutionary Pricing Section */}
       <section className="py-24 relative">
         <div className="container relative z-10">
@@ -610,39 +736,145 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-20 bg-gradient-to-br from-background via-primary/5 to-accent/5">
+        <div className="container px-4">
+          <div className="text-center mb-16">
+            <Badge className="mb-6 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-200 px-6 py-3 text-lg font-bold">
+              <Target className="h-5 w-5 mr-2 animate-pulse" />
+              Veelgestelde vragen
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Laatste twijfels weggenomen
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Deze vragen krijgen we het meest. Staat jouw vraag er niet bij? Chat met ons!
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                q: "Hoe snel zie ik resultaten?",
+                a: "De meeste klanten zien binnen 2-4 weken significante stijgingen in organic traffic. Sarah zag na 14 dagen al 340% meer bezoekers. De AI content rankt gemiddeld 3x sneller dan handgeschreven content."
+              },
+              {
+                q: "Moet ik technische kennis hebben?",
+                a: "Absoluut niet! Upload gewoon je Google Sheet CSV en onze AI doet alles. Geen programmeren, geen technische setup. Zelfs je oma kan het gebruiken. Gemiddelde setup tijd: 2 minuten."
+              },
+              {
+                q: "Wat als ik niet tevreden ben?",
+                a: "30 dagen geld-terug-garantie, geen vragen gesteld. We zijn zo zeker van onze resultaten dat 98.7% van onze klanten hun abonnement verlengt. Risk-free uitproberen dus!"
+              },
+              {
+                q: "Hoe zit het met SEO kwaliteit?",
+                a: "Onze AI is getraind op 10M+ top-rankende artikelen. Elke post krijgt perfecte meta tags, H1-H6 structuur, keyword density en readability score. Google HOUDT van onze content."
+              },
+              {
+                q: "Kan ik de content aanpassen?",
+                a: "Natuurlijk! Alle gegenereerde content is 100% bewerkbaar. Je kunt handmatig edits maken of onze bulk-edit tools gebruiken. Volledige controle over je content."
+              },
+              {
+                q: "Ondersteunt het mijn CMS?",
+                a: "WordPress, Ghost, Webflow, Squarespace, Shopify - we integreren met 15+ platforms. Export naar CSV, JSON of direct publish. API beschikbaar voor custom setups."
+              }
+            ].map((faq, index) => (
+              <Card key={index} className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 border border-border/50 hover:border-primary/20 bg-gradient-to-br from-background to-primary/5">
+                <CardContent className="p-8">
+                  <h3 className="text-xl font-bold mb-4 text-foreground group-hover:text-primary transition-colors">
+                    {faq.q}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
+                    {faq.a}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Still have questions CTA */}
+          <div className="text-center mt-16">
+            <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-8 rounded-2xl border border-primary/20 max-w-4xl mx-auto">
+              <h3 className="text-2xl font-bold mb-4 text-foreground">
+                Nog vragen? 💬
+              </h3>
+              <p className="text-lg text-muted-foreground mb-6">
+                Chat direct met ons support team. Gemiddelde reactietijd: 2 minuten.
+              </p>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2 border-primary/50 hover:bg-primary hover:text-white group">
+                <Users className="mr-2 h-6 w-6 group-hover:animate-bounce" />
+                Start Live Chat
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
-      <section className="py-24 hero-gradient relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-br from-primary via-primary to-primary/90 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container text-center relative z-10">
           <div className="max-w-4xl mx-auto text-white">
-            <h3 className="text-5xl font-heading font-bold mb-8 drop-shadow-xl">
-              Stop met Geld Verspillen aan Dure Copywriters
+            <Badge className="mb-8 bg-white text-primary border-0 px-8 py-4 text-lg font-bold animate-pulse shadow-xl">
+              <Clock className="h-6 w-6 mr-3 animate-spin" />
+              ⚡ LAATSTE KANS: Actie eindigt over {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+            </Badge>
+            <h3 className="text-4xl md:text-6xl font-bold mb-8 drop-shadow-xl leading-tight">
+              Stop met Geld Verspillen aan 
+              <span className="block text-yellow-300 mt-4">Dure Copywriters</span>
             </h3>
-            <p className="text-2xl mb-10 text-white/95 drop-shadow-lg leading-relaxed">
-              Word de volgende successtory. 2.500+ bedrijven gingen je voor.
+            <p className="text-xl md:text-2xl mb-10 text-white/95 drop-shadow-lg leading-relaxed">
+              Word de volgende successtory. <strong className="text-yellow-300">2.500+ bedrijven gingen je voor</strong> en besparen nu €15k+ per jaar.
             </p>
-            <div className="space-y-6">
+            <div className="space-y-8">
+              <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 shadow-2xl max-w-2xl mx-auto">
+                <div className="grid grid-cols-3 gap-4 text-white font-semibold">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-yellow-300">95%</div>
+                    <div className="text-sm">Tijd Besparing</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-yellow-300">€15k+</div>
+                    <div className="text-sm">Jaarlijkse Besparing</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-yellow-300">14 dagen</div>
+                    <div className="text-sm">Gratis Trial</div>
+                  </div>
+                </div>
+              </div>
+              
               <Button 
                 size="lg" 
-                className="text-2xl px-12 py-8 bg-gradient-to-r from-white to-gray-100 text-primary hover:from-gray-100 hover:to-white font-bold shadow-2xl transform hover:scale-110 transition-all duration-300"
+                className="text-xl md:text-2xl px-8 md:px-16 py-6 md:py-8 bg-gradient-to-r from-white to-gray-100 text-primary hover:from-gray-100 hover:to-white font-bold shadow-2xl transform hover:scale-110 transition-all duration-300 min-h-[80px]"
                 onClick={() => handleSubscribe('professional')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-3 h-8 w-8 animate-spin" />
-                    Bezig met laden...
+                    <span>Bezig met laden...</span>
                   </>
                 ) : (
-                  <>
-                    Ja, ik wil 95% tijd besparen
+                  <div className="flex items-center justify-center">
+                    <Rocket className="mr-3 h-8 w-8 animate-bounce" />
+                    <span className="text-center leading-tight">
+                      <span className="block">Ja, ik wil 95% tijd besparen</span>
+                      <span className="block text-sm opacity-80">Start nu gratis - geen creditcard</span>
+                    </span>
                     <ArrowRight className="ml-3 h-8 w-8" />
-                  </>
+                  </div>
                 )}
               </Button>
-              <p className="text-xl text-white/90 drop-shadow-md">
-                💳 Geen creditcard • 🚀 Direct toegang • 💯 30 dagen geld terug
+              
+              <p className="text-lg md:text-xl text-white/90 drop-shadow-md">
+                💳 Geen creditcard • 🚀 Setup in 2 min • 💯 30 dagen geld terug • 🔒 SSL beveiligd
               </p>
+              
+              <div className="text-sm text-white/80">
+                <p>⭐ Gemiddelde beoordeling: 4.9/5 sterren (2,847 reviews)</p>
+                <p className="mt-2">🏆 #1 Content Automation Tool van 2024</p>
+              </div>
             </div>
           </div>
         </div>
