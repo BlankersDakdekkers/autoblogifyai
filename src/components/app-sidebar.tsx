@@ -1,11 +1,14 @@
 import { useState } from "react"
-import { FileText, ChevronDown, ChevronRight } from "lucide-react"
-import { NavLink, useLocation } from "react-router-dom"
+import { FileText, ChevronDown, ChevronRight, LogOut, User } from "lucide-react"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useNavigationSections, isActiveRoute } from "./Navigation"
+import { useAuth } from "@/contexts/AuthContext"
+import { Button } from "@/components/ui/button"
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -21,6 +24,8 @@ export function AppSidebar() {
   const location = useLocation()
   const currentPath = location.pathname
   const navigationSections = useNavigationSections()
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
 
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     "Dashboard": true,
@@ -45,6 +50,11 @@ export function AppSidebar() {
         ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-semibold shadow-md" 
         : "hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/30 hover:shadow-sm"
     }`
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/auth')
   }
 
   return (
@@ -123,6 +133,42 @@ export function AppSidebar() {
           )
         })}
       </SidebarContent>
+      
+      {/* Footer with user info and logout */}
+      <SidebarFooter className="border-t bg-muted/30">
+        <div className="flex items-center gap-3 p-3">
+          {!collapsed ? (
+            <>
+              <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user?.email}</p>
+                <p className="text-xs text-muted-foreground">Ingelogd</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                title="Uitloggen"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="w-full h-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+              title="Uitloggen"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }

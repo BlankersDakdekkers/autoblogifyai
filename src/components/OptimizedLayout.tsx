@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import SimpleHeader from "@/components/SimpleHeader";
+import Footer from "@/components/Footer";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { LoadingFallback } from './LoadingFallback';
 import { cn } from '@/lib/utils';
@@ -49,13 +50,14 @@ const DashboardLayout = memo(({ children }: { children: React.ReactNode }) => {
 DashboardLayout.displayName = 'DashboardLayout';
 
 const SimpleLayout = memo(({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen bg-background">
+  <div className="min-h-screen bg-background flex flex-col">
     <SimpleHeader />
-    <main className="animate-fade-in">
+    <main className="animate-fade-in flex-1">
       <Suspense fallback={<LoadingFallback />}>
         {children}
       </Suspense>
     </main>
+    <Footer />
   </div>
 ));
 
