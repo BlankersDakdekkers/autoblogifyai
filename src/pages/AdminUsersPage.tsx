@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Users, Search, MoreHorizontal, Mail, Calendar, Shield, UserX, UserCheck, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { callEdgeFunction } from "@/utils/api-helpers";
 
 interface UserData {
   id: string;
@@ -33,23 +34,8 @@ const AdminUsersPage = () => {
     try {
       setLoading(true);
       
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Niet geautoriseerd",
-          description: "Je moet ingelogd zijn om gebruikers te bekijken",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Call our Edge Function to list users
-      const { data, error } = await supabase.functions.invoke('admin-list-users', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      // Use the improved edge function helper
+      const { data, error } = await callEdgeFunction('admin-list-users');
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -61,7 +47,9 @@ const AdminUsersPage = () => {
         return;
       }
 
-      setUsers(data.users);
+      if (data?.users) {
+        setUsers(data.users);
+      }
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -76,23 +64,9 @@ const AdminUsersPage = () => {
 
   const handleUpdateUserRole = async (userId: string, newRole: string) => {
     try {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Niet geautoriseerd",
-          description: "Je moet ingelogd zijn om rollen bij te werken",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Call our Edge Function to update user role
-      const { error } = await supabase.functions.invoke('admin-update-user-role', {
-        body: { userId, newRole },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      // Use the improved edge function helper
+      const { error } = await callEdgeFunction('admin-update-user-role', {
+        body: { userId, newRole }
       });
 
       if (error) {
