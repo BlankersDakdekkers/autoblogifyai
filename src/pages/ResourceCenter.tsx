@@ -166,13 +166,29 @@ const ResourceCenter = () => {
 
           <div className="flex gap-2">
             {resource.external_url && (
-              <Button size="sm" className="flex-1">
+              <Button 
+                size="sm" 
+                className="flex-1"
+                onClick={() => window.open(resource.external_url, '_blank')}
+              >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Bekijken
               </Button>
             )}
             {resource.download_url && (
-              <Button variant="outline" size="sm" className="flex-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = resource.download_url!;
+                  link.download = '';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
                 <Download className="w-4 h-4 mr-1" />
                 Download
               </Button>
