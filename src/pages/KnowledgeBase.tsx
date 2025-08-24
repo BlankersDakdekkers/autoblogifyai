@@ -62,7 +62,7 @@ interface Category {
 }
 
 const KnowledgeBase = () => {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -789,51 +789,59 @@ ${item.title} vereist een strategische aanpak en constante optimalisatie. Door d
           </p>
         </div>
         <div className="flex gap-2">
-          <div className="relative">
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={isUploading}
-            />
-            <Button disabled={isUploading} variant="outline">
-              {isUploading ? (
-                <>
-                  <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Uploaden...
-                </>
-              ) : (
-                <>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Excel/CSV Upload
-                </>
-              )}
+          {userRole === 'admin' && (
+            <div className="relative">
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={isUploading}
+              />
+              <Button disabled={isUploading} variant="outline">
+                {isUploading ? (
+                  <>
+                    <Clock className="h-4 w-4 mr-2 animate-spin" />
+                    Uploaden...
+                  </>
+                ) : (
+                  <>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Excel/CSV Upload
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+          {userRole === 'admin' && (
+            <Button onClick={() => setIsEditMode(!isEditMode)}>
+              <Plus className="h-4 w-4 mr-2" />
+              {isEditMode ? "Annuleren" : "Nieuw Item"}
             </Button>
-          </div>
-          <Button onClick={() => setIsEditMode(!isEditMode)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {isEditMode ? "Annuleren" : "Nieuw Item"}
-          </Button>
-          <Button 
-            onClick={() => setShowProgressSidebar(!showProgressSidebar)}
-            variant="outline"
-            className={showProgressSidebar ? "bg-primary/10" : ""}
-          >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            AI Progress
-          </Button>
+          )}
+          {userRole === 'admin' && (
+            <Button 
+              onClick={() => setShowProgressSidebar(!showProgressSidebar)}
+              variant="outline"
+              className={showProgressSidebar ? "bg-primary/10" : ""}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              AI Progress
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Excel Upload Info */}
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>AI Content Generator:</strong> Upload Excel (.xlsx, .xls) of CSV bestanden met minimaal een 'Title' kolom. 
-          AI genereert automatisch complete SEO-geoptimaliseerde blogposts met neuromarketing technieken, inclusief meta beschrijvingen, FAQ's, CTA's en passende afbeeldingen. Je krijgt eerst een preview voordat items worden toegevoegd.
-        </AlertDescription>
-      </Alert>
+      {/* Excel Upload Info - Only show for admins */}
+      {userRole === 'admin' && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>AI Content Generator:</strong> Upload Excel (.xlsx, .xls) of CSV bestanden met minimaal een 'Title' kolom. 
+            AI genereert automatisch complete SEO-geoptimaliseerde blogposts met neuromarketing technieken, inclusief meta beschrijvingen, FAQ's, CTA's en passende afbeeldingen. Je krijgt eerst een preview voordat items worden toegevoegd.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Review Modal - Artikel voor artikel beoordeling */}
       {showPreview && previewItems.length > 0 && (
