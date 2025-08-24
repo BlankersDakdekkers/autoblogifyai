@@ -12,9 +12,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Admin list users function called');
+    
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.log('No authorization header found');
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
         { 
@@ -24,66 +29,68 @@ serve(async (req) => {
       );
     }
 
-    // Create a regular Supabase client to verify the user is authenticated and has admin role
+    // Create admin client with service role key first
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
-    // Create client with the auth header included in all requests
-    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { 
-        headers: { 
-          Authorization: authHeader 
-        } 
-      },
-      auth: {
-        persistSession: false
-      }
-    });
-
+    console.log('Environment variables loaded');
+    
     // Extract JWT from Bearer token
     const jwt = authHeader.replace('Bearer ', '');
+    console.log('JWT extracted, length:', jwt.length);
     
-    // Set the session with the JWT token
-    const { data: sessionData, error: sessionError } = await userSupabase.auth.setSession({
-      access_token: jwt,
-      refresh_token: ''
-    });
+    // Use service role to verify the JWT and get user info
+    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    if (sessionError || !sessionData.user) {
-      console.error('Error setting session:', sessionError);
+    try {
+      // Verify JWT token using service role client
+      const { data: { user }, error: jwtError } = await adminSupabase.auth.getUser(jwt);
+      
+      if (jwtError || !user) {
+        console.error('JWT verification failed:', jwtError);
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired token' }),
+          { 
+            status: 401, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      console.log('User verified:', user.id);
+      
+      // Check if user has admin role using service role client
+      const { data: roleData, error: roleError } = await adminSupabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (roleError || !roleData) {
+        console.error('User is not admin:', roleError);
+        return new Response(
+          JSON.stringify({ error: 'Not authorized - admin role required' }),
+          { 
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+      console.log('Admin role verified');
+      
+    } catch (error) {
+      console.error('Error during authentication:', error);
       return new Response(
-        JSON.stringify({ error: 'Not authenticated' }),
+        JSON.stringify({ error: 'Authentication failed' }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
-
-    const user = sessionData.user;
-
-    // Check if user has admin role
-    const { data: roleData, error: roleError } = await userSupabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    if (roleError || !roleData) {
-      console.error('User is not admin:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Not authorized - admin role required' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Create admin client with service role key
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // List all users
     const { data: authUsers, error: listError } = await adminSupabase.auth.admin.listUsers();
