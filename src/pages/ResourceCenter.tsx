@@ -122,6 +122,50 @@ const ResourceCenter = () => {
     }
   };
 
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const handleViewResource = (resource: Resource) => {
+    if (!resource.external_url) {
+      toast.error('Geen externe URL beschikbaar');
+      return;
+    }
+
+    // Check for placeholder/dummy URLs
+    const placeholderPatterns = [
+      /docs\.google\.com\/document\/d\/1234567890/,
+      /youtube\.com\/watch\?v=.*_tutorial$/,
+      /example\.com/,
+      /placeholder/i,
+      /dummy/i
+    ];
+
+    const isPlaceholder = placeholderPatterns.some(pattern => pattern.test(resource.external_url!));
+    
+    if (isPlaceholder) {
+      toast.error('Deze resource is momenteel niet beschikbaar. We werken eraan om deze toe te voegen.');
+      return;
+    }
+
+    if (!isValidUrl(resource.external_url)) {
+      toast.error('Ongeldige URL format');
+      return;
+    }
+
+    try {
+      window.open(resource.external_url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error opening URL:', error);
+      toast.error('Kan de resource niet openen');
+    }
+  };
+
   const ResourceCard = ({ resource }: { resource: Resource }) => {
     const Icon = getTypeIcon(resource.type);
     
@@ -169,7 +213,7 @@ const ResourceCenter = () => {
               <Button 
                 size="sm" 
                 className="flex-1"
-                onClick={() => window.open(resource.external_url, '_blank')}
+                onClick={() => handleViewResource(resource)}
               >
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Bekijken
