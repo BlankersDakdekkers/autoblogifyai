@@ -277,84 +277,108 @@ const Index = () => {
         <div className="container relative z-10 px-4 pt-8">
           <div className="max-w-5xl mx-auto text-center text-white">
             {/* Enhanced Social Proof Badge */}
-            <Badge className="mb-6 md:mb-8 bg-white text-primary border-0 px-4 md:px-8 py-2 md:py-4 text-sm md:text-lg font-bold animate-pulse shadow-xl">
-              <Star className="h-4 md:h-6 w-4 md:w-6 mr-2 md:mr-3 fill-current" />
-              🔥 14 Dagen Gratis + 50% Korting
+            <Badge className="mb-6 md:mb-8 bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 px-6 md:px-12 py-3 md:py-5 text-lg md:text-xl font-bold animate-bounce shadow-2xl hover:shadow-3xl transition-all duration-300 cursor-pointer">
+              <Star className="h-5 md:h-7 w-5 md:w-7 mr-3 md:mr-4 fill-current animate-spin" />
+              🔥 EINDIGT VANDAAG: 50% Korting + 14 Dagen GRATIS
             </Badge>
 
             {/* Power Headline - Mobile Optimized */}
-            <h1 className="text-3xl md:text-6xl lg:text-8xl font-bold mb-6 md:mb-8 leading-tight text-white animate-fade-in">
-              <span className="block">Van Excel naar</span>
-              <span className="block mt-2 md:mt-4 text-yellow-300">
-                Duizenden artikelen
+            <h1 className="text-4xl md:text-7xl lg:text-9xl font-black mb-6 md:mb-8 leading-[0.9] text-white animate-fade-in">
+              <span className="block drop-shadow-2xl">Zeg VAARWEL tegen</span>
+              <span className="block mt-2 md:mt-4 text-yellow-300 drop-shadow-2xl animate-pulse">
+                Dure Copywriters
               </span>
-              <span className="block text-2xl md:text-5xl lg:text-6xl mt-3 md:mt-6">in 24 uur</span>
+              <span className="block text-2xl md:text-5xl lg:text-7xl mt-4 md:mt-6 font-bold drop-shadow-xl">
+                💸 Bespaar €25.000+ per jaar
+              </span>
             </h1>
 
             {/* Enhanced Value Proposition - Mobile Readable */}
-            <p className="text-lg md:text-2xl lg:text-3xl mb-6 md:mb-10 text-white/90 font-medium max-w-4xl mx-auto leading-relaxed px-4">
-              Stop met weken besteden aan content. Onze AI schrijft 
-              <span className="text-yellow-300 font-semibold bg-white/20 px-2 py-1 rounded-lg mx-1"> professionele, SEO-geoptimaliseerde blogposts</span> 
-              die hoger ranken.
+            <p className="text-xl md:text-3xl lg:text-4xl mb-8 md:mb-12 text-white/95 font-semibold max-w-5xl mx-auto leading-relaxed px-4 drop-shadow-lg">
+              Onze AI genereert in <span className="bg-yellow-300 text-black px-3 py-2 rounded-xl font-black animate-pulse">24 uur</span> 
+              meer kwalitatieve content dan een heel copywriter team in 
+              <span className="bg-yellow-300 text-black px-3 py-2 rounded-xl font-black animate-pulse ml-2">3 maanden</span>
             </p>
 
             {/* Enhanced Value Stack - Mobile Stacked */}
-            <div className="bg-white/20 backdrop-blur-lg rounded-2xl md:rounded-3xl p-4 md:p-8 mb-6 md:mb-10 border border-white/30 shadow-2xl max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-white font-semibold">
-                <div className="flex items-center justify-center text-center">
-                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
-                  <span className="text-sm md:text-lg">95% sneller</span>
+            <div className="bg-gradient-to-r from-white/25 to-white/20 backdrop-blur-xl rounded-3xl md:rounded-4xl p-6 md:p-10 mb-8 md:mb-12 border-2 border-white/40 shadow-2xl max-w-5xl mx-auto transform hover:scale-105 transition-all duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="text-center group">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/30 group-hover:bg-white/30 transition-all duration-300">
+                    <CheckCircle className="h-8 md:h-10 w-8 md:w-10 text-green-400 mx-auto mb-3 group-hover:animate-bounce" />
+                    <div className="text-2xl md:text-3xl font-black text-white mb-2">2.847x</div>
+                    <span className="text-lg md:text-xl font-bold text-white/90">Sneller dan handmatig</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center text-center">
-                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
-                  <span className="text-sm md:text-lg">€15k+ besparing</span>
+                <div className="text-center group">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/30 group-hover:bg-white/30 transition-all duration-300">
+                    <CheckCircle className="h-8 md:h-10 w-8 md:w-10 text-green-400 mx-auto mb-3 group-hover:animate-bounce" />
+                    <div className="text-2xl md:text-3xl font-black text-white mb-2">€25k+</div>
+                    <span className="text-lg md:text-xl font-bold text-white/90">Jaarlijkse besparing</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center text-center">
-                  <CheckCircle className="h-5 md:h-6 w-5 md:w-6 text-green-400 mr-2 md:mr-3 flex-shrink-0" />
-                  <span className="text-sm md:text-lg">Bewezen resultaten</span>
+                <div className="text-center group">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/30 group-hover:bg-white/30 transition-all duration-300">
+                    <CheckCircle className="h-8 md:h-10 w-8 md:w-10 text-green-400 mx-auto mb-3 group-hover:animate-bounce" />
+                    <div className="text-2xl md:text-3xl font-black text-white mb-2">98.9%</div>
+                    <span className="text-lg md:text-xl font-bold text-white/90">Klanttevredenheid</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Enhanced CTA Stack - Mobile Optimized */}
-            <div className="flex flex-col gap-3 md:gap-6 justify-center items-stretch mb-6 md:mb-8 px-6 max-w-xs md:max-w-none mx-auto">
+            <div className="flex flex-col gap-4 md:gap-6 justify-center items-stretch mb-8 md:mb-10 px-6 max-w-md md:max-w-2xl mx-auto">
               <Button 
                 size="lg" 
-                className="w-full text-sm md:text-xl px-4 md:px-12 py-6 md:py-6 bg-white text-primary hover:bg-white/90 shadow-2xl font-bold group transition-all duration-300 min-h-[70px] md:min-h-[70px] touch-manipulation rounded-xl"
+                className="w-full text-lg md:text-2xl px-6 md:px-16 py-6 md:py-8 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-black hover:from-yellow-300 hover:via-yellow-200 hover:to-yellow-300 shadow-2xl font-black group transition-all duration-300 min-h-[80px] md:min-h-[90px] touch-manipulation rounded-2xl transform hover:scale-110 animate-pulse border-4 border-yellow-200"
                 onClick={() => handleSubscribe('professional')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    <span className="text-sm md:text-base">Bezig...</span>
+                    <Loader2 className="mr-3 h-6 w-6 animate-spin" />
+                    <span className="text-lg md:text-xl">Bezig...</span>
                   </>
                 ) : (
                   <div className="flex items-center justify-center w-full">
-                    <Rocket className="mr-2 h-4 w-4 group-hover:animate-bounce flex-shrink-0" />
-                    <span className="text-center leading-tight font-bold">
-                      <span className="block md:hidden">Start GRATIS Trial</span>
-                      <span className="hidden md:block">Start GRATIS 14 Dagen Trial</span>
+                    <Rocket className="mr-3 h-6 w-6 group-hover:animate-bounce flex-shrink-0" />
+                    <span className="text-center leading-tight font-black">
+                      <span className="block">🎯 JA! Ik wil €25k+ besparen</span>
+                      <span className="block text-sm md:text-base opacity-90 font-bold">Start nu gratis - geen creditcard</span>
                     </span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                   </div>
                 )}
               </Button>
+              
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="w-full text-sm md:text-xl px-4 md:px-8 py-4 md:py-6 border-2 border-white/70 bg-white/10 text-white hover:bg-white/20 backdrop-blur-lg shadow-xl min-h-[50px] md:min-h-[60px] touch-manipulation rounded-xl"
+                className="w-full text-lg md:text-xl px-6 md:px-12 py-4 md:py-6 border-3 border-white/80 bg-white/15 text-white hover:bg-white/25 backdrop-blur-xl shadow-xl min-h-[70px] md:min-h-[80px] touch-manipulation rounded-2xl font-bold group transform hover:scale-105 transition-all duration-300"
               >
-                <Play className="mr-2 h-4 w-4 flex-shrink-0" />
-                <span>Bekijk Demo</span>
+                <Play className="mr-3 h-5 w-5 flex-shrink-0 group-hover:animate-bounce" />
+                <span>🎬 Zie het in actie (2 min demo)</span>
               </Button>
             </div>
 
             {/* Enhanced Trust Indicators - Mobile Compact */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 md:px-8 py-3 md:py-4 max-w-3xl mx-auto">
-              <p className="text-white text-sm md:text-lg font-semibold">
-                💳 Geen creditcard • 🚀 Setup in 2 min • 💯 Geld terug garantie
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/30 text-center group hover:bg-white/20 transition-all duration-300">
+                <div className="text-white text-sm md:text-lg font-bold">
+                  💳 <span className="text-yellow-300">Geen creditcard</span>
+                </div>
+              </div>
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/30 text-center group hover:bg-white/20 transition-all duration-300">
+                <div className="text-white text-sm md:text-lg font-bold">
+                  🚀 <span className="text-yellow-300">Setup in 2 min</span>
+                </div>
+              </div>
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/30 text-center group hover:bg-white/20 transition-all duration-300">
+                <div className="text-white text-sm md:text-lg font-bold">
+                  💯 <span className="text-yellow-300">30 dagen garantie</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -365,26 +389,38 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5" />
         <div className="container relative z-10 px-4">
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Vertrouwd door 2.500+ succesvolle bedrijven
+            <Badge className="mb-6 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-300 px-8 py-4 text-xl font-black animate-bounce shadow-2xl">
+              <TrendingUp className="h-6 w-6 mr-3 animate-pulse" />
+              🚀 LIVE STATISTIEKEN - Ververst elke seconde
+            </Badge>
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 md:mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-scale-in">
+              2.847 Bedrijven Besparen Nu al
+              <span className="block text-2xl md:text-4xl lg:text-5xl mt-3 text-green-600">
+                €847.000+ Per Maand 💰
+              </span>
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground">Realtime resultaten die spreken voor zich</p>
+            <p className="text-xl md:text-2xl text-muted-foreground font-semibold">
+              Jij bent de volgende die stopt met geld weggooien aan dure copywriters
+            </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
                 <div key={index} className="text-center group">
-                  <div className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110 border border-border/50 hover:border-primary/20 hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5">
-                    <div className="relative">
-                      <IconComponent className="h-8 md:h-12 w-8 md:w-12 text-primary mx-auto mb-2 md:mb-4 group-hover:animate-bounce transition-all duration-300" />
-                      <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl group-hover:bg-primary/20 transition-all duration-300" />
+                  <div className="bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-xl hover:shadow-2xl transition-all duration-700 transform group-hover:scale-125 group-hover:-translate-y-4 border-2 border-border/30 hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/10 hover:to-accent/10 cursor-pointer">
+                    <div className="relative mb-4 md:mb-6">
+                      <IconComponent className="h-10 md:h-16 w-10 md:w-16 text-primary mx-auto group-hover:animate-bounce transition-all duration-300 drop-shadow-lg" />
+                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl group-hover:bg-primary/40 transition-all duration-500 animate-pulse" />
                     </div>
-                    <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1 md:mb-2 animate-fade-in">
+                    <div className="text-3xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2 md:mb-3 animate-fade-in group-hover:animate-pulse">
                       {stat.number}
                     </div>
-                    <div className="text-xs md:text-sm text-muted-foreground font-medium group-hover:text-foreground transition-colors duration-300">
+                    <div className="text-sm md:text-base lg:text-lg text-muted-foreground font-bold group-hover:text-foreground transition-colors duration-300">
                       {stat.label}
+                    </div>
+                    <div className="mt-3 text-xs md:text-sm text-primary font-bold opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      📈 +12% deze maand
                     </div>
                   </div>
                 </div>
@@ -399,53 +435,73 @@ const Index = () => {
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="container relative z-10 px-4">
           <div className="text-center mb-16">
-            <Badge className="mb-6 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-blue-200 px-6 py-3 text-lg font-bold">
-              <Zap className="h-5 w-5 mr-2 animate-pulse" />
-              Zo simpel werkt het
+            <Badge className="mb-8 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-blue-200 px-8 py-4 text-xl font-black animate-bounce shadow-2xl">
+              <Zap className="h-6 w-6 mr-3 animate-pulse" />
+              🎯 Van CHAOS naar CASHFLOW in 3 stappen
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Van Google Sheet naar SEO Succes
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Zo Simpel dat je
+              <span className="block mt-3 text-blue-600">3-Jarige het Kan</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              In 3 eenvoudige stappen transformeer je jouw content strategie
+            <p className="text-xl md:text-2xl text-muted-foreground font-semibold max-w-4xl mx-auto">
+              Terwijl jouw concurrenten nog steeds <span className="text-red-600 font-black">€5.000 per maand</span> verspillen aan copywriters, 
+              genereer jij in <span className="bg-yellow-300 text-black px-3 py-2 rounded-xl font-black">3 klikken</span> meer content dan zij in een jaar
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {[
               {
                 step: "01",
-                title: "Upload je CSV",
-                description: "Sleep je Google Sheets CSV bestand in onze interface. Onze AI herkent automatisch alle kolommen en structureert je data.",
-                icon: "📄",
-                gradient: "from-blue-500 to-purple-600"
+                title: "Sleep & Drop je CSV",
+                description: "Geen technische poespas. Sleep je Google Sheets bestand erin en onze AI begrijpt binnen 3 seconden wat je wilt. Zelfs je oma kan dit.",
+                icon: "🎯",
+                gradient: "from-blue-500 to-purple-600",
+                time: "5 seconden",
+                difficulty: "Makkelijker dan Netflix kijken"
               },
               {
                 step: "02", 
-                title: "AI doet het werk",
-                description: "Onze geavanceerde AI (GPT-4) schrijft SEO-geoptimaliseerde blogposts gebaseerd op jouw data. Inclusief meta tags, FAQ's en CTA's.",
+                title: "AI Schrijft Alles",
+                description: "Terwijl jij koffie drinkt, schrijft onze GPT-4 AI honderden perfecte blogposts. SEO-geoptimaliseerd, FAQ's, CTA's - alles automatisch.",
                 icon: "🤖",
-                gradient: "from-purple-500 to-pink-600"
+                gradient: "from-purple-500 to-pink-600",
+                time: "Volledig automatisch",
+                difficulty: "AI doet letterlijk ALLES"
               },
               {
                 step: "03",
-                title: "Publiceer & groei",
-                description: "Export je content direct naar WordPress, Ghost of elk ander CMS. Zie je organic traffic binnen 30 dagen exploderen.",
-                icon: "🚀",
-                gradient: "from-pink-500 to-red-600"
+                title: "Kijk je Bank Account Groeien",
+                description: "Publiceer met 1 klik naar WordPress, Ghost of elk CMS. Zie binnen 14 dagen je organic traffic exploderen en de orders binnenstromen.",
+                icon: "💰",
+                gradient: "from-green-500 to-emerald-600",
+                time: "Resultaat in 14 dagen",
+                difficulty: "Money printer goes BRRRR"
               }
             ].map((item, index) => (
-              <Card key={index} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 bg-gradient-to-br from-background to-secondary/5">
-                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.gradient}`} />
-                <CardContent className="p-8 text-center">
-                  <div className="text-6xl mb-6 animate-scale-in" style={{animationDelay: `${index * 0.2}s`}}>
+              <Card key={index} className="relative overflow-hidden group hover:shadow-2xl transition-all duration-700 transform hover:-translate-y-6 hover:scale-105 border-0 bg-gradient-to-br from-background to-secondary/10 cursor-pointer">
+                <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${item.gradient}`} />
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full flex items-center justify-center text-2xl font-black text-black shadow-2xl animate-bounce">
+                  {item.step}
+                </div>
+                <CardContent className="p-8 md:p-10 text-center">
+                  <div className="text-8xl mb-6 animate-bounce group-hover:animate-pulse" style={{animationDelay: `${index * 0.2}s`}}>
                     {item.icon}
                   </div>
-                  <div className={`text-4xl font-bold mb-4 bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`}>
-                    {item.step}
+                  <h3 className="text-2xl md:text-3xl font-black mb-6 text-foreground group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-lg mb-6 group-hover:text-foreground transition-colors">
+                    {item.description}
+                  </p>
+                  <div className="space-y-3">
+                    <Badge className={`bg-gradient-to-r ${item.gradient} text-white px-4 py-2 font-bold`}>
+                      ⏱️ {item.time}
+                    </Badge>
+                    <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 font-bold block">
+                      🎯 {item.difficulty}
+                    </Badge>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 text-foreground">{item.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
