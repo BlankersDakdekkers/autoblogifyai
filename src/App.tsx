@@ -91,43 +91,83 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const App = () => (
-  <LanguageProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter 
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <AuthProvider>
-             <Routes>
-               <Route path="/" element={<><SimpleHeader /><Index /></>} />
-               <Route path="/auth" element={<AuthPage />} />
-               
-               {/* ULTRA SIMPLE TEST ROUTE */}
-               <Route 
-                 path="/dashboard/cms-integration" 
-                 element={
-                   <div style={{padding: '2rem', background: 'red', color: 'white', fontSize: '2rem'}}>
-                     🚨 ROUTE FOUND! Dit werkt als je dit ziet!
-                   </div>
-                 } 
-               />
-               
-               <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-               
-               {/* ALLE ANDERE ROUTES TIJDELIJK UITGESCHAKELD VOOR TEST */}
-               <Route path="*" element={<NotFound />} />
-             </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </LanguageProvider>
-);
+const App = () => {
+  console.log("🔍 App component is rendering");
+  console.log("🔍 Current location:", window.location.pathname);
+  
+  return (
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter 
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
+            <AuthProvider>
+              <Routes>
+                <Route path="/" element={<><SimpleHeader /><Index /></>} />
+                <Route path="/auth" element={<AuthPage />} />
+                
+                {/* EMERGENCY TEST ROUTE */}
+                <Route 
+                  path="/dashboard/cms-integration" 
+                  element={
+                    <div style={{
+                      padding: '4rem', 
+                      background: 'red', 
+                      color: 'white', 
+                      fontSize: '3rem',
+                      textAlign: 'center',
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      zIndex: 9999
+                    }}>
+                      🚨 NOODROUTE ACTIEF! 🚨<br/>
+                      Als je dit ziet werkt routing!<br/>
+                      URL: {window.location.pathname}
+                    </div>
+                  } 
+                />
+                
+                <Route 
+                  path="/dashboard/cms-integrations" 
+                  element={
+                    <div style={{
+                      padding: '4rem', 
+                      background: 'blue', 
+                      color: 'white', 
+                      fontSize: '3rem',
+                      textAlign: 'center',
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      zIndex: 9999
+                    }}>
+                      🚨 BACKUP NOODROUTE ACTIEF! 🚨<br/>
+                      URL: {window.location.pathname}
+                    </div>
+                  } 
+                />
+                
+                <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </LanguageProvider>
+  );
+};
 
 export default App;
