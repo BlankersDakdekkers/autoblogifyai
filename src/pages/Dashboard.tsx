@@ -9,17 +9,12 @@ import { NewUserDashboard } from '@/components/NewUserDashboard';
 const Dashboard = () => {
   const { user, profile, userRole } = useAuth();
 
-  // Show admin setup for admin users
-  if (userRole === 'admin') {
-    return <AdminSetup />;
-  }
-
-  // Show new user dashboard for users without profile or new users
+  // Show new user dashboard for users without profile or incomplete onboarding
   if (!profile || !profile.onboarding_completed) {
     return <NewUserDashboard />;
   }
 
-  // Show production dashboard for established users
+  // All users (including admins) with completed setup see the production dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <ResponsiveContainer maxWidth="7xl">
