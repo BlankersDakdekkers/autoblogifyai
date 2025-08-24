@@ -74,7 +74,26 @@ const WordPressTestPilot = () => {
 
   const progress = (currentPhase / phases.length) * 100;
 
+  // Load saved WordPress config on mount
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('wordpress-config');
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        setWordpressConfig(config);
+        if (config.siteUrl && config.username && config.appPassword) {
+          // Skip to phase 2 if config is complete
+          setCurrentPhase(2);
+        }
+      } catch (error) {
+        console.error('Failed to load saved WordPress config:', error);
+      }
+    }
+  }, []);
+
   const handleWordPressSetup = (config: WordPressConfig) => {
+    // Save config to localStorage
+    localStorage.setItem('wordpress-config', JSON.stringify(config));
     setWordpressConfig(config);
     setCurrentPhase(2);
     toast({
