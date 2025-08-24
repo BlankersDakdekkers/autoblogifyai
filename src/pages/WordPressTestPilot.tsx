@@ -107,6 +107,8 @@ const WordPressTestPilot = () => {
     setProcessingStep("Content genereren...");
     
     try {
+      console.log('Starting content generation for:', testPost);
+      
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
           title: testPost.title,
@@ -122,8 +124,19 @@ const WordPressTestPilot = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('API Response:', { data, error });
 
+      if (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error('No data received from API');
+        throw new Error('Geen data ontvangen van de API');
+      }
+
+      console.log('Generated content:', data);
       setGeneratedPosts([data]);
       setCurrentPhase(3);
       
@@ -132,9 +145,10 @@ const WordPressTestPilot = () => {
         description: "Test artikel is succesvol aangemaakt",
       });
     } catch (error: any) {
+      console.error('Content generation error:', error);
       toast({
         title: "Fout bij content generatie",
-        description: error.message,
+        description: error.message || 'Onbekende fout opgetreden',
         variant: "destructive",
       });
     } finally {
