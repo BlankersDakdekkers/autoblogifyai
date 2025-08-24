@@ -33,30 +33,35 @@ const AdminUsersPage = () => {
     try {
       setLoading(true);
       
-      // Fetch users from auth.users (requires admin access)
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) {
-        console.error('Error fetching users:', authError);
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast({
-          title: "Fout bij ophalen gebruikers",
-          description: "Kon gebruikersgegevens niet ophalen",
+          title: "Niet geautoriseerd",
+          description: "Je moet ingelogd zijn om gebruikers te bekijken",
           variant: "destructive",
         });
         return;
       }
 
-      // Transform the data for our component
-      const transformedUsers = authUsers.users.map(user => ({
-        id: user.id,
-        email: user.email || 'Geen email',
-        created_at: user.created_at,
-        last_sign_in_at: user.last_sign_in_at,
-        email_confirmed_at: user.email_confirmed_at,
-        role: user.app_metadata?.role || 'user'
-      }));
+      // Call our Edge Function to list users
+      const { data, error } = await supabase.functions.invoke('admin-list-users', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Fout bij ophalen gebruikers",
+          description: error.message || "Kon gebruikersgegevens niet ophalen",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      setUsers(transformedUsers);
+      setUsers(data.users);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -71,11 +76,34 @@ const AdminUsersPage = () => {
 
   const handleUpdateUserRole = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        app_metadata: { role: newRole }
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Niet geautoriseerd",
+          description: "Je moet ingelogd zijn om rollen bij te werken",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Call our Edge Function to update user role
+      const { error } = await supabase.functions.invoke('admin-update-user-role', {
+        body: { userId, newRole },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating user role:', error);
+        toast({
+          title: "Fout",
+          description: error.message || "Kon gebruikersrol niet bijwerken",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Rol bijgewerkt",
