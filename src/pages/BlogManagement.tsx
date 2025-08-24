@@ -315,7 +315,7 @@ const BlogManagement = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate('/dashboard/generate')} className="flex items-center gap-2">
+          <Button onClick={() => navigate('/dashboard/csv-processor')} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Nieuwe Blog
           </Button>
@@ -424,7 +424,7 @@ const BlogManagement = () => {
                   ? "Geen blogs komen overeen met je filters" 
                   : "Je hebt nog geen blogs aangemaakt"}
               </p>
-              <Button onClick={() => navigate('/dashboard/generate')}>
+              <Button onClick={() => navigate('/dashboard/csv-processor')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Eerste Blog Maken
               </Button>

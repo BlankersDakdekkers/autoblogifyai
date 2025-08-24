@@ -119,7 +119,7 @@ const routes = [
   
   // AutoblogifyAI routes
   { path: "/dashboard/keywords", element: AutoBlogProducer, layout: "dashboard" as const, protected: true },
-  { path: "/dashboard/generate", element: AutoBlogProducerWithTabs, layout: "dashboard" as const, protected: true },
+  { path: "/dashboard/csv-processor", element: CSVProcessor, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/media", element: MediaPortal, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/content-features", element: ContentFeatures, layout: "dashboard" as const, protected: true },
   { path: "/dashboard/advanced-ai", element: AdvancedAIFeatures, layout: "dashboard" as const, protected: true },

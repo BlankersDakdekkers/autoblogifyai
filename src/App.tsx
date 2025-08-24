@@ -125,7 +125,7 @@ const App = () => (
               <Route path="/dashboard/pricing" element={<ProtectedRoute><Layout><PricingPage /></Layout></ProtectedRoute>} />
               
               {/* Standalone pages */}
-              <Route path="/dashboard/generate" element={<ProtectedRoute><Layout><AutoBlogProducer /></Layout></ProtectedRoute>} />
+              <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/ai-generator" element={<ProtectedRoute><Layout><AIWebsiteGenerator /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/website-builder" element={<ProtectedRoute><Layout><WebsiteBuilder /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/analytics" element={<ProtectedRoute><Layout><AnalyticsPage /></Layout></ProtectedRoute>} />
@@ -140,7 +140,6 @@ const App = () => (
               <Route path="/dashboard/category-manager" element={<ProtectedRoute><Layout><CategoryManager /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/template-editor" element={<ProtectedRoute><Layout><TemplateEditor /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/webhooks" element={<ProtectedRoute><Layout><WebhookIntegration /></Layout></ProtectedRoute>} />
-              <Route path="/dashboard/csv-processor" element={<ProtectedRoute><Layout><CSVProcessor /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/knowledge-base" element={<ProtectedRoute><Layout><KnowledgeBase /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
               <Route path="/dashboard/projects" element={<ProtectedRoute><Layout><ProjectsOverview /></Layout></ProtectedRoute>} />

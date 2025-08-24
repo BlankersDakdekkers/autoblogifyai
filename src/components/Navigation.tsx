@@ -79,12 +79,6 @@ export const useNavigationSections = (): NavigationSection[] => {
         description: "AI keyword generator en analyse"
       },
       { 
-        title: "Content Genereren", 
-        url: "/dashboard/generate", 
-        icon: FileText,
-        description: "CSV naar blogposts genereren"
-      },
-      { 
         title: "Media Portaal", 
         url: "/dashboard/media", 
         icon: Image,

@@ -39,7 +39,7 @@ const WelcomeModal = ({ isOpen, onClose }: WelcomeModalProps) => {
       description: "Start met de AI Blog Generator",
       action: () => {
         onClose();
-        navigate('/dashboard/generate');
+        navigate('/dashboard/csv-processor');
       },
       color: "bg-blue-100 text-blue-600"
     },
@@ -121,7 +121,7 @@ const WelcomeModal = ({ isOpen, onClose }: WelcomeModalProps) => {
             <Button 
               onClick={() => {
                 onClose();
-                navigate('/dashboard/generate');
+                navigate('/dashboard/csv-processor');
               }}
               className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
             >
@@ -277,7 +277,7 @@ export const NewUserDashboard = () => {
           title="Eerste Blog Maken"
           description="Gebruik onze AI om in minuten een professionele blog te schrijven"
           actionText="Start AI Generator"
-          onAction={() => navigate('/dashboard/generate')}
+          onAction={() => navigate('/dashboard/csv-processor')}
         />
         
         <EmptyState

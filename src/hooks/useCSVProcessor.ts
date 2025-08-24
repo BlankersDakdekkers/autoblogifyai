@@ -73,39 +73,110 @@ export const useCSVProcessor = (userId: string) => {
     validationResult: null,
   });
 
-  // Enhanced file validation with preprocessing
+  // Enhanced file validation with local processing instead of non-existent edge function
   const validateFile = useCallback(async (file: File): Promise<FileValidationResult> => {
-    const fileHash = await generateFileHash(file);
-    
     try {
-      const { data, error } = await supabase.functions.invoke('validate-csv', {
-        body: { 
-          fileSize: file.size,
-          fileName: file.name,
-          fileHash,
+      // Local file validation instead of calling non-existent edge function
+      const errors: Array<{ row?: number; column?: string; message: string; severity: 'error' | 'warning' }> = [];
+      const warnings: Array<{ row?: number; column?: string; message: string }> = [];
+      
+      // Basic file type validation
+      if (!file.name.toLowerCase().endsWith('.csv') && !file.type.includes('csv')) {
+        errors.push({
+          message: 'File moet een CSV bestand zijn',
+          severity: 'error'
+        });
+      }
+      
+      // File size validation (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        errors.push({
+          message: `Bestand is te groot (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum: 10MB`,
+          severity: 'error'
+        });
+      }
+      
+      // File size warning for large files
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        warnings.push({
+          message: `Groot bestand gedetecteerd (${(file.size / 1024 / 1024).toFixed(1)}MB). Verwerking kan langer duren.`
+        });
+      }
+      
+      // Basic CSV structure validation by reading first few lines
+      let totalRows = 0;
+      let totalColumns = 0;
+      
+      try {
+        const text = await file.text();
+        const lines = text.split('\n').filter(line => line.trim());
+        totalRows = lines.length;
+        
+        if (lines.length > 0) {
+          const firstLine = lines[0];
+          totalColumns = firstLine.split(',').length;
+          
+          // Check if header row seems valid
+          if (totalColumns < 2) {
+            warnings.push({
+              message: 'CSV lijkt maar één kolom te hebben. Zorg ervoor dat je komma\'s gebruikt als separator.'
+            });
+          }
+          
+          // Check for required columns in header
+          const header = firstLine.toLowerCase();
+          const requiredColumns = ['title', 'slug', 'status', 'publish_date'];
+          const missingColumns = requiredColumns.filter(col => !header.includes(col));
+          
+          if (missingColumns.length > 0) {
+            warnings.push({
+              message: `Mogelijke ontbrekende kolommen: ${missingColumns.join(', ')}`
+            });
+          }
         }
-      });
-
-      if (error) throw error;
+        
+        if (totalRows === 0) {
+          errors.push({
+            message: 'CSV bestand is leeg',
+            severity: 'error'
+          });
+        }
+        
+        if (totalRows > 1000) {
+          warnings.push({
+            message: `Groot aantal rijen (${totalRows}). Verwerking kan lang duren.`
+          });
+        }
+        
+      } catch (parseError) {
+        errors.push({
+          message: 'Kan CSV bestand niet lezen. Controleer of het bestand geldig is.',
+          severity: 'error'
+        });
+      }
 
       const result: FileValidationResult = {
-        isValid: data.errors.length === 0,
-        errors: data.errors || [],
-        warnings: data.warnings || [],
+        isValid: errors.length === 0,
+        errors,
+        warnings,
         metadata: {
-          totalRows: data.totalRows || 0,
-          totalColumns: data.totalColumns || 0,
-          estimatedProcessingTime: data.estimatedTime || 0,
+          totalRows,
+          totalColumns,
+          estimatedProcessingTime: Math.ceil(totalRows / 10), // ~10 rows per second
           fileSize: file.size,
         }
       };
 
       setState(prev => ({ ...prev, validationResult: result }));
       return result;
-    } catch (error) {
+      
+    } catch (error: any) {
+      console.error('File validation error:', error);
+      
       const fallbackResult: FileValidationResult = {
         isValid: false,
-        errors: [{ message: 'Validation failed', severity: 'error' as const }],
+        errors: [{ message: `Validatie fout: ${error.message}`, severity: 'error' as const }],
         warnings: [],
         metadata: {
           totalRows: 0,
