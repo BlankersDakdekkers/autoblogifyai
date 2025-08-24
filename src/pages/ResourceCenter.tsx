@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,12 @@ import {
   PlayCircle,
   FileText,
   Lightbulb,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Resource {
   id: string;
@@ -28,14 +31,16 @@ interface Resource {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration?: string;
   rating: number;
-  downloadUrl?: string;
-  externalUrl?: string;
+  download_url?: string;
+  external_url?: string;
   featured: boolean;
 }
 
 const ResourceCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useSEO({
     title: "Resource Center - AutoblogifyAI",
@@ -43,78 +48,48 @@ const ResourceCenter = () => {
     keywords: "resources, tutorials, templates, handleidingen, tools, ondersteuning"
   });
 
-  const resources: Resource[] = [
-    {
-      id: '1',
-      title: 'Aan de slag met AutoblogifyAI',
-      description: 'Complete gids om je eerste blogposts te genereren vanuit een Google Sheet',
-      type: 'tutorial',
-      category: 'Beginners',
-      difficulty: 'beginner',
-      duration: '15 min',
-      rating: 4.8,
-      externalUrl: '#',
-      featured: true
-    },
-    {
-      id: '2',
-      title: 'WordPress Integratie Setup',
-      description: 'Stap-voor-stap handleiding voor het koppelen van je WordPress site',
-      type: 'guide',
-      category: 'Integratie',
-      difficulty: 'intermediate',
-      duration: '20 min',
-      rating: 4.7,
-      externalUrl: '#',
-      featured: true
-    },
-    {
-      id: '3',
-      title: 'SEO-geoptimaliseerde Content Templates',
-      description: 'Kant-en-klare templates voor verschillende contenttypen',
-      type: 'template',
-      category: 'Templates',
-      difficulty: 'beginner',
-      rating: 4.9,
-      downloadUrl: '#',
-      featured: false
-    },
-    {
-      id: '4',
-      title: 'Geavanceerde CSV Structuren',
-      description: 'Leer hoe je complexe content structuren opzet in je Google Sheets',
-      type: 'video',
-      category: 'Geavanceerd',
-      difficulty: 'advanced',
-      duration: '35 min',
-      rating: 4.6,
-      externalUrl: '#',
-      featured: true
-    },
-    {
-      id: '5',
-      title: 'Content Automation Workflows',
-      description: 'Automatiseer je content pipeline met webhooks en scheduling',
-      type: 'guide',
-      category: 'Automation',
-      difficulty: 'advanced',
-      duration: '25 min',
-      rating: 4.5,
-      externalUrl: '#',
-      featured: false
-    },
-    {
-      id: '6',
-      title: 'FAQ Schema Generator',
-      description: 'Tool voor het genereren van structured data voor je FAQ secties',
-      type: 'tool',
-      category: 'SEO Tools',
-      difficulty: 'intermediate',
-      rating: 4.4,
-      externalUrl: '#',
-      featured: false
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
+  const fetchResources = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('resources')
+        .select('*')
+        .order('featured', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching resources:', error);
+        toast.error('Kon resources niet laden');
+        return;
+      }
+
+      // Map database data to our interface format
+      const mappedResources: Resource[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        type: item.type as 'tutorial' | 'template' | 'guide' | 'video' | 'tool',
+        category: item.category,
+        difficulty: item.difficulty as 'beginner' | 'intermediate' | 'advanced',
+        duration: item.duration || undefined,
+        rating: Number(item.rating),
+        download_url: item.download_url || undefined,
+        external_url: item.external_url || undefined,
+        featured: item.featured
+      }));
+
+      setResources(mappedResources);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Er ging iets mis bij het laden van resources');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const categories = ["all", ...Array.from(new Set(resources.map(r => r.category)))];
 
@@ -190,13 +165,13 @@ const ResourceCenter = () => {
           </div>
 
           <div className="flex gap-2">
-            {resource.externalUrl && (
+            {resource.external_url && (
               <Button size="sm" className="flex-1">
                 <ExternalLink className="w-4 h-4 mr-1" />
                 Bekijken
               </Button>
             )}
-            {resource.downloadUrl && (
+            {resource.download_url && (
               <Button variant="outline" size="sm" className="flex-1">
                 <Download className="w-4 h-4 mr-1" />
                 Download
@@ -254,71 +229,104 @@ const ResourceCenter = () => {
         </TabsList>
 
         <TabsContent value="all" className="space-y-6">
-          {/* Featured Section */}
-          {featuredResources.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Uitgelichte Resources</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredResources.map(resource => (
-                  <ResourceCard key={resource.id} resource={resource} />
-                ))}
-              </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <span className="ml-2">Resources laden...</span>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Featured Section */}
+              {featuredResources.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">Uitgelichte Resources</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredResources.map(resource => (
+                      <ResourceCard key={resource.id} resource={resource} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* All Resources */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Alle Resources</h2>
-            {filteredResources.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Geen resources gevonden</h3>
-                  <p className="text-muted-foreground">
-                    Probeer je zoekopdracht aan te passen
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredResources.map(resource => (
-                  <ResourceCard key={resource.id} resource={resource} />
-                ))}
+              {/* All Resources */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Alle Resources</h2>
+                {filteredResources.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Geen resources gevonden</h3>
+                      <p className="text-muted-foreground">
+                        Probeer je zoekopdracht aan te passen
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredResources.map(resource => (
+                      <ResourceCard key={resource.id} resource={resource} />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="featured">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredResources.map(resource => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredResources.map(resource => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="tutorials">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredResources.filter(r => r.type === 'tutorial' || r.type === 'guide').map(resource => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResources.filter(r => r.type === 'tutorial' || r.type === 'guide').map(resource => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="templates">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredResources.filter(r => r.type === 'template').map(resource => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResources.filter(r => r.type === 'template').map(resource => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="tools">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredResources.filter(r => r.type === 'tool').map(resource => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResources.filter(r => r.type === 'tool').map(resource => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

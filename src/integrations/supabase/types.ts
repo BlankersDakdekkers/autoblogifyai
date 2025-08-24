@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_personas: {
+        Row: {
+          created_at: string | null
+          description: string
+          examples: string[]
+          expertise: string[]
+          id: string
+          name: string
+          system_prompt: string | null
+          tone: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          examples?: string[]
+          expertise?: string[]
+          id?: string
+          name: string
+          system_prompt?: string | null
+          tone: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          examples?: string[]
+          expertise?: string[]
+          id?: string
+          name?: string
+          system_prompt?: string | null
+          tone?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       auth_rate_limits: {
         Row: {
           attempt_type: string
@@ -323,6 +362,54 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          difficulty: string
+          download_url: string | null
+          duration: string | null
+          external_url: string | null
+          featured: boolean | null
+          id: string
+          rating: number | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          difficulty: string
+          download_url?: string | null
+          duration?: string | null
+          external_url?: string | null
+          featured?: boolean | null
+          id?: string
+          rating?: number | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          download_url?: string | null
+          duration?: string | null
+          external_url?: string | null
+          featured?: boolean | null
+          id?: string
+          rating?: number | null
+          title?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
