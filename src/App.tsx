@@ -109,7 +109,32 @@ const App = () => {
           >
             <AuthProvider>
             <Routes>
-              {/* ALLEEN NOODROUTE - ALLE ANDEREN WEGGEHAALD */}
+              {/* EXTREME NOODTEST ZONDER DASHBOARD PREFIX */}
+              <Route 
+                path="/test123" 
+                element={
+                  <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'green',
+                    color: 'white',
+                    fontSize: '5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    zIndex: 99999
+                  }}>
+                    ✅ ROUTER WERKT! ✅<br/>
+                    TEST123 ROUTE SUCCESVOL!
+                  </div>
+                } 
+              />
+              
+              {/* PROBEER NOG EENS MET DASHBOARD */}
               <Route 
                 path="/dashboard/cms-integration" 
                 element={
@@ -128,8 +153,8 @@ const App = () => {
                     textAlign: 'center',
                     zIndex: 99999
                   }}>
-                    🆘 LAATSTE TEST! 🆘<br/>
-                    ROUTE WERKT EINDELIJK!
+                    🆘 DASHBOARD ROUTE WERKT! 🆘<br/>
+                    CMS INTEGRATION GEVONDEN!
                   </div>
                 } 
               />
