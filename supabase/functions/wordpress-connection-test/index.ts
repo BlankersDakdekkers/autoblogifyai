@@ -119,12 +119,12 @@ serve(async (req) => {
       );
     }
 
-    // Step 3: Application Password Authentication Test
-    console.log('\n--- STEP 3: Authentication Test ---');
+    // Step 3: Authentication Test
+    console.log('\n--- STEP 3: Authentication & Permissions Test ---');
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     console.log('Basic Auth credentials prepared');
     
-    // Test with a simple, direct approach that bypasses nonce issues
+    // First test authentication with user info
     const authTestUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
     
     try {
@@ -134,7 +134,6 @@ serve(async (req) => {
           'Authorization': `Basic ${credentials}`,
           'User-Agent': 'AutoblogifyAI/1.0',
           'Accept': 'application/json',
-          // Remove problematic headers that can trigger nonce checks
         },
         signal: AbortSignal.timeout(15000)
       });
@@ -142,54 +141,153 @@ serve(async (req) => {
       console.log('Authentication response:', {
         status: authResponse.status,
         statusText: authResponse.statusText,
-        ok: authResponse.ok,
-        headers: Object.fromEntries(authResponse.headers.entries())
+        ok: authResponse.ok
       });
 
       if (authResponse.ok) {
         const userData = await authResponse.json();
         console.log('✅ Authentication successful');
-        console.log('User data received:', {
+        console.log('User data:', {
           id: userData.id,
           username: userData.username || userData.slug,
           name: userData.name,
-          roles: userData.roles
+          roles: userData.roles,
+          capabilities: userData.capabilities ? Object.keys(userData.capabilities) : 'none'
         });
 
-        // Check user permissions
-        const canPublish = userData.capabilities?.edit_posts || 
-                          userData.capabilities?.publish_posts || 
-                          userData.roles?.includes('administrator') || 
-                          userData.roles?.includes('editor') || 
-                          userData.roles?.includes('author');
+        // Step 4: Test actual posting permissions
+        console.log('\n--- STEP 4: Testing Post Creation Rights ---');
+        
+        // Test if user can read posts in edit context (basic requirement)
+        const postsReadUrl = `${normalizedUrl}/wp-json/wp/v2/posts?per_page=1&context=edit`;
+        
+        try {
+          const postsReadResponse = await fetch(postsReadUrl, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Basic ${credentials}`,
+              'User-Agent': 'AutoblogifyAI/1.0',
+              'Accept': 'application/json',
+            },
+            signal: AbortSignal.timeout(10000)
+          });
 
-        if (!canPublish) {
+          console.log('Posts read test:', {
+            status: postsReadResponse.status,
+            ok: postsReadResponse.ok
+          });
+
+          if (!postsReadResponse.ok) {
+            const errorText = await postsReadResponse.text();
+            console.log('Posts read failed:', errorText);
+            
+            return new Response(
+              JSON.stringify({
+                success: false,
+                step: 'permissions',
+                error: `Gebruiker '${cleanUsername}' kan posts niet lezen/bewerken.\n\nFout: ${errorText}\n\nVereiste rollen: Editor, Administrator of Author.\nHuidige rollen: ${userData.roles?.join(', ') || 'geen'}\n\n💡 Los dit op door:\n1. Ga naar WordPress Admin → Gebruikers\n2. Bewerk gebruiker '${cleanUsername}'\n3. Verander rol naar 'Editor' of 'Administrator'\n4. Sla op en probeer opnieuw`
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          // Test creating a draft post to verify full permissions
+          console.log('Testing draft post creation...');
+          const testPostUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
+          
+          const testPostResponse = await fetch(testPostUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Basic ${credentials}`,
+              'Content-Type': 'application/json',
+              'User-Agent': 'AutoblogifyAI/1.0',
+            },
+            body: JSON.stringify({
+              title: 'AutoblogifyAI Connection Test',
+              content: 'Dit is een test post om de verbinding te controleren. Deze post wordt automatisch verwijderd.',
+              status: 'draft'
+            }),
+            signal: AbortSignal.timeout(15000)
+          });
+
+          console.log('Test post creation:', {
+            status: testPostResponse.status,
+            ok: testPostResponse.ok
+          });
+
+          if (testPostResponse.ok) {
+            const createdPost = await testPostResponse.json();
+            console.log('✅ Test post created:', createdPost.id);
+            
+            // Clean up test post
+            try {
+              await fetch(`${normalizedUrl}/wp-json/wp/v2/posts/${createdPost.id}?force=true`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Basic ${credentials}`,
+                  'User-Agent': 'AutoblogifyAI/1.0'
+                }
+              });
+              console.log('✅ Test post cleaned up');
+            } catch (cleanupError) {
+              console.log('Test post cleanup failed (niet erg):', cleanupError);
+            }
+
+            // SUCCESS - All tests passed
+            console.log('🎉 All WordPress connection tests passed!');
+            return new Response(
+              JSON.stringify({
+                success: true,
+                message: 'WordPress verbinding en rechten succesvol getest!',
+                user: {
+                  id: userData.id,
+                  username: userData.username || userData.slug,
+                  name: userData.name,
+                  roles: userData.roles,
+                  capabilities: userData.capabilities
+                },
+                permissions: {
+                  canRead: true,
+                  canCreate: true,
+                  canPublish: true
+                }
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+
+          } else {
+            // Post creation failed
+            const errorText = await testPostResponse.text();
+            console.log('❌ Post creation failed:', errorText);
+            
+            let errorObj;
+            try {
+              errorObj = JSON.parse(errorText);
+            } catch {
+              errorObj = { message: errorText };
+            }
+
+            return new Response(
+              JSON.stringify({
+                success: false,
+                step: 'post_creation',
+                error: `Gebruiker '${cleanUsername}' kan geen posts aanmaken.\n\nWordPress fout: ${errorObj.message || errorObj.code || 'Onbekend'}\n\nHuidige rollen: ${userData.roles?.join(', ') || 'geen'}\n\n💡 Oplossing:\n1. Ga naar WordPress Admin → Gebruikers\n2. Bewerk gebruiker '${cleanUsername}'\n3. Verander rol naar 'Editor' of 'Administrator'\n4. Controleer of Application Passwords zijn ingeschakeld\n5. Probeer opnieuw\n\nAls het probleem blijft bestaan, controleer dan beveiligingsplugins.`
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+        } catch (postsError: any) {
+          console.error('❌ Posts permission test failed:', postsError);
           return new Response(
             JSON.stringify({
               success: false,
               step: 'permissions',
-              error: `Gebruiker '${cleanUsername}' heeft geen rechten om posts te publiceren. Rollen: ${userData.roles?.join(', ') || 'geen'}`
+              error: `Kan post-rechten niet controleren: ${postsError.message}`
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-
-        // SUCCESS - All tests passed
-        console.log('🎉 All tests passed successfully!');
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'WordPress verbinding succesvol getest!',
-            user: {
-              id: userData.id,
-              username: userData.username || userData.slug,
-              name: userData.name,
-              roles: userData.roles,
-              capabilities: userData.capabilities
-            }
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
 
       } else {
         // Authentication failed - provide detailed error info
