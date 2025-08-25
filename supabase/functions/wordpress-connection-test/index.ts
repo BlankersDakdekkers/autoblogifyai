@@ -236,48 +236,37 @@ ${isWordPressCom ? '• Dit lijkt een WordPress.com site - deze hebben strengere
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-      
-      // Step 4: Check user permissions
-      const canPublish = userData.capabilities?.publish_posts || 
-                        userData.roles?.includes('administrator') || 
-                        userData.roles?.includes('editor');
+    
+    // Step 4: Check user permissions
+    const canPublish = userData.capabilities?.publish_posts || 
+                      userData.roles?.includes('administrator') || 
+                      userData.roles?.includes('editor');
 
-      if (!canPublish) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            step: 'permissions',
-            error: `Gebruiker '${cleanUsername}' heeft geen rechten om posts te publiceren. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}. Vereist: Administrator of Editor.`
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Success!
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'WordPress verbinding succesvol getest!',
-          user: {
-            id: userData.id,
-            username: userData.username,
-            name: userData.name,
-            roles: userData.roles
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-
-    } catch (authError) {
+    if (!canPublish) {
       return new Response(
         JSON.stringify({
           success: false,
-          step: 'authentication',
-          error: `Verbindingsfout: ${authError.message}`
+          step: 'permissions',
+          error: `Gebruiker '${cleanUsername}' heeft geen rechten om posts te publiceren. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}. Vereist: Administrator of Editor.`
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Success!
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'WordPress verbinding succesvol getest!',
+        user: {
+          id: userData.id,
+          username: userData.username,
+          name: userData.name,
+          roles: userData.roles
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('WordPress connection test error:', error);
