@@ -33,26 +33,9 @@ const AdminUsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      console.log('=== STARTING FETCH USERS ===');
-      
-      // Check session first
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('Current session:', session ? 'Available' : 'Not available');
-      console.log('Session error:', sessionError);
-      
-      if (!session) {
-        toast({
-          title: "Sessie probleem",
-          description: "Geen geldige sessie gevonden - log opnieuw in",
-          variant: "destructive",
-        });
-        return;
-      }
       
       // Use the improved edge function helper
-      console.log('Calling admin-list-users edge function...');
       const { data, error } = await callEdgeFunction('admin-list-users');
-      console.log('Edge function response:', { data, error });
       
       if (error) {
         console.error('Error fetching users:', error);
