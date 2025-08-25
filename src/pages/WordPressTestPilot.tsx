@@ -267,8 +267,8 @@ const WordPressTestPilot = () => {
       
       const { data, error } = await supabase.functions.invoke('wordpress-publish', {
         body: {
-          postId,
-          wordpressConfig
+          postId: postId,
+          wordpressConfig: wordpressConfig
         }
       });
 
@@ -516,8 +516,8 @@ const WordPressTestPilot = () => {
               </Alert>
             ) : (
               <div className="space-y-3">
-                {generatedPosts.slice(0, 3).map((post) => (
-                  <div key={post.id} className="p-4 border rounded-lg">
+                {generatedPosts.slice(0, 3).map((post, index) => (
+                  <div key={`post-${post.id}-${index}`} className="p-4 border rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-medium">{post.title}</h4>
