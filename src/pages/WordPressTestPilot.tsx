@@ -137,8 +137,21 @@ const WordPressTestPilot = () => {
       }
 
       console.log('Generated content:', data);
-      setGeneratedPosts([data]);
-      setCurrentPhase(3);
+      
+      // Check if data has the expected structure
+      if (data.success && data.post) {
+        console.log('Setting generated post:', data.post);
+        setGeneratedPosts([data.post]);
+        setCurrentPhase(3);
+      } else if (data.id) {
+        // Direct post data
+        console.log('Setting generated post (direct):', data);
+        setGeneratedPosts([data]);
+        setCurrentPhase(3);  
+      } else {
+        console.error('Unexpected data structure:', data);
+        throw new Error('Onverwachte data structuur ontvangen');
+      }
       
       toast({
         title: "Content gegenereerd!",
