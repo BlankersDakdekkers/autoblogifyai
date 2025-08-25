@@ -32,10 +32,14 @@ const AdminUsersPage = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('=== ADMIN USERS: Starting fetchUsers ===');
       setLoading(true);
       
       // Use the improved edge function helper
+      console.log('Calling admin-list-users edge function...');
       const { data, error } = await callEdgeFunction('admin-list-users');
+      
+      console.log('Edge function response:', { data, error });
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -47,11 +51,18 @@ const AdminUsersPage = () => {
         return;
       }
 
+      console.log('Data from edge function:', data);
+      
       if (data?.users) {
         console.log('Setting users:', data.users.length, 'users found');
+        console.log('First user sample:', data.users[0]);
         setUsers(data.users);
+      } else if (data && Array.isArray(data)) {
+        console.log('Data is array directly:', data.length, 'users found');
+        console.log('First user sample:', data[0]);
+        setUsers(data);
       } else {
-        console.log('No users in response data:', data);
+        console.log('Unexpected data format:', data);
         toast({
           title: "Geen gebruikers",
           description: "Er werden geen gebruikers gevonden",
@@ -67,6 +78,7 @@ const AdminUsersPage = () => {
       });
     } finally {
       setLoading(false);
+      console.log('=== ADMIN USERS: fetchUsers completed ===');
     }
   };
 
