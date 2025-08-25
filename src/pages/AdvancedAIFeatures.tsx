@@ -77,6 +77,7 @@ interface KeywordResult {
 
 const AdvancedAIFeatures = () => {
   const { userRole } = useAuth();
+  const [activeTab, setActiveTab] = useState('models');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [selectedModel, setSelectedModel] = useState('gpt-5-2025-08-07');
@@ -531,7 +532,7 @@ const AdvancedAIFeatures = () => {
       </div>
 
       <PremiumGate>
-        <Tabs defaultValue="models" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="models" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
               <Brain className="h-4 w-4" />
