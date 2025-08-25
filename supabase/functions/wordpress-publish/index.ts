@@ -92,8 +92,11 @@ async function publishToWordPress(post: any, config: any) {
     // Normalize site URL
     const normalizedUrl = siteUrl.replace(/\/$/, '');
     
-    // Basic auth credentials
-    const credentials = btoa(`${username}:${appPassword}`);
+    // Basic auth credentials - remove spaces from app password
+    const cleanAppPassword = appPassword.replace(/\s+/g, '');
+    const credentials = btoa(`${username}:${cleanAppPassword}`);
+    
+    console.log('Cleaned application password (removed spaces):', cleanAppPassword.length, 'characters');
     
     // First, test authentication and user permissions
     const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
@@ -112,10 +115,27 @@ async function publishToWordPress(post: any, config: any) {
         const errorText = await userResponse.text();
         console.error('User authentication failed:', userResponse.status, errorText);
         
-        if (userResponse.status === 401) {
-          throw new Error('Authenticatie gefaald. Controleer je WordPress gebruikersnaam en applicatie wachtwoord. Zorg ervoor dat het applicatie wachtwoord correct is aangemaakt in WordPress → Users → Profile.');
+        let specificError = '';
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.log('WordPress error details:', errorJson);
+          specificError = errorJson.message || errorJson.code || errorText;
+        } catch (e) {
+          specificError = errorText;
         }
-        throw new Error(`Gebruikersverificatie gefaald (${userResponse.status}). Controleer je WordPress inloggegevens.`);
+        
+        if (userResponse.status === 401) {
+          throw new Error(`WordPress authenticatie gefaald (401). Controleer:
+1. Gebruikersnaam '${username}' bestaat en is correct gespeld
+2. Application Password is geldig (geen gewoon wachtwoord!)
+3. Application Password is actief en niet verlopen
+4. WordPress site: ${normalizedUrl}
+
+Error details: ${specificError}`);
+        } else if (userResponse.status === 403) {
+          throw new Error(`Toegang geweigerd (403). Gebruiker '${username}' heeft mogelijk onvoldoende rechten. Error: ${specificError}`);
+        }
+        throw new Error(`Gebruikersverificatie gefaald (${userResponse.status}): ${specificError}`);
       }
       
       const userData = await userResponse.json();
