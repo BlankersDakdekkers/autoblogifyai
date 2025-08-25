@@ -92,76 +92,123 @@ async function publishToWordPress(post: any, config: any) {
     // Normalize site URL
     const normalizedUrl = siteUrl.replace(/\/$/, '');
     
-    // Basic auth credentials - remove spaces from app password
+    // Clean and normalize credentials
+    const cleanUsername = username.trim();
     const cleanAppPassword = appPassword.replace(/\s+/g, '');
-    const credentials = btoa(`${username}:${cleanAppPassword}`);
+    const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     
-    console.log('Cleaned application password (removed spaces):', cleanAppPassword.length, 'characters');
+    console.log('WordPress connection attempt:', {
+      siteUrl: normalizedUrl,
+      username: cleanUsername,
+      appPasswordLength: cleanAppPassword.length,
+      credentialsLength: credentials.length
+    });
     
-    // First, test authentication and user permissions
-    const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
-    console.log('Checking user authentication and permissions:', userCheckUrl);
+    // First, test if WordPress REST API is available without auth
+    const apiTestUrl = `${normalizedUrl}/wp-json/wp/v2`;
+    console.log('Testing WordPress REST API availability:', apiTestUrl);
     
     try {
-      const userResponse = await fetch(userCheckUrl, {
+      const apiTestResponse = await fetch(apiTestUrl, {
         method: 'GET',
         headers: {
-          'Authorization': `Basic ${credentials}`,
           'User-Agent': 'AutoblogifyAI/1.0'
         }
       });
       
-      if (!userResponse.ok) {
-        const errorText = await userResponse.text();
-        console.error('User authentication failed:', userResponse.status, errorText);
-        
-        let specificError = '';
-        try {
-          const errorJson = JSON.parse(errorText);
-          console.log('WordPress error details:', errorJson);
-          specificError = errorJson.message || errorJson.code || errorText;
-        } catch (e) {
-          specificError = errorText;
-        }
-        
-        if (userResponse.status === 401) {
-          throw new Error(`WordPress authenticatie gefaald (401). Controleer:
-1. Gebruikersnaam '${username}' bestaat en is correct gespeld
-2. Application Password is geldig (geen gewoon wachtwoord!)
-3. Application Password is actief en niet verlopen
-4. WordPress site: ${normalizedUrl}
-
-Error details: ${specificError}`);
-        } else if (userResponse.status === 403) {
-          throw new Error(`Toegang geweigerd (403). Gebruiker '${username}' heeft mogelijk onvoldoende rechten. Error: ${specificError}`);
-        }
-        throw new Error(`Gebruikersverificatie gefaald (${userResponse.status}): ${specificError}`);
-      }
-      
-      const userData = await userResponse.json();
-      console.log('User authenticated successfully:', {
-        id: userData.id,
-        username: userData.username,
-        name: userData.name,
-        roles: userData.roles,
-        capabilities: Object.keys(userData.capabilities || {}).filter(cap => userData.capabilities[cap])
+      console.log('WordPress API test response:', {
+        status: apiTestResponse.status,
+        statusText: apiTestResponse.statusText,
+        headers: Object.fromEntries(apiTestResponse.headers.entries())
       });
       
-      // Check if user can publish posts
-      const canPublish = userData.capabilities?.publish_posts || userData.roles?.includes('administrator') || userData.roles?.includes('editor');
-      if (!canPublish) {
-        throw new Error(`Gebruiker '${username}' heeft geen rechten om posts te publiceren. Vereiste rollen: Administrator of Editor. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}`);
+      if (!apiTestResponse.ok) {
+        throw new Error(`WordPress REST API niet beschikbaar (${apiTestResponse.status}). Controleer of permalinks zijn ingeschakeld.`);
       }
-      
-      console.log('User has publish permissions');
-      
-    } catch (authError) {
-      console.error('Authentication check failed:', authError);
-      if (authError.message.includes('Authenticatie gefaald') || authError.message.includes('geen rechten')) {
-        throw authError;
-      }
-      throw new Error(`Kan verbinding met WordPress niet verifiëren: ${authError.message}`);
+    } catch (apiTestError) {
+      console.error('WordPress API test failed:', apiTestError);
+      throw new Error(`Kan WordPress site niet bereiken: ${apiTestError.message}`);
     }
+    
+    // Test authentication with multiple methods
+    const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
+    console.log('Testing authentication:', userCheckUrl);
+    
+    // Try different authentication headers
+    const authHeaders = [
+      { 'Authorization': `Basic ${credentials}` },
+      { 'Authorization': `Basic ${credentials}`, 'X-WP-Nonce': '' },
+      { 'Authorization': `Bearer ${btoa(cleanUsername + ':' + cleanAppPassword)}` }
+    ];
+    
+    let authSuccess = false;
+    let userData = null;
+    let lastError = null;
+    
+    for (let i = 0; i < authHeaders.length && !authSuccess; i++) {
+      console.log(`Trying authentication method ${i + 1}:`, Object.keys(authHeaders[i]));
+      
+      try {
+        const userResponse = await fetch(userCheckUrl, {
+          method: 'GET',
+          headers: {
+            ...authHeaders[i],
+            'User-Agent': 'AutoblogifyAI/1.0',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log(`Auth attempt ${i + 1} response:`, {
+          status: userResponse.status,
+          statusText: userResponse.statusText,
+          headers: Object.fromEntries(userResponse.headers.entries())
+        });
+        
+        if (userResponse.ok) {
+          userData = await userResponse.json();
+          authSuccess = true;
+          console.log('Authentication successful with method', i + 1, 'User data:', {
+            id: userData.id,
+            username: userData.username,
+            name: userData.name,
+            roles: userData.roles
+          });
+          break;
+        } else {
+          const errorText = await userResponse.text();
+          lastError = { status: userResponse.status, text: errorText, method: i + 1 };
+          console.log(`Auth method ${i + 1} failed:`, lastError);
+        }
+      } catch (authError) {
+        lastError = { error: authError.message, method: i + 1 };
+        console.error(`Auth method ${i + 1} error:`, authError);
+      }
+    }
+    
+    if (!authSuccess) {
+      console.error('All authentication methods failed. Last error:', lastError);
+      
+      let errorMsg = `WordPress authenticatie volledig gefaald na alle pogingen. 
+      
+Laatste fout (methode ${lastError?.method || '?'}): ${lastError?.text || lastError?.error || 'Onbekend'}
+
+Controleer:
+1. Username '${cleanUsername}' bestaat exact zo in WordPress
+2. Application Password '${cleanAppPassword.substring(0, 4)}...' is geldig
+3. User heeft 'publish_posts' rechten
+4. WordPress REST API is ingeschakeld
+5. Geen extra beveiligingsplugins actief
+6. Site: ${normalizedUrl}`;
+
+      throw new Error(errorMsg);
+    }
+    // Check if user can publish posts
+    const canPublish = userData.capabilities?.publish_posts || userData.roles?.includes('administrator') || userData.roles?.includes('editor');
+    if (!canPublish) {
+      throw new Error(`Gebruiker '${cleanUsername}' heeft geen rechten om posts te publiceren. Vereiste rollen: Administrator of Editor. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}`);
+    }
+    
+    console.log('User has publish permissions');
     
     // Check if WordPress REST API is available for posts
     const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
