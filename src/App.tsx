@@ -57,6 +57,7 @@ const Footer = lazy(() => import("./components/Footer"));
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const AdminCustomersPage = lazy(() => import("./pages/AdminCustomersPage"));
 const SystemMonitoringPage = lazy(() => import("./pages/SystemMonitoringPage"));
 
 const queryClient = new QueryClient();
@@ -563,7 +564,7 @@ const App = () => {
                         <ProtectedRoute requiredRole="admin">
                           <Suspense fallback={<LoadingFallback />}>
                             <OptimizedLayout type="dashboard">
-                              <AdminUsersPage />
+                              <AdminCustomersPage />
                             </OptimizedLayout>
                           </Suspense>
                         </ProtectedRoute>

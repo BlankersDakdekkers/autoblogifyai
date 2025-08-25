@@ -14,6 +14,7 @@ import { ResponsiveContainer, ResponsiveGrid } from '@/components/ui/responsive-
 import { useIsMobile, useCurrentBreakpoint } from '@/utils/responsive';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import { CreditsDisplay } from '@/components/CreditsDisplay';
+import AdminSetupButton from '@/components/AdminSetupButton';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   FileText, 
@@ -618,7 +619,7 @@ PerformanceInsights.displayName = 'PerformanceInsights';
 
 // Main production dashboard component
 export const ProductionDashboard = memo(() => {
-  const { profile, user } = useAuth();
+  const { profile, user, userRole } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -940,6 +941,7 @@ export const ProductionDashboard = memo(() => {
               </div>
               
               <div className="flex items-center gap-2">
+                {userRole !== 'admin' && <AdminSetupButton />}
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/dashboard/help">
                     <Info className="h-4 w-4 mr-2" />
