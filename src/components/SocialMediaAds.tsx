@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,15 +21,20 @@ import {
   Eye,
   UserPlus,
   RefreshCw,
-  Filter
+  Filter,
+  Image as ImageIcon,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SocialMediaAds = () => {
   const [copiedText, setCopiedText] = useState("");
   const [selectedCampaignType, setSelectedCampaignType] = useState("conversion");
   const [selectedAudience, setSelectedAudience] = useState("mkb");
   const [selectedVariant, setSelectedVariant] = useState("A");
+  const [generatedMockups, setGeneratedMockups] = useState<{[key: string]: string}>({});
+  const [generatingMockup, setGeneratingMockup] = useState<string | null>(null);
   const { toast } = useToast();
 
   const campaignTypes = [
@@ -362,6 +367,113 @@ VERWACHTE METRICS:
     return estimates[campaignType] || 2.0;
   };
 
+  const generateMockup = async (platform: string, adContent: any) => {
+    const mockupKey = `${platform}-${selectedCampaignType}-${selectedAudience}-${selectedVariant}`;
+    
+    if (generatedMockups[mockupKey]) {
+      return generatedMockups[mockupKey];
+    }
+    
+    setGeneratingMockup(mockupKey);
+    
+    try {
+      // Create platform-specific mockup prompts
+      let mockupPrompt = "";
+      let dimensions = { width: 1080, height: 1080 };
+      
+      switch (platform) {
+        case "instagram-feed":
+          dimensions = { width: 1080, height: 1080 };
+          mockupPrompt = `Professional Instagram feed post mockup for AutoblogifyAI content automation tool. Modern mobile interface showing: AutoblogifyAI logo and branding, dashboard screenshot with Google Sheets data transforming into blog posts, clean blue and white design, social media UI elements, engagement metrics, professional business tool aesthetic, mobile-first design, ${adContent.cta} call-to-action button prominently displayed. Ultra high resolution, clean and modern design.`;
+          break;
+          
+        case "instagram-story":
+          dimensions = { width: 1080, height: 1920 };
+          mockupPrompt = `Vertical Instagram story mockup for AutoblogifyAI automation tool. 9:16 aspect ratio showing: animated progression from spreadsheet to published blog, swipe-up indicator, AutoblogifyAI branding, modern mobile UI, progress indicators, time-saving visualization, "${adContent.cta}" button at bottom, urgency elements, professional business tool, clean modern design. Ultra high resolution, mobile-optimized.`;
+          break;
+          
+        case "facebook-feed":
+          dimensions = { width: 1200, height: 630 };
+          mockupPrompt = `Facebook feed advertisement mockup for AutoblogifyAI business tool. Professional landscape format showing: AutoblogifyAI dashboard interface, before/after content transformation visualization, business professional using laptop, clean corporate design, testimonial quotes overlay, ROI statistics, "${adContent.cta}" prominent call-to-action, blue and white color scheme, professional business aesthetic. Ultra high resolution.`;
+          break;
+          
+        case "facebook-video":
+          dimensions = { width: 1200, height: 1200 };
+          mockupPrompt = `Square Facebook video advertisement thumbnail for AutoblogifyAI. Screen recording preview showing: computer screen with AutoblogifyAI interface, CSV file upload process, AI content generation in progress, WordPress publishing workflow, play button overlay, "${adContent.cta}" text overlay, professional business environment, modern office setup, time-lapse effect visualization. Ultra high resolution.`;
+          break;
+      }
+      
+      // Generate the mockup image using Supabase function
+      const imageUrl = await generateMockupImage(mockupPrompt, dimensions.width, dimensions.height, platform);
+      
+      if (!imageUrl) {
+        throw new Error('Failed to generate mockup image');
+      }
+      
+      setGeneratedMockups(prev => ({
+        ...prev,
+        [mockupKey]: imageUrl
+      }));
+      
+      return imageUrl;
+      
+    } catch (error) {
+      console.error('Error generating mockup:', error);
+      toast({
+        title: "Mockup generatie mislukt",
+        description: "Er is een fout opgetreden bij het genereren van de mockup",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setGeneratingMockup(null);
+    }
+  };
+
+  // Helper function to generate mockup images
+  const generateMockupImage = async (prompt: string, width: number, height: number, platform: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-social-mockups', {
+        body: {
+          prompt,
+          width,
+          height,
+          platform,
+          campaignType: selectedCampaignType,
+          audience: selectedAudience
+        }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        return null;
+      }
+
+      if (data?.success && data?.imageUrl) {
+        return data.imageUrl;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Image generation error:', error);
+      return null;
+    }
+  };
+
+  // Generate all mockups when campaign settings change
+  useEffect(() => {
+    const generateAllMockups = async () => {
+      const ads = getCurrentAds();
+      for (const ad of ads) {
+        await generateMockup(ad.platform, ad);
+      }
+    };
+    
+    // Small delay to avoid rapid regeneration
+    const timer = setTimeout(generateAllMockups, 500);
+    return () => clearTimeout(timer);
+  }, [selectedCampaignType, selectedAudience, selectedVariant]);
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="text-center space-y-4 mb-8">
@@ -376,6 +488,24 @@ VERWACHTE METRICS:
         <Button onClick={downloadAdKit} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Download Complete Ad Kit
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={async () => {
+            const ads = getCurrentAds();
+            for (const ad of ads) {
+              await generateMockup(ad.platform, ad);
+            }
+            toast({
+              title: "Mockups gegenereerd!",
+              description: "Alle advertentie mockups zijn bijgewerkt",
+            });
+          }}
+          className="flex items-center gap-2"
+        >
+          <ImageIcon className="h-4 w-4" />
+          Genereer Alle Mockups
         </Button>
       </div>
 
@@ -547,23 +677,51 @@ VERWACHTE METRICS:
                   {/* Visual Mockup */}
                   <div 
                     className={`
-                      bg-gradient-to-br from-primary/10 to-primary/5 
-                      border border-primary/20 rounded-lg p-6 mb-4 
-                      flex flex-col items-center justify-center text-center
+                      relative overflow-hidden
+                      border border-primary/20 rounded-lg mb-4 
+                      flex flex-col items-center justify-center
                       ${ad.platform.includes('story') ? 'aspect-[9/16] max-h-96' : 
                         ad.platform.includes('video') ? 'aspect-square' : 'aspect-video'}
                     `}
                   >
-                    <div className="space-y-4">
-                      <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
-                        <Zap className="h-8 w-8 text-white" />
+                    {generatedMockups[`${ad.platform}-${selectedCampaignType}-${selectedAudience}-${selectedVariant}`] ? (
+                      <img 
+                        src={generatedMockups[`${ad.platform}-${selectedCampaignType}-${selectedAudience}-${selectedVariant}`]}
+                        alt={`${ad.title} mockup`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : generatingMockup === `${ad.platform}-${selectedCampaignType}-${selectedAudience}-${selectedVariant}` ? (
+                      <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex flex-col items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                        <p className="text-sm text-muted-foreground">Mockup genereren...</p>
                       </div>
-                      <h3 className="font-bold text-lg">AutoblogifyAI</h3>
-                      <p className="text-sm text-muted-foreground max-w-xs">
-                        {ad.visualDescription}
-                      </p>
-                      <Button size="sm" className="flex items-center gap-2">
-                        <ArrowRight className="h-4 w-4" />
+                    ) : (
+                      <div 
+                        className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex flex-col items-center justify-center text-center p-6 cursor-pointer hover:bg-primary/20 transition-colors"
+                        onClick={() => generateMockup(ad.platform, ad)}
+                      >
+                        <div className="space-y-4">
+                          <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg">AutoblogifyAI</h3>
+                            <p className="text-sm text-muted-foreground max-w-xs">
+                              {ad.visualDescription}
+                            </p>
+                            <Button size="sm" className="mt-2 flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Genereer Mockup
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* CTA Overlay */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                      <Button size="sm" variant="secondary" className="shadow-lg">
+                        <ArrowRight className="h-4 w-4 mr-1" />
                         {ad.cta}
                       </Button>
                     </div>
