@@ -497,6 +497,39 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     }
   }
 
+  // Generate hero image if not provided
+  let heroImageUrl = row.hero_image_url || aiContent.heroImageUrl || '';
+  let heroImageAlt = row.hero_image_alt || aiContent.heroImageAlt || '';
+  
+  if (!heroImageUrl) {
+    logStep("Generating hero image", { rowIndex, title: row.title });
+    try {
+      const imageResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-blog-images`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: row.title || row.Title || 'Artikel',
+          content: aiContent.content.substring(0, 500) || '',
+          category: parseTagsFromString(row.tags)?.[0] || 'content'
+        })
+      });
+
+      if (imageResponse.ok) {
+        const imageData = await imageResponse.json();
+        if (imageData.success && imageData.imageUrl) {
+          heroImageUrl = imageData.imageUrl;
+          heroImageAlt = `${row.title || row.Title} - Hero afbeelding`;
+          logStep("Hero image generated successfully", { rowIndex, imageUrl: heroImageUrl });
+        }
+      }
+    } catch (imageError) {
+      logStep("Image generation failed, continuing without image", { rowIndex, error: imageError.message });
+    }
+  }
+
   const blogPost = {
     user_id: userId,
     title: row.title || row.Title || 'Untitled',
@@ -507,8 +540,8 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     meta_title: row.meta_title || row.title || row.Title,
     meta_description: row.meta_description || aiContent.metaDescription,
     canonical_url: row.canonical_url || '',
-    hero_image_url: row.hero_image_url || aiContent.heroImageUrl || '',
-    hero_image_alt: row.hero_image_alt || aiContent.heroImageAlt || '',
+    hero_image_url: heroImageUrl,
+    hero_image_alt: heroImageAlt,
     body_markdown: aiContent.content,
     faq_json: aiContent.faq.length > 0 ? aiContent.faq : parseFAQ(row.faq_json),
     cta_heading: row.cta_heading || aiContent.cta.heading,
