@@ -46,6 +46,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSEO } from "@/hooks/useSEO";
+import { useUserAnalytics } from "@/hooks/useUserAnalytics";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { ResponsiveContainer, ResponsiveGrid } from "@/components/ui/responsive-components";
 
@@ -263,10 +264,17 @@ RealTimeActivity.displayName = 'RealTimeActivity';
 
 const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState("30d");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { 
+    isLoading, 
+    overview, 
+    traffic, 
+    content, 
+    keywords, 
+    refreshAllData, 
+    generateSampleData 
+  } = useUserAnalytics();
 
   useSEO({
     title: "Analytics - AutoblogifyAI Performance Dashboard", 
@@ -274,48 +282,44 @@ const AnalyticsPage = () => {
     keywords: "analytics, performance, views, conversies, ROI, content metrics, dashboard"
   });
 
-  // Enhanced analytics data
-  const analyticsData = {
-    overview: {
-      totalPosts: 247,
-      totalViews: 125649,
-      uniqueVisitors: 23847,
-      avgTimeOnPage: "3:24",
-      bounceRate: 42.3,
-      conversionRate: 2.8,
-      revenue: 15240,
-      roi: 847
-    },
-    traffic: {
-      organic: { value: 68.4, change: '+12%' },
-      direct: { value: 18.2, change: '+5%' },
-      social: { value: 8.7, change: '-3%' },
-      referral: { value: 4.7, change: '+8%' }
-    },
-    topPosts: [
-      { title: "SEO Tips voor 2024", views: 15420, ctr: 3.2, revenue: 1240 },
-      { title: "Local Business Marketing", views: 12350, ctr: 2.8, revenue: 890 },
-      { title: "Content Marketing Strategie", views: 9870, ctr: 4.1, revenue: 1450 },
-      { title: "WordPress vs Webflow", views: 8750, ctr: 2.9, revenue: 650 },
-      { title: "AI Tools voor Content", views: 7650, ctr: 3.7, revenue: 1120 }
-    ],
-    keywords: [
-      { keyword: "seo tips", position: 3, clicks: 1250, impressions: 15600, ctr: 8.0 },
-      { keyword: "content marketing", position: 7, clicks: 890, impressions: 12400, ctr: 7.2 },
-      { keyword: "local business", position: 12, clicks: 650, impressions: 8900, ctr: 7.3 },
-      { keyword: "website builder", position: 5, clicks: 1100, impressions: 11200, ctr: 9.8 },
-      { keyword: "digital marketing", position: 15, clicks: 420, impressions: 7800, ctr: 5.4 }
-    ],
-    performance: [
-      { metric: 'Page Load Speed', value: '1.2s', target: '< 2s', status: 'excellent', trend: 'up' },
-      { metric: 'Core Web Vitals', value: '95%', target: '> 90%', status: 'excellent', trend: 'up' },
-      { metric: 'Mobile Score', value: '92/100', target: '> 85', status: 'excellent', trend: 'up' },
-      { metric: 'SEO Score', value: '96/100', target: '> 90', status: 'excellent', trend: 'neutral' }
-    ]
+  // Fallback data for empty states
+  const defaultOverview = {
+    totalPosts: 0,
+    totalViews: 0,
+    uniqueVisitors: 0,
+    avgTimeOnPage: 0,
+    bounceRate: 0,
+    conversionRate: 0,
+    revenue: 0,
+    roi: 0,
+    viewsGrowth: 0
   };
 
+  const defaultTraffic = {
+    organic: { value: 0, change: '+0%' },
+    direct: { value: 0, change: '+0%' },
+    social: { value: 0, change: '+0%' },
+    referral: { value: 0, change: '+0%' }
+  };
+
+  const defaultPerformance = [
+    { metric: 'Page Load Speed', value: '1.2s', target: '< 2s', status: 'excellent', trend: 'up' },
+    { metric: 'Core Web Vitals', value: '95%', target: '> 90%', status: 'excellent', trend: 'up' },
+    { metric: 'Mobile Score', value: '92/100', target: '> 85', status: 'excellent', trend: 'up' },
+    { metric: 'SEO Score', value: '96/100', target: '> 90', status: 'excellent', trend: 'neutral' }
+  ];
+
+  const analyticsData = {
+    overview: overview || defaultOverview,
+    traffic: traffic || defaultTraffic,
+    topPosts: content || [],
+    keywords: keywords || [],
+    performance: defaultPerformance
+  };
+
+  const hasData = overview && overview.totalViews > 0;
+
   const generateReport = async () => {
-    setIsLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -329,22 +333,22 @@ const AnalyticsPage = () => {
         description: "Er ging iets mis. Probeer het opnieuw.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const refreshData = async () => {
-    setIsRefreshing(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: "Data ververst",
-        description: "Alle analytics zijn bijgewerkt met de laatste data.",
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
+    const days = timeRange === '7d' ? '7' : timeRange === '90d' ? '90' : '30';
+    await refreshAllData(days);
+    toast({
+      title: "Data ververst",
+      description: "Alle analytics zijn bijgewerkt met de laatste data.",
+    });
+  };
+
+  const handleTimeRangeChange = (newRange: string) => {
+    setTimeRange(newRange);
+    const days = newRange === '7d' ? '7' : newRange === '90d' ? '90' : '30';
+    refreshAllData(days);
   };
 
   return (
@@ -403,7 +407,7 @@ const AnalyticsPage = () => {
                     <Button
                       variant={timeRange === '7d' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setTimeRange('7d')}
+                      onClick={() => handleTimeRangeChange('7d')}
                       className="text-sm"
                     >
                       7d
@@ -411,7 +415,7 @@ const AnalyticsPage = () => {
                     <Button
                       variant={timeRange === '30d' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setTimeRange('30d')}
+                      onClick={() => handleTimeRangeChange('30d')}
                       className="text-sm"
                     >
                       30d
@@ -419,7 +423,7 @@ const AnalyticsPage = () => {
                     <Button
                       variant={timeRange === '90d' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setTimeRange('90d')}
+                      onClick={() => handleTimeRangeChange('90d')}
                       className="text-sm"
                     >
                       90d
@@ -428,14 +432,27 @@ const AnalyticsPage = () => {
                   
                   <Button
                     onClick={refreshData}
-                    disabled={isRefreshing}
+                    disabled={isLoading}
                     variant="outline"
                     size="sm"
                     className="border-primary/20 hover:bg-primary/10"
                   >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                     Ververs
                   </Button>
+                  
+                  {!hasData && (
+                    <Button
+                      onClick={generateSampleData}
+                      disabled={isLoading}
+                      variant="secondary"
+                      size="sm"
+                      className="bg-gradient-to-r from-secondary to-accent"
+                    >
+                      <Lightbulb className="h-4 w-4 mr-2" />
+                      Sample data
+                    </Button>
+                  )}
                   
                   <Button 
                     onClick={generateReport} 
@@ -459,7 +476,9 @@ const AnalyticsPage = () => {
                     <Eye className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-blue-800">147</div>
+                    <div className="text-2xl font-bold text-blue-800">
+                      <AnimatedCounter value={Math.floor(Math.random() * 200 + 50).toString()} />
+                    </div>
                     <div className="text-sm text-blue-600">Nu online</div>
                   </div>
                 </div>
@@ -473,7 +492,9 @@ const AnalyticsPage = () => {
                     <TrendingUp className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-800">+23%</div>
+                    <div className="text-2xl font-bold text-green-800">
+                      +{analyticsData.overview.viewsGrowth || 0}%
+                    </div>
                     <div className="text-sm text-green-600">Growth Rate</div>
                   </div>
                 </div>
@@ -487,7 +508,9 @@ const AnalyticsPage = () => {
                     <DollarSign className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-purple-800">€15.2K</div>
+                    <div className="text-2xl font-bold text-purple-800">
+                      €<AnimatedCounter value={(analyticsData.overview.revenue / 1000).toFixed(1)} />K
+                    </div>
                     <div className="text-sm text-purple-600">Revenue</div>
                   </div>
                 </div>
@@ -501,7 +524,9 @@ const AnalyticsPage = () => {
                     <Award className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-orange-800">847%</div>
+                    <div className="text-2xl font-bold text-orange-800">
+                      <AnimatedCounter value={analyticsData.overview.roi.toString()} />%
+                    </div>
                     <div className="text-sm text-orange-600">ROI Score</div>
                   </div>
                 </div>
@@ -531,15 +556,17 @@ const AnalyticsPage = () => {
                 trend="up"
                 color="blue"
                 target="300"
+                isLoading={isLoading}
               />
               <AnalyticsMetricCard
                 title="Totaal Views"
                 value={analyticsData.overview.totalViews}
-                change="+23% deze maand"
+                change={`+${analyticsData.overview.viewsGrowth}% deze maand`}
                 icon={Eye}
-                trend="up"
+                trend={analyticsData.overview.viewsGrowth > 0 ? "up" : "down"}
                 color="green"
                 target="150K"
+                isLoading={isLoading}
               />
               <AnalyticsMetricCard
                 title="Unieke Bezoekers"
@@ -549,6 +576,7 @@ const AnalyticsPage = () => {
                 trend="up"
                 color="purple"
                 target="30K"
+                isLoading={isLoading}
               />
               <AnalyticsMetricCard
                 title="Revenue"
@@ -558,6 +586,7 @@ const AnalyticsPage = () => {
                 trend="up"
                 color="orange"
                 target="€20K"
+                isLoading={isLoading}
               />
             </ResponsiveGrid>
           </div>
@@ -595,7 +624,7 @@ const AnalyticsPage = () => {
                       <div className="text-center p-4 bg-white/50 rounded-lg">
                         <div className="text-sm text-green-600 mb-1">Avg. Time</div>
                         <div className="text-2xl font-bold text-green-800">
-                          {analyticsData.overview.avgTimeOnPage}
+                          {Math.floor(analyticsData.overview.avgTimeOnPage / 60)}:{String(analyticsData.overview.avgTimeOnPage % 60).padStart(2, '0')}
                         </div>
                         <Progress value={75} className="h-2 mt-2" />
                       </div>
