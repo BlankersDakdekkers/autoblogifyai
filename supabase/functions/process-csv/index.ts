@@ -168,41 +168,53 @@ async function processCSVData(csvUrl: string, jobId: string, userId: string, sup
     
     // Check if it's a Google Sheets URL and correct format if needed
     if (csvUrl.includes('docs.google.com/spreadsheets')) {
-      console.log('Detected Google Sheets URL, correcting format...');
+      console.log('Detected Google Sheets URL, checking format...');
       console.log('Original URL:', csvUrl);
       
-      let spreadsheetId = '';
-      
-      // Extract spreadsheet ID from various Google Sheets URL formats
-      const patterns = [
-        /\/d\/([a-zA-Z0-9-_]+)\//, // Standard format with trailing slash
-        /\/d\/e\/([a-zA-Z0-9-_]+)\//, // Published format
-        /spreadsheets\/d\/([a-zA-Z0-9-_]+)/, // Alternative format
-      ];
-      
-      for (const pattern of patterns) {
-        const match = csvUrl.match(pattern);
-        if (match) {
-          // For published sheets, use the second capture group
-          spreadsheetId = match[2] || match[1];
-          break;
-        }
+      // If it's already a published CSV URL, use it as-is
+      if (csvUrl.includes('/pub?') && csvUrl.includes('output=csv')) {
+        console.log('URL is already published CSV format, using as-is');
+        correctedUrl = csvUrl;
+      } 
+      // If it's an export URL, use it as-is
+      else if (csvUrl.includes('/export?format=csv')) {
+        console.log('URL is already export format, using as-is');
+        correctedUrl = csvUrl;
       }
-      
-      if (spreadsheetId) {
-        // Extract gid if present
-        let gid = '0'; // Default to first sheet
-        const gidMatch = csvUrl.match(/[?&]gid=([0-9]+)/);
-        if (gidMatch) {
-          gid = gidMatch[1];
+      // Otherwise, try to convert to export format
+      else {
+        let spreadsheetId = '';
+        
+        // Extract spreadsheet ID from various Google Sheets URL formats
+        const patterns = [
+          /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/, // Standard format: /d/ID/
+        ];
+        
+        for (const pattern of patterns) {
+          const match = csvUrl.match(pattern);
+          if (match) {
+            spreadsheetId = match[1];
+            break;
+          }
         }
         
-        // Use the correct export format for Google Sheets
-        correctedUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
-        console.log('Corrected URL:', correctedUrl);
-      } else {
-        console.log('Could not extract spreadsheet ID from URL');
-        throw new Error(`Invalid Google Sheets URL format. Expected format: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/...`);
+        if (spreadsheetId) {
+          // Extract gid if present
+          let gid = '0'; // Default to first sheet
+          const gidMatch = csvUrl.match(/[?&#]gid=([0-9]+)/);
+          if (gidMatch) {
+            gid = gidMatch[1];
+          }
+          
+          // Use the correct export format for Google Sheets
+          correctedUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+          console.log('Corrected URL:', correctedUrl);
+        } else {
+          console.log('Could not extract spreadsheet ID from URL');
+          // Don't throw error, try the original URL
+          console.log('Using original URL as fallback');
+          correctedUrl = csvUrl;
+        }
       }
     }
     
