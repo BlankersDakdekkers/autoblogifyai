@@ -36,13 +36,22 @@ serve(async (req) => {
     });
 
     // Step 1: Test if WordPress site is reachable
+    console.log('Step 1: Testing site reachability...');
     try {
       const siteResponse = await fetch(normalizedUrl, {
         method: 'HEAD',
-        headers: { 'User-Agent': 'AutoblogifyAI/1.0' }
+        headers: { 'User-Agent': 'AutoblogifyAI/1.0' },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
+      
+      console.log('Site response:', {
+        status: siteResponse.status,
+        statusText: siteResponse.statusText,
+        ok: siteResponse.ok
       });
       
       if (!siteResponse.ok) {
+        console.log('Site not reachable, status:', siteResponse.status);
         return new Response(
           JSON.stringify({
             success: false,
@@ -52,49 +61,68 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    } catch (siteError) {
+      
+      console.log('Site is reachable');
+    } catch (siteError: any) {
+      console.error('Site reachability failed:', siteError.message);
       return new Response(
         JSON.stringify({
           success: false,
           step: 'site_reachability',
-          error: `Kan WordPress site niet bereiken: ${siteError.message}`
+          error: `Kan WordPress site niet bereiken: ${siteError.message}. Controleer of de URL correct is en toegankelijk.`
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Step 2: Test WordPress REST API availability
+    console.log('Step 2: Testing WordPress REST API...');
     const apiTestUrl = `${normalizedUrl}/wp-json/wp/v2`;
     try {
       const apiResponse = await fetch(apiTestUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'AutoblogifyAI/1.0' }
+        headers: { 'User-Agent': 'AutoblogifyAI/1.0' },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
+      
+      console.log('REST API response:', {
+        status: apiResponse.status,
+        statusText: apiResponse.statusText,
+        ok: apiResponse.ok
       });
       
       if (!apiResponse.ok) {
+        console.log('REST API not available, status:', apiResponse.status);
         return new Response(
           JSON.stringify({
             success: false,
             step: 'rest_api',
-            error: `WordPress REST API niet beschikbaar (${apiResponse.status}). Controleer of permalinks zijn ingeschakeld.`
+            error: `WordPress REST API niet beschikbaar (${apiResponse.status}). Controleer of permalinks zijn ingeschakeld in WordPress → Settings → Permalinks.`
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    } catch (apiError) {
+      
+      console.log('REST API is available');
+    } catch (apiError: any) {
+      console.error('REST API test failed:', apiError.message);
       return new Response(
         JSON.stringify({
           success: false,
           step: 'rest_api',
-          error: `WordPress REST API fout: ${apiError.message}`
+          error: `WordPress REST API fout: ${apiError.message}. Mogelijk zijn permalinks niet ingeschakeld.`
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Step 3: Test authentication
+    console.log('Step 3: Testing authentication...');
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     const authUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
+    
+    console.log('Making auth request to:', authUrl);
+    console.log('Credentials length:', credentials.length);
     
     try {
       const authResponse = await fetch(authUrl, {
@@ -103,18 +131,29 @@ serve(async (req) => {
           'Authorization': `Basic ${credentials}`,
           'User-Agent': 'AutoblogifyAI/1.0',
           'Content-Type': 'application/json'
-        }
+        },
+        signal: AbortSignal.timeout(15000) // 15 second timeout for auth
+      });
+
+      console.log('Auth response:', {
+        status: authResponse.status,
+        statusText: authResponse.statusText,
+        ok: authResponse.ok,
+        headers: Object.fromEntries(authResponse.headers.entries())
       });
 
       if (!authResponse.ok) {
         const errorText = await authResponse.text();
+        console.log('Auth failed, response body:', errorText);
+        
         let errorDetails = errorText;
         
         try {
           const errorJson = JSON.parse(errorText);
           errorDetails = errorJson.message || errorJson.code || errorText;
+          console.log('Parsed error:', errorJson);
         } catch (e) {
-          // Keep original error text
+          console.log('Could not parse error as JSON');
         }
 
         if (authResponse.status === 401) {
@@ -122,7 +161,13 @@ serve(async (req) => {
             JSON.stringify({
               success: false,
               step: 'authentication',
-              error: `Authenticatie gefaald. Controleer gebruikersnaam '${cleanUsername}' en application password. Details: ${errorDetails}`
+              error: `Authenticatie gefaald. Controleer:
+• Gebruikersnaam '${cleanUsername}' bestaat en is correct gespeld
+• Application Password is geldig (geen gewoon wachtwoord!)
+• Application Password is gegeneerd in WordPress → Users → Profile
+• Gebruiker is actief en niet geblokkeerd
+
+Details: ${errorDetails}`
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
@@ -139,6 +184,12 @@ serve(async (req) => {
       }
 
       const userData = await authResponse.json();
+      console.log('Auth successful, user data:', {
+        id: userData.id,
+        username: userData.username,
+        name: userData.name,
+        roles: userData.roles
+      });
       
       // Step 4: Check user permissions
       const canPublish = userData.capabilities?.publish_posts || 
