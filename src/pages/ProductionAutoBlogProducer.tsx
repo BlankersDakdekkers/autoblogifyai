@@ -89,14 +89,6 @@ const ProductionAutoBlogProducer = () => {
     postsFromKeywords: 0,
     avgTrafficPotential: 0
   });
-  
-  // Analytics state
-  const [analytics, setAnalytics] = useState({
-    keywordsGenerated: 0,
-    contentIdeasCreated: 0,
-    postsFromKeywords: 0,
-    avgTrafficPotential: 0
-  });
 
   // Load data on mount
   useEffect(() => {
@@ -459,70 +451,6 @@ const ProductionAutoBlogProducer = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const testWordPressConnection = async () => {
-    if (!wordpressConfig.siteUrl || !wordpressConfig.username || !wordpressConfig.appPassword) {
-      toast({
-        title: "WordPress Configuratie Incompleet",
-        description: "Vul alle WordPress velden in",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsTestingConnection(true);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('wordpress-connection-test', {
-        body: {
-          wordpressConfig
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setIsWordPressConnected(true);
-        // Save config to localStorage
-        localStorage.setItem('wordpress_config', JSON.stringify(wordpressConfig));
-        
-        toast({
-          title: "WordPress Verbinding Succesvol! ✅",
-          description: "Je WordPress site is succesvol verbonden"
-        });
-      } else {
-        throw new Error(data?.message || 'Verbinding mislukt');
-      }
-
-    } catch (error: any) {
-      console.error('WordPress connection test error:', error);
-      setIsWordPressConnected(false);
-      
-      toast({
-        title: "WordPress Verbinding Mislukt",
-        description: error.message || "Controleer je instellingen en probeer opnieuw",
-        variant: "destructive"
-      });
-    } finally {
-      setIsTestingConnection(false);
-    }
-  };
-
-  const handleWordPressPublishSuccess = () => {
-    toast({
-      title: "WordPress Publicatie Succesvol! 🚀",
-      description: "Post is succesvol gepubliceerd naar WordPress"
-    });
-    
-    // Update analytics
-    setAnalytics(prev => ({
-      ...prev,
-      postsPublished: prev.postsPublished + 1
-    }));
-    
-    // Refresh posts to update status
-    loadBlogPosts();
   };
 
   const getIntentIcon = (intent: string) => {
