@@ -57,8 +57,55 @@ serve(async (req) => {
       );
     }
 
+    // Generate hero image if not present
+    let updatedPost = post;
+    if (!post.hero_image_url) {
+      console.log('Generating hero image for post:', post.title);
+      try {
+        const imageResponse = await fetch(`${supabaseUrl}/functions/v1/generate-blog-images`, {
+          method: 'POST',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: post.title,
+            content: post.body_markdown?.substring(0, 500) || '',
+            category: post.tags?.split(';')[0] || 'content'
+          })
+        });
+
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          if (imageData.success && imageData.imageUrl) {
+            console.log('Hero image generated successfully');
+            
+            // Update post with generated image
+            const { error: updateError } = await supabase
+              .from('blog_posts')
+              .update({ 
+                hero_image_url: imageData.imageUrl,
+                hero_image_alt: `${post.title} - Hero afbeelding`
+              })
+              .eq('id', postId);
+
+            if (!updateError) {
+              updatedPost = {
+                ...post,
+                hero_image_url: imageData.imageUrl,
+                hero_image_alt: `${post.title} - Hero afbeelding`
+              };
+              console.log('Post updated with hero image');
+            }
+          }
+        }
+      } catch (imageError) {
+        console.log('Image generation failed, continuing without image:', imageError);
+      }
+    }
+
     // Publish to WordPress
-    const result = await publishToWordPress(post, wordpressConfig);
+    const result = await publishToWordPress(updatedPost, wordpressConfig);
 
     // Update post status if successful
     if (result.success) {
