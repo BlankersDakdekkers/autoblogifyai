@@ -405,7 +405,13 @@ Taal: ${language}`
     });
 
     const metaData = await metaResponse.json();
-    const metaDescription = metaData.choices[0].message.content.replace(/"/g, '');
+    let metaDescription = '';
+    if (metaData.choices && metaData.choices[0] && metaData.choices[0].message && metaData.choices[0].message.content) {
+      metaDescription = metaData.choices[0].message.content.replace(/"/g, '');
+    } else {
+      console.error('Meta description generation failed, using fallback');
+      metaDescription = `Ontdek alles over ${title} in ${city}. Professioneel advies en tips voor de beste resultaten.`;
+    }
 
     // Generate comprehensive FAQ section
     let faqJson = null;
@@ -440,10 +446,22 @@ Taal: ${language}`
 
     const faqData = await faqResponse.json();
     try {
-      const faqContent = faqData.choices[0].message.content;
-      const jsonMatch = faqContent.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        faqJson = JSON.parse(jsonMatch[0]);
+      let faqContent = '';
+      if (faqData.choices && faqData.choices[0] && faqData.choices[0].message && faqData.choices[0].message.content) {
+        faqContent = faqData.choices[0].message.content;
+        const jsonMatch = faqContent.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          faqJson = JSON.parse(jsonMatch[0]);
+        }
+      } else {
+        console.error('FAQ generation failed, using fallback');
+        // Fallback FAQ
+        faqJson = [
+          {
+            "q": `Wat zijn de voordelen van ${title.toLowerCase()}?`,
+            "a": `${title} biedt verschillende voordelen zoals verhoogde efficiëntie, betere resultaten en professionele service.`
+          }
+        ];
       }
     } catch (e) {
       console.log('FAQ generation failed:', e);
@@ -470,7 +488,14 @@ Taal: ${language}`
     });
 
     const ctaData = await ctaResponse.json();
-    const ctaText = ctaData.choices[0].message.content;
+    let ctaText = '';
+    if (ctaData.choices && ctaData.choices[0] && ctaData.choices[0].message && ctaData.choices[0].message.content) {
+      ctaText = ctaData.choices[0].message.content;
+    } else {
+      console.error('CTA generation failed, using fallback');
+      ctaText = language === 'nl' ? 'Neem Contact Op\nVoor meer informatie' : 'Get In Touch\nFor more information';
+    }
+    
     const ctaLines = ctaText.split('\n').filter(line => line.trim());
     const ctaHeading = ctaLines[0]?.replace(/^Heading:\s*/i, '').replace(/"/g, '') || (language === 'nl' ? 'Neem Contact Op' : 'Get In Touch');
     const ctaSubtext = ctaLines[1]?.replace(/^Subtext:\s*/i, '').replace(/"/g, '') || (language === 'nl' ? 'Start vandaag nog' : 'Start today');
