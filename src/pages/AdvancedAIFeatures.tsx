@@ -294,14 +294,34 @@ const AdvancedAIFeatures = () => {
         });
         toast.success('Content succesvol gegenereerd (fallback modus)!');
       } else if (data?.success) {
-        // Format content for display
+        // Format content for display - handle different response structures
+        let contentToDisplay = '';
+        let translationsArray = [];
+        
+        // Check if data.content is already a structured object
+        if (data.content && typeof data.content === 'object' && data.content.primary) {
+          contentToDisplay = data.content.primary.content || 'Geen content beschikbaar';
+          translationsArray = data.content.translations || [];
+        } else if (typeof data.content === 'string') {
+          contentToDisplay = data.content;
+          translationsArray = [];
+        } else if (data.generatedContent) {
+          contentToDisplay = data.generatedContent;
+          translationsArray = [];
+        } else {
+          contentToDisplay = 'Content generatie gefaald';
+          translationsArray = [];
+        }
+        
         const formattedContent = {
           primary: {
             language: selectedLanguages[0] || 'nl',
-            content: data.content || data.generatedContent || 'Content generatie gefaald'
+            content: contentToDisplay
           },
-          translations: []
+          translations: translationsArray
         };
+        
+        console.log('Setting generatedContent:', JSON.stringify(formattedContent, null, 2));
         setGeneratedContent(formattedContent);
         toast.success(`Content succesvol gegenereerd met ${selectedModel}!`);
       } else {
