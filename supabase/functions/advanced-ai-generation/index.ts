@@ -104,7 +104,12 @@ Generate comprehensive, engaging content that matches the specified persona and 
       }
 
       const data = await response.json();
-      generatedContent = data.content[0].text;
+      if (data.content && data.content[0] && data.content[0].text) {
+        generatedContent = data.content[0].text;
+      } else {
+        console.error('Unexpected Claude API response:', data);
+        throw new Error('Claude API returned unexpected response format');
+      }
 
     } else if (openAIApiKey) {
       logStep(`Using OpenAI model: ${model}`);
@@ -140,7 +145,12 @@ Generate comprehensive, engaging content that matches the specified persona and 
       }
 
       const data = await response.json();
-      generatedContent = data.choices[0].message.content;
+      if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+        generatedContent = data.choices[0].message.content;
+      } else {
+        console.error('Unexpected OpenAI API response:', data);
+        throw new Error('OpenAI API returned unexpected response format');
+      }
     } else {
       throw new Error('No compatible API key found for selected model');
     }
@@ -179,10 +189,14 @@ Generate comprehensive, engaging content that matches the specified persona and 
 
           if (translationResponse.ok) {
             const translationData = await translationResponse.json();
-            results.translations.push({
-              language: lang,
-              content: translationData.choices[0].message.content
-            });
+            if (translationData.choices && translationData.choices[0] && translationData.choices[0].message && translationData.choices[0].message.content) {
+              results.translations.push({
+                language: lang,
+                content: translationData.choices[0].message.content
+              });
+            } else {
+              logStep(`Translation response invalid for ${lang}`, translationData);
+            }
           }
         } catch (translationError) {
           logStep(`Translation error for ${lang}`, translationError);
