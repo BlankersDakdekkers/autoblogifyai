@@ -18,6 +18,7 @@ import {
   Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WordPressConfig {
   siteUrl: string;
@@ -38,6 +39,7 @@ const WordPressSetupWizard = ({ onComplete, onSkip }: WordPressSetupWizardProps)
     appPassword: ""
   });
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionTestResult, setConnectionTestResult] = useState<any>(null);
   const { toast } = useToast();
 
   const steps = [
@@ -71,21 +73,69 @@ const WordPressSetupWizard = ({ onComplete, onSkip }: WordPressSetupWizardProps)
 
   const testConnection = async () => {
     setIsTestingConnection(true);
+    setConnectionTestResult(null);
     
-    // Simuleer verbindingstest
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Verbinding succesvol!",
-        description: "Je WordPress site is correct geconfigureerd",
+      console.log('Testing WordPress connection with:', {
+        siteUrl: config.siteUrl,
+        username: config.username,
+        hasPassword: !!config.appPassword
       });
+
+      const { data, error } = await supabase.functions.invoke('wordpress-connection-test', {
+        body: {
+          siteUrl: config.siteUrl,
+          username: config.username,
+          appPassword: config.appPassword
+        }
+      });
+
+      console.log('WordPress connection test response:', { data, error });
+
+      if (error) {
+        throw new Error(error.message || 'Verbindingstest gefaald');
+      }
+
+      if (data.success) {
+        setConnectionTestResult({
+          success: true,
+          user: data.user,
+          message: data.message
+        });
+
+        toast({
+          title: "Verbinding succesvol! 🎉",
+          description: `Ingelogd als ${data.user.name || data.user.username} (${data.user.roles?.join(', ')})`,
+        });
+        
+        // Auto-complete na 2 seconden
+        setTimeout(() => {
+          onComplete(config);
+        }, 2000);
+      } else {
+        setConnectionTestResult({
+          success: false,
+          step: data.step,
+          error: data.error
+        });
+
+        toast({
+          title: "Verbindingstest gefaald",
+          description: data.error,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('WordPress connection test error:', error);
       
-      onComplete(config);
-    } catch (error) {
+      setConnectionTestResult({
+        success: false,
+        error: error.message || 'Onbekende fout bij verbindingstest'
+      });
+
       toast({
-        title: "Verbinding mislukt",
-        description: "Controleer je gegevens en probeer opnieuw",
+        title: "Verbindingstest mislukt",
+        description: error.message || "Er ging iets mis bij het testen van de verbinding",
         variant: "destructive",
       });
     } finally {
@@ -278,6 +328,41 @@ const WordPressSetupWizard = ({ onComplete, onSkip }: WordPressSetupWizardProps)
                   </div>
                 </div>
               </div>
+
+              {/* Test Result */}
+              {connectionTestResult && (
+                <Alert className={connectionTestResult.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                  {connectionTestResult.success ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                  )}
+                  <AlertDescription>
+                    {connectionTestResult.success ? (
+                      <div>
+                        <div className="font-medium text-green-800">Verbinding succesvol!</div>
+                        {connectionTestResult.user && (
+                          <div className="text-sm text-green-700 mt-1">
+                            Ingelogd als: {connectionTestResult.user.name || connectionTestResult.user.username} 
+                            {connectionTestResult.user.roles && ` (${connectionTestResult.user.roles.join(', ')})`}
+                          </div>
+                        )}
+                        <div className="text-sm text-green-700 mt-1">
+                          Je wordt automatisch doorgestuurd naar de volgende stap...
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="font-medium text-red-800">Verbindingstest gefaald</div>
+                        <div className="text-sm text-red-700 mt-1">
+                          {connectionTestResult.step && `Stap: ${connectionTestResult.step} - `}
+                          {connectionTestResult.error}
+                        </div>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
         </CardContent>

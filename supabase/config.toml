@@ -54,6 +54,9 @@ verify_jwt = true
 [functions.wordpress-publish]
 verify_jwt = true
 
+[functions.wordpress-connection-test]
+verify_jwt = true
+
 [functions.advanced-ai-generation]
 verify_jwt = true
 
