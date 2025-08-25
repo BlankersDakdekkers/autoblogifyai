@@ -202,6 +202,7 @@ Controleer:
 
       throw new Error(errorMsg);
     }
+    
     // Check if user can publish posts
     const canPublish = userData.capabilities?.publish_posts || userData.roles?.includes('administrator') || userData.roles?.includes('editor');
     if (!canPublish) {
