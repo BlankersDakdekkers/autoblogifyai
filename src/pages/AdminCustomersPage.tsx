@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Search, Calendar, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { callEdgeFunction } from "@/utils/api-helpers";
 
 interface CustomerData {
   id: string;
@@ -30,52 +30,47 @@ const AdminCustomersPage = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
+      console.log('Fetching customers data...');
       
-      // Fetch users with their credit info and subscriptions
-      const { data: users, error: usersError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          created_at
-        `);
-        
+      // Use the admin edge function instead of direct queries
+      const { data: usersData, error: usersError } = await callEdgeFunction('admin-list-users');
+      
       if (usersError) {
-        console.error('Error fetching users:', usersError);
+        console.error('Error fetching users via edge function:', usersError);
+        toast({
+          title: "Fout",
+          description: "Kon gebruikersgegevens niet ophalen: " + usersError.message,
+          variant: "destructive",
+        });
         return;
       }
 
-      // Get credits for each user
-      const { data: credits } = await supabase
-        .from('user_credits')
-        .select('user_id, credits_remaining');
+      if (!usersData?.users) {
+        console.log('No users data returned');
+        setCustomers([]);
+        return;
+      }
 
-      // Get subscription data
-      const { data: subscriptions } = await supabase
-        .from('subscribers')
-        .select('user_id, email, subscription_tier');
+      console.log('Users fetched:', usersData.users.length);
 
-      // Combine data
-      const customerData = users?.map(user => {
-        const userCredits = credits?.find(c => c.user_id === user.user_id);
-        const userSub = subscriptions?.find(s => s.user_id === user.user_id);
-        
-        return {
-          id: user.user_id,
-          email: userSub?.email || 'Geen email',
-          subscription_tier: userSub?.subscription_tier || 'Free',
-          credits_remaining: userCredits?.credits_remaining || 0,
-          created_at: user.created_at,
-          last_sign_in_at: null
-        };
-      }) || [];
+      // Transform the data for customers view
+      const customerData = usersData.users.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        subscription_tier: 'Free', // Default for now
+        credits_remaining: 5, // Default for now  
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at
+      }));
 
+      console.log('Customer data prepared:', customerData.length, 'customers');
       setCustomers(customerData);
+      
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error('Exception in fetchCustomers:', error);
       toast({
         title: "Fout",
-        description: "Kon klantgegevens niet ophalen",
+        description: "Er ging iets mis bij het ophalen van klantgegevens",
         variant: "destructive",
       });
     } finally {
