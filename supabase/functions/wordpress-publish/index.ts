@@ -92,34 +92,83 @@ async function publishToWordPress(post: any, config: any) {
     // Normalize site URL
     const normalizedUrl = siteUrl.replace(/\/$/, '');
     
-    // First, check if WordPress REST API is available
-    const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2`;
-    console.log('Checking WordPress REST API availability:', apiDiscoveryUrl);
+    // Basic auth credentials
+    const credentials = btoa(`${username}:${appPassword}`);
+    
+    // First, test authentication and user permissions
+    const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
+    console.log('Checking user authentication and permissions:', userCheckUrl);
     
     try {
-      const discoveryResponse = await fetch(apiDiscoveryUrl, {
+      const userResponse = await fetch(userCheckUrl, {
         method: 'GET',
         headers: {
+          'Authorization': `Basic ${credentials}`,
           'User-Agent': 'AutoblogifyAI/1.0'
         }
       });
       
-      if (!discoveryResponse.ok) {
-        console.error('WordPress REST API not available:', discoveryResponse.status);
-        throw new Error(`WordPress REST API is niet beschikbaar op ${normalizedUrl}. Status: ${discoveryResponse.status}. Controleer of de WordPress site correct is geconfigureerd en permalinks zijn ingeschakeld.`);
+      if (!userResponse.ok) {
+        const errorText = await userResponse.text();
+        console.error('User authentication failed:', userResponse.status, errorText);
+        
+        if (userResponse.status === 401) {
+          throw new Error('Authenticatie gefaald. Controleer je WordPress gebruikersnaam en applicatie wachtwoord. Zorg ervoor dat het applicatie wachtwoord correct is aangemaakt in WordPress → Users → Profile.');
+        }
+        throw new Error(`Gebruikersverificatie gefaald (${userResponse.status}). Controleer je WordPress inloggegevens.`);
       }
       
-      console.log('WordPress REST API is beschikbaar');
+      const userData = await userResponse.json();
+      console.log('User authenticated successfully:', {
+        id: userData.id,
+        username: userData.username,
+        name: userData.name,
+        roles: userData.roles,
+        capabilities: Object.keys(userData.capabilities || {}).filter(cap => userData.capabilities[cap])
+      });
+      
+      // Check if user can publish posts
+      const canPublish = userData.capabilities?.publish_posts || userData.roles?.includes('administrator') || userData.roles?.includes('editor');
+      if (!canPublish) {
+        throw new Error(`Gebruiker '${username}' heeft geen rechten om posts te publiceren. Vereiste rollen: Administrator of Editor. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}`);
+      }
+      
+      console.log('User has publish permissions');
+      
+    } catch (authError) {
+      console.error('Authentication check failed:', authError);
+      if (authError.message.includes('Authenticatie gefaald') || authError.message.includes('geen rechten')) {
+        throw authError;
+      }
+      throw new Error(`Kan verbinding met WordPress niet verifiëren: ${authError.message}`);
+    }
+    
+    // Check if WordPress REST API is available for posts
+    const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
+    console.log('Checking WordPress posts endpoint:', apiDiscoveryUrl);
+    
+    try {
+      const discoveryResponse = await fetch(apiDiscoveryUrl, {
+        method: 'HEAD',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      });
+      
+      if (!discoveryResponse.ok && discoveryResponse.status !== 405) {
+        console.error('WordPress posts endpoint not available:', discoveryResponse.status);
+        throw new Error(`WordPress posts endpoint is niet beschikbaar. Status: ${discoveryResponse.status}. Controleer of permalinks zijn ingeschakeld en de REST API actief is.`);
+      }
+      
+      console.log('WordPress posts endpoint is beschikbaar');
     } catch (discoveryError) {
-      console.error('Failed to connect to WordPress:', discoveryError);
-      throw new Error(`Kan geen verbinding maken met WordPress site ${normalizedUrl}. Controleer of de URL correct is en de site online is.`);
+      console.error('Failed to check posts endpoint:', discoveryError);
+      throw new Error(`Kan posts endpoint niet bereiken: ${discoveryError.message}`);
     }
     
     // WordPress REST API endpoint for posts
     const apiUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
-    
-    // Basic auth credentials
-    const credentials = btoa(`${username}:${appPassword}`);
     
     // Convert markdown to HTML (basic conversion)
     const htmlContent = markdownToHtml(post.body_markdown || '');
