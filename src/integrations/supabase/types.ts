@@ -593,8 +593,10 @@ export type Database = {
       subscribers: {
         Row: {
           created_at: string
+          credits_reset_date: string | null
           email: string
           id: string
+          monthly_credit_limit: number | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscribed: boolean
@@ -605,8 +607,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          credits_reset_date?: string | null
           email: string
           id?: string
+          monthly_credit_limit?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscribed?: boolean
@@ -617,8 +621,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          credits_reset_date?: string | null
           email?: string
           id?: string
+          monthly_credit_limit?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscribed?: boolean
@@ -721,6 +727,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      get_credit_limit_for_tier: {
+        Args: { tier_name: string }
+        Returns: number
+      }
       get_queue_stats: {
         Args: { time_range_hours?: number }
         Returns: {
@@ -738,6 +748,18 @@ export type Database = {
       }
       make_self_admin: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      refresh_monthly_credits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_subscription_tier: {
+        Args: {
+          p_new_tier: string
+          p_stripe_subscription_id?: string
+          p_user_id: string
+        }
         Returns: undefined
       }
     }
