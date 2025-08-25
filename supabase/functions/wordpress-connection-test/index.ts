@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log('Received request body:', body);
+    console.log('Received request body:', JSON.stringify(body, null, 2));
     
     // Handle both direct parameters and nested wordpressConfig object
     let siteUrl, username, appPassword;
@@ -22,6 +22,15 @@ serve(async (req) => {
     } else {
       ({ siteUrl, username, appPassword } = body);
     }
+
+    console.log('Extracted values:');
+    console.log('- siteUrl:', JSON.stringify(siteUrl));
+    console.log('- username:', JSON.stringify(username));
+    console.log('- appPassword:', JSON.stringify(appPassword));
+    console.log('- appPassword length:', appPassword?.length || 0);
+    console.log('- siteUrl truthy:', !!siteUrl);
+    console.log('- username truthy:', !!username);
+    console.log('- appPassword truthy:', !!appPassword);
 
     if (!siteUrl || !username || !appPassword) {
       return new Response(
