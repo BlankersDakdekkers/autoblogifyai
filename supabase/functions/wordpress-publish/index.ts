@@ -94,7 +94,7 @@ async function publishToWordPress(post: any, config: any) {
     
     // Clean and normalize credentials
     const cleanUsername = username.trim();
-    const cleanAppPassword = appPassword.replace(/\s+/g, '');
+    const cleanAppPassword = appPassword.trim(); // Keep spaces in password
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     
     console.log('WordPress connection attempt:', {
