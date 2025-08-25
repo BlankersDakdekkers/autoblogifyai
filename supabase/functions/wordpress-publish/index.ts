@@ -141,146 +141,30 @@ async function publishToWordPress(post: any, config: any) {
     
     // Clean and normalize credentials
     const cleanUsername = username.trim();
-    const cleanAppPassword = appPassword.trim(); // Keep spaces in password
+    const cleanAppPassword = appPassword.trim();
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     
     console.log('WordPress connection attempt:', {
       siteUrl: normalizedUrl,
       username: cleanUsername,
-      appPasswordLength: cleanAppPassword.length,
-      credentialsLength: credentials.length
+      appPasswordLength: cleanAppPassword.length
     });
     
-    // First, test if WordPress REST API is available without auth
-    const apiTestUrl = `${normalizedUrl}/wp-json/wp/v2`;
-    console.log('Testing WordPress REST API availability:', apiTestUrl);
-    
-    try {
-      const apiTestResponse = await fetch(apiTestUrl, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'AutoblogifyAI/1.0'
-        }
-      });
-      
-      console.log('WordPress API test response:', {
-        status: apiTestResponse.status,
-        statusText: apiTestResponse.statusText,
-        headers: Object.fromEntries(apiTestResponse.headers.entries())
-      });
-      
-      if (!apiTestResponse.ok) {
-        throw new Error(`WordPress REST API niet beschikbaar (${apiTestResponse.status}). Controleer of permalinks zijn ingeschakeld.`);
-      }
-    } catch (apiTestError) {
-      console.error('WordPress API test failed:', apiTestError);
-      throw new Error(`Kan WordPress site niet bereiken: ${apiTestError.message}`);
-    }
-    
-    // Test authentication with multiple methods
-    const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
-    console.log('Testing authentication:', userCheckUrl);
-    
-    // Try different authentication headers
-    const authHeaders = [
-      { 'Authorization': `Basic ${credentials}` },
-      { 'Authorization': `Basic ${credentials}`, 'X-WP-Nonce': '' },
-      { 'Authorization': `Bearer ${btoa(cleanUsername + ':' + cleanAppPassword)}` }
-    ];
-    
-    let authSuccess = false;
-    let userData = null;
-    let lastError = null;
-    
-    for (let i = 0; i < authHeaders.length && !authSuccess; i++) {
-      console.log(`Trying authentication method ${i + 1}:`, Object.keys(authHeaders[i]));
-      
-      try {
-        const userResponse = await fetch(userCheckUrl, {
-          method: 'GET',
-          headers: {
-            ...authHeaders[i],
-            'User-Agent': 'AutoblogifyAI/1.0',
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        console.log(`Auth attempt ${i + 1} response:`, {
-          status: userResponse.status,
-          statusText: userResponse.statusText,
-          headers: Object.fromEntries(userResponse.headers.entries())
-        });
-        
-        if (userResponse.ok) {
-          userData = await userResponse.json();
-          authSuccess = true;
-          console.log('Authentication successful with method', i + 1, 'User data:', {
-            id: userData.id,
-            username: userData.username,
-            name: userData.name,
-            roles: userData.roles
-          });
-          break;
-        } else {
-          const errorText = await userResponse.text();
-          lastError = { status: userResponse.status, text: errorText, method: i + 1 };
-          console.log(`Auth method ${i + 1} failed:`, lastError);
-        }
-      } catch (authError) {
-        lastError = { error: authError.message, method: i + 1 };
-        console.error(`Auth method ${i + 1} error:`, authError);
-      }
-    }
-    
-    if (!authSuccess) {
-      console.error('All authentication methods failed. Last error:', lastError);
-      
-      let errorMsg = `WordPress authenticatie volledig gefaald na alle pogingen. 
-      
-Laatste fout (methode ${lastError?.method || '?'}): ${lastError?.text || lastError?.error || 'Onbekend'}
-
-Controleer:
-1. Username '${cleanUsername}' bestaat exact zo in WordPress
-2. Application Password '${cleanAppPassword.substring(0, 4)}...' is geldig
-3. User heeft 'publish_posts' rechten
-4. WordPress REST API is ingeschakeld
-5. Geen extra beveiligingsplugins actief
-6. Site: ${normalizedUrl}`;
-
-      throw new Error(errorMsg);
-    }
-    
-    console.log('Skipping permission check - will let WordPress handle authorization');
-    
-    // Check if WordPress REST API is available for posts
-    const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
-    console.log('Checking WordPress posts endpoint:', apiDiscoveryUrl);
-    
-    try {
-      const discoveryResponse = await fetch(apiDiscoveryUrl, {
-        method: 'HEAD',
-        headers: {
-          'Authorization': `Basic ${credentials}`,
-          'User-Agent': 'AutoblogifyAI/1.0'
-        }
-      });
-      
-      if (!discoveryResponse.ok && discoveryResponse.status !== 405) {
-        console.error('WordPress posts endpoint not available:', discoveryResponse.status);
-        throw new Error(`WordPress posts endpoint is niet beschikbaar. Status: ${discoveryResponse.status}. Controleer of permalinks zijn ingeschakeld en de REST API actief is.`);
-      }
-      
-      console.log('WordPress posts endpoint is beschikbaar');
-    } catch (discoveryError) {
-      console.error('Failed to check posts endpoint:', discoveryError);
-      throw new Error(`Kan posts endpoint niet bereiken: ${discoveryError.message}`);
-    }
+    // Test WordPress REST API availability and authentication
+    await testWordPressConnection(normalizedUrl, credentials);
     
     // WordPress REST API endpoint for posts
     const apiUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
     
-    // Convert markdown to HTML (basic conversion)
-    const htmlContent = markdownToHtml(post.body_markdown || '');
+    // Generate enhanced HTML content with layout
+    const htmlContent = await generateWordPressHTML(post);
+    
+    // Upload featured image if available
+    let featuredImageId = null;
+    if (post.hero_image_url) {
+      console.log('Uploading featured image to WordPress...');
+      featuredImageId = await uploadFeaturedImage(post.hero_image_url, post.hero_image_alt, normalizedUrl, credentials);
+    }
     
     const wordpressPost = {
       title: post.title,
@@ -288,15 +172,27 @@ Controleer:
       status: post.status === 'published' ? 'publish' : 'draft',
       excerpt: post.summary || '',
       slug: post.slug,
+      featured_media: featuredImageId,
       meta: {
         _yoast_wpseo_title: post.meta_title || post.title,
-        _yoast_wpseo_metadesc: post.meta_description || '',
-        _yoast_wpseo_canonical: post.canonical_url || ''
+        _yoast_wpseo_metadesc: post.meta_description || post.summary || '',
+        _yoast_wpseo_canonical: post.canonical_url || '',
+        autoblogify_cta_heading: post.cta_heading || '',
+        autoblogify_cta_subtext: post.cta_subtext || '',
+        autoblogify_city: post.city || '',
+        autoblogify_author: post.author || 'AutoblogifyAI'
       }
     };
 
-    console.log('Publishing to WordPress:', apiUrl);
-    console.log('Post data:', JSON.stringify(wordpressPost, null, 2));
+    // Add categories/tags if available
+    if (post.tags && post.tags.length > 0) {
+      const tagIds = await getOrCreateTags(post.tags, normalizedUrl, credentials);
+      if (tagIds.length > 0) {
+        wordpressPost.tags = tagIds;
+      }
+    }
+
+    console.log('Publishing enhanced post to WordPress...');
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -308,56 +204,17 @@ Controleer:
       body: JSON.stringify(wordpressPost),
     });
 
-    console.log('WordPress response status:', response.status);
-    console.log('WordPress response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('WordPress API error:', response.status, errorText);
-      
-      // Try to parse as JSON for better error messages
-      let errorMessage = errorText;
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (errorJson.message) {
-          errorMessage = errorJson.message;
-        } else if (errorJson.code) {
-          errorMessage = `${errorJson.code}: ${errorJson.message || 'Onbekende fout'}`;
-        }
-      } catch (e) {
-        // Not JSON, use the raw text but truncate if too long
-        if (errorText.length > 500) {
-          errorMessage = errorText.substring(0, 500) + '...';
-        }
-      }
-      
-      // Provide specific error messages based on status code
-      let userFriendlyError = '';
-      switch (response.status) {
-        case 401:
-          userFriendlyError = 'Authenticatie gefaald. Controleer je WordPress gebruikersnaam en applicatie wachtwoord.';
-          break;
-        case 403:
-          userFriendlyError = 'Geen rechten om posts te maken. Controleer of je WordPress gebruiker de juiste rechten heeft.';
-          break;
-        case 404:
-          userFriendlyError = 'WordPress REST API niet gevonden. Controleer of permalinks zijn ingeschakeld in WordPress.';
-          break;
-        case 500:
-          userFriendlyError = 'WordPress server fout. Controleer de WordPress site logs voor meer details.';
-          break;
-        default:
-          userFriendlyError = `WordPress API fout (${response.status}): ${errorMessage}`;
-      }
-      
-      throw new Error(userFriendlyError);
+      throw new Error(getWordPressError(response.status, errorText));
     }
 
     const result = await response.json();
     
     return {
       success: true,
-      message: 'Post succesvol gepubliceerd naar WordPress',
+      message: 'Post succesvol gepubliceerd naar WordPress met uitgelichte foto en CTA',
       url: result.link,
       wordpressId: result.id
     };
@@ -371,36 +228,329 @@ Controleer:
   }
 }
 
+async function testWordPressConnection(normalizedUrl: string, credentials: string) {
+  // Test if WordPress REST API is available
+  const apiTestUrl = `${normalizedUrl}/wp-json/wp/v2`;
+  console.log('Testing WordPress REST API availability:', apiTestUrl);
+  
+  const apiTestResponse = await fetch(apiTestUrl, {
+    method: 'GET',
+    headers: { 'User-Agent': 'AutoblogifyAI/1.0' }
+  });
+  
+  if (!apiTestResponse.ok) {
+    throw new Error(`WordPress REST API niet beschikbaar (${apiTestResponse.status}). Controleer of permalinks zijn ingeschakeld.`);
+  }
+
+  // Test authentication
+  const userCheckUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
+  const userResponse = await fetch(userCheckUrl, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'User-Agent': 'AutoblogifyAI/1.0',
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  if (!userResponse.ok) {
+    const errorText = await userResponse.text();
+    throw new Error(`WordPress authenticatie gefaald (${userResponse.status}): ${errorText}`);
+  }
+
+  console.log('WordPress connection test successful');
+}
+
+async function generateWordPressHTML(post: any) {
+  let html = '';
+  
+  // Hero section with image if available
+  if (post.hero_image_url) {
+    html += `
+    <div class="wp-block-cover alignfull has-background-dim" style="background-image:url(${post.hero_image_url})">
+      <div class="wp-block-cover__inner-container">
+        <h1 class="has-text-align-center has-large-font-size">${post.title}</h1>
+      </div>
+    </div>
+    `;
+  }
+
+  // Main content from markdown
+  const mainContent = markdownToHtml(post.body_markdown || '');
+  html += `<div class="entry-content">${mainContent}</div>`;
+
+  // FAQ Section if available
+  if (post.faq_json) {
+    try {
+      const faqs = typeof post.faq_json === 'string' ? JSON.parse(post.faq_json) : post.faq_json;
+      if (Array.isArray(faqs) && faqs.length > 0) {
+        html += `
+        <div class="faq-section wp-block-group">
+          <h2 class="wp-block-heading has-text-align-center">Veelgestelde Vragen</h2>
+          <div class="wp-block-group__inner-container">
+        `;
+        
+        faqs.forEach((faq: any, index: number) => {
+          html += `
+          <details class="wp-block-details">
+            <summary><strong>Q${index + 1}: ${faq.q || faq.question}</strong></summary>
+            <p>${faq.a || faq.answer}</p>
+          </details>
+          `;
+        });
+        
+        html += `</div></div>`;
+      }
+    } catch (e) {
+      console.log('Failed to parse FAQ JSON:', e);
+    }
+  }
+
+  // CTA Section
+  if (post.cta_heading || post.cta_subtext) {
+    html += `
+    <div class="cta-section wp-block-group has-background has-primary-background-color">
+      <div class="wp-block-group__inner-container has-text-align-center">
+        ${post.cta_heading ? `<h3 class="wp-block-heading has-white-color">${post.cta_heading}</h3>` : ''}
+        ${post.cta_subtext ? `<p class="has-white-color">${post.cta_subtext}</p>` : ''}
+        <div class="wp-block-buttons">
+          <div class="wp-block-button">
+            <a class="wp-block-button__link has-white-background-color has-primary-color" href="#contact">
+              Neem Contact Op
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  }
+
+  // Schema markup for SEO
+  if (post.faq_json) {
+    try {
+      const faqs = typeof post.faq_json === 'string' ? JSON.parse(post.faq_json) : post.faq_json;
+      if (Array.isArray(faqs) && faqs.length > 0) {
+        const schemaFaqs = faqs.map((faq: any) => ({
+          "@type": "Question",
+          "name": faq.q || faq.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.a || faq.answer
+          }
+        }));
+
+        const schema = {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": schemaFaqs
+        };
+
+        html += `
+        <script type="application/ld+json">
+        ${JSON.stringify(schema, null, 2)}
+        </script>
+        `;
+      }
+    } catch (e) {
+      console.log('Failed to generate FAQ schema:', e);
+    }
+  }
+
+  return html;
+}
+
+async function uploadFeaturedImage(imageUrl: string, altText: string, siteUrl: string, credentials: string) {
+  try {
+    console.log('Downloading image from:', imageUrl);
+    
+    // Download the image
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      console.log('Failed to download image:', imageResponse.status);
+      return null;
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+    
+    // Get filename from URL or create one
+    const urlParts = imageUrl.split('/');
+    const filename = urlParts[urlParts.length - 1] || `featured-image-${Date.now()}.jpg`;
+
+    console.log('Uploading image to WordPress media library...');
+    
+    // Upload to WordPress media library
+    const uploadUrl = `${siteUrl}/wp-json/wp/v2/media`;
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'User-Agent': 'AutoblogifyAI/1.0'
+      },
+      body: imageBuffer
+    });
+
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.log('Failed to upload image to WordPress:', uploadResponse.status, errorText);
+      return null;
+    }
+
+    const uploadResult = await uploadResponse.json();
+    
+    // Update alt text if provided
+    if (altText && uploadResult.id) {
+      await fetch(`${siteUrl}/wp-json/wp/v2/media/${uploadResult.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'AutoblogifyAI/1.0'
+        },
+        body: JSON.stringify({
+          alt_text: altText
+        })
+      });
+    }
+
+    console.log('Featured image uploaded successfully:', uploadResult.id);
+    return uploadResult.id;
+    
+  } catch (error) {
+    console.error('Error uploading featured image:', error);
+    return null;
+  }
+}
+
+async function getOrCreateTags(tags: string[], siteUrl: string, credentials: string) {
+  try {
+    const tagIds = [];
+    const tagsArray = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(';') : []);
+    
+    for (const tag of tagsArray) {
+      if (!tag || tag.trim() === '') continue;
+      
+      const tagName = tag.trim();
+      
+      // Check if tag exists
+      const searchUrl = `${siteUrl}/wp-json/wp/v2/tags?search=${encodeURIComponent(tagName)}`;
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      });
+      
+      if (searchResponse.ok) {
+        const existingTags = await searchResponse.json();
+        const existingTag = existingTags.find((t: any) => t.name.toLowerCase() === tagName.toLowerCase());
+        
+        if (existingTag) {
+          tagIds.push(existingTag.id);
+          continue;
+        }
+      }
+      
+      // Create new tag
+      const createUrl = `${siteUrl}/wp-json/wp/v2/tags`;
+      const createResponse = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'AutoblogifyAI/1.0'
+        },
+        body: JSON.stringify({
+          name: tagName,
+          slug: tagName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+        })
+      });
+      
+      if (createResponse.ok) {
+        const newTag = await createResponse.json();
+        tagIds.push(newTag.id);
+      }
+    }
+    
+    return tagIds;
+  } catch (error) {
+    console.error('Error managing tags:', error);
+    return [];
+  }
+}
+
+function getWordPressError(status: number, errorText: string) {
+  let errorMessage = errorText;
+  try {
+    const errorJson = JSON.parse(errorText);
+    if (errorJson.message) {
+      errorMessage = errorJson.message;
+    }
+  } catch (e) {
+    // Not JSON, use raw text
+  }
+  
+  switch (status) {
+    case 401:
+      return 'WordPress authenticatie gefaald. Controleer je gebruikersnaam en applicatie wachtwoord.';
+    case 403:
+      return 'Geen rechten om posts te maken. Controleer je WordPress gebruikersrechten.';
+    case 404:
+      return 'WordPress REST API niet gevonden. Controleer of permalinks zijn ingeschakeld.';
+    case 500:
+      return 'WordPress server fout. Controleer de server logs voor meer details.';
+    default:
+      return `WordPress API fout (${status}): ${errorMessage}`;
+  }
+}
+
 function markdownToHtml(markdown: string): string {
   if (!markdown) return '';
   
-  // Basic markdown to HTML conversion
+  // Enhanced markdown to HTML conversion with better formatting
   return markdown
-    // Headers
-    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+    // Headers with proper WordPress classes
+    .replace(/^### (.*$)/gm, '<h3 class="wp-block-heading">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 class="wp-block-heading">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 class="wp-block-heading">$1</h1>')
     
     // Bold and italic
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     
-    // Lists
+    // Code blocks
+    .replace(/```([\s\S]*?)```/g, '<pre class="wp-block-code"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    
+    // Blockquotes
+    .replace(/^> (.*$)/gm, '<blockquote class="wp-block-quote"><p>$1</p></blockquote>')
+    
+    // Lists with proper WordPress classes
     .replace(/^\* (.*$)/gm, '<li>$1</li>')
     .replace(/^- (.*$)/gm, '<li>$1</li>')
-    .replace(/(\<li\>.*\<\/li\>)/gs, '<ul>$1</ul>')
+    .replace(/(\<li\>.*\<\/li\>)/gs, '<ul class="wp-block-list">$1</ul>')
     
     // Numbered lists
     .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+    .replace(/(\<li\>.*\<\/li\>)/gs, '<ol class="wp-block-list">$1</ol>')
     
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    // Links with WordPress styling
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="wp-element-button">$1</a>')
     
-    // Line breaks
-    .replace(/\n\n/g, '</p><p>')
+    // Images with WordPress blocks
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<figure class="wp-block-image"><img src="$2" alt="$1" /></figure>')
+    
+    // Line breaks and paragraphs
+    .replace(/\n\n/g, '</p><p class="wp-block-paragraph">')
     .replace(/\n/g, '<br>')
     
-    // Wrap in paragraphs
-    .replace(/^(?!<[hlu])/gm, '<p>')
-    .replace(/(?<!>)$/gm, '</p>');
+    // Wrap in WordPress paragraph blocks
+    .replace(/^(?!<[hluofb])/gm, '<p class="wp-block-paragraph">')
+    .replace(/(?<!>)$/gm, '</p>')
+    
+    // Clean up multiple paragraph tags
+    .replace(/<\/p><p class="wp-block-paragraph"><\/p>/g, '</p>')
+    .replace(/<p class="wp-block-paragraph"><\/p>/g, '');
 }

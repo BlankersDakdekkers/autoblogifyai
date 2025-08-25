@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   Globe, 
   ExternalLink, 
@@ -13,7 +13,8 @@ import {
   AlertCircle, 
   Key,
   Settings,
-  Loader2
+  Loader2,
+  Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -194,10 +195,19 @@ const WordPressPublishModal = ({ postId, postTitle, children, onSuccess }: WordP
           </Card>
 
           {/* Info Alert */}
+          {/* WordPress Layout Options Info */}
           <Alert>
-            <Key className="h-4 w-4" />
-            <AlertDescription>
-              <strong>WordPress Setup:</strong> Zorg ervoor dat je WordPress REST API is ingeschakeld en dat je een Application Password hebt aangemaakt voor veilige authenticatie.
+            <Info className="h-4 w-4" />
+            <AlertTitle>Uitgebreide WordPress Layout</AlertTitle>
+            <AlertDescription className="text-sm space-y-2">
+              <p><strong>Automatische Features:</strong></p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li><strong>Uitgelichte foto:</strong> Wordt automatisch geüpload naar WordPress media library</li>
+                <li><strong>CTA blokken:</strong> Professioneel gestyled volgens WordPress block editor</li>
+                <li><strong>FAQ sectie:</strong> Met Schema.org markup voor betere SEO rankings</li>
+                <li><strong>Tags:</strong> Worden automatisch aangemaakt in WordPress</li>
+                <li><strong>SEO meta:</strong> Yoast SEO compatible fields voor optimale vindbaarheid</li>
+              </ul>
             </AlertDescription>
           </Alert>
 
