@@ -184,6 +184,8 @@ const WordPressTestPilot = () => {
     setProcessingStep("CSV verwerken...");
     
     try {
+      console.log('Calling process-csv with URL:', csvUrl.trim());
+      
       const { data, error } = await supabase.functions.invoke('process-csv', {
         body: {
           csvUrl: csvUrl.trim(),
@@ -195,7 +197,16 @@ const WordPressTestPilot = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('Process-csv response:', { data, error });
+
+      if (error) {
+        console.error('Process-csv error:', error);
+        throw new Error(error.message || 'Edge function error');
+      }
+
+      if (!data || !data.success) {
+        throw new Error(data?.error || 'CSV verwerking gefaald');
+      }
 
       // Poll for completion
       let attempts = 0;

@@ -28,7 +28,36 @@ serve(async (req) => {
 
   try {
     logStep("Processing CSV request started");
-    const { csvUrl, options = {} } = await req.json();
+    
+    // Check for authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      logStep("ERROR: No authorization header");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Authorization header is vereist'
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      logStep("ERROR: Invalid JSON body", { parseError: parseError.message });
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Invalid request body' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { csvUrl, options = {} } = body;
 
     if (!csvUrl) {
       logStep("ERROR: Missing CSV URL");
@@ -40,8 +69,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
     
     // Create client for user authentication check
