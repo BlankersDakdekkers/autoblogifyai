@@ -27,7 +27,7 @@ serve(async (req) => {
     // Clean and normalize inputs
     const normalizedUrl = siteUrl.trim().replace(/\/$/, '');
     const cleanUsername = username.trim();
-    const cleanAppPassword = appPassword.replace(/\s+/g, '');
+    const cleanAppPassword = appPassword.trim(); // Keep spaces in password
     
     console.log('=== WORDPRESS CONNECTION TEST START ===');
     console.log('Site URL:', normalizedUrl);
