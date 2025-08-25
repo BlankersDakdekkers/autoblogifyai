@@ -444,11 +444,26 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
     };
   }
   
+  // Validate and normalize status
+  const validStatuses = ['draft', 'published', 'scheduled'];
+  let normalizedStatus = 'draft'; // default
+  
+  if (row.status && typeof row.status === 'string') {
+    const statusLower = row.status.toLowerCase().trim();
+    if (validStatuses.includes(statusLower)) {
+      normalizedStatus = statusLower;
+    } else if (statusLower.includes('publish') || statusLower.includes('live')) {
+      normalizedStatus = 'published';
+    } else if (statusLower.includes('schedule') || statusLower.includes('plan')) {
+      normalizedStatus = 'scheduled';
+    }
+  }
+
   const blogPost = {
     user_id: userId,
     title: row.title || row.Title || 'Untitled',
     slug: generateUniqueSlug(row.title || row.Title || 'untitled', supabase),
-    status: row.status || 'draft',
+    status: normalizedStatus,
     publish_date: validateAndFormatDate(row.publish_date) || new Date().toISOString().split('T')[0],
     summary: row.summary || aiContent.content.substring(0, 300) + '...',
     meta_title: row.meta_title || row.title || row.Title,
