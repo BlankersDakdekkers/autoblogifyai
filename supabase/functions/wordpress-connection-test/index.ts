@@ -124,89 +124,144 @@ serve(async (req) => {
     const isWordPressCom = normalizedUrl.includes('.wordpress.com') || normalizedUrl.includes('wpcomstaging.com');
     console.log('Is WordPress.com hosted site:', isWordPressCom);
     
-    // Try multiple authentication endpoints and methods
-    const authEndpoints = [
-      `${normalizedUrl}/wp-json/wp/v2/users/me`,
-      `${normalizedUrl}/wp-json/wp/v2/posts?per_page=1&context=edit`, // Alternative endpoint
+    // Try multiple authentication methods to bypass nonce issues
+    const authTests = [
+      // Test 1: Direct user endpoint with clean headers
+      {
+        url: `${normalizedUrl}/wp-json/wp/v2/users/me`,
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Accept': 'application/json',
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      },
+      // Test 2: Posts endpoint with minimal headers (bypass nonce)
+      {
+        url: `${normalizedUrl}/wp-json/wp/v2/posts?per_page=1&context=edit`,
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      },
+      // Test 3: Try with X-Requested-With header (some plugins require this)
+      {
+        url: `${normalizedUrl}/wp-json/wp/v2/users/me`,
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'X-Requested-With': 'XMLHttpRequest',
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      },
+      // Test 4: Try CREATE operation to test full permissions
+      {
+        url: `${normalizedUrl}/wp-json/wp/v2/posts`,
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'AutoblogifyAI/1.0'
+        },
+        body: JSON.stringify({
+          title: 'AutoblogifyAI Test Post',
+          content: 'This is a test post to verify authentication and publishing permissions.',
+          status: 'draft'
+        })
+      }
     ];
     
     let authSuccess = false;
     let userData = null;
     let lastError = null;
+    let testResults = [];
     
-    for (let i = 0; i < authEndpoints.length && !authSuccess; i++) {
-      const authUrl = authEndpoints[i];
-      console.log(`Trying auth endpoint ${i + 1}: ${authUrl}`);
+    for (let i = 0; i < authTests.length && !authSuccess; i++) {
+      const test = authTests[i];
+      console.log(`Auth test ${i + 1}: ${test.method} ${test.url}`);
       
-      // Try different authentication headers
-      const authHeaders = [
-        { 'Authorization': `Basic ${credentials}` },
-        { 
-          'Authorization': `Basic ${credentials}`,
-          'X-WP-Nonce': '', // Empty nonce to bypass some checks
-          'Accept': 'application/json'
-        }
-      ];
-      
-      for (let j = 0; j < authHeaders.length && !authSuccess; j++) {
-        console.log(`Auth method ${j + 1} for endpoint ${i + 1}`);
-        
-        try {
-          const authResponse = await fetch(authUrl, {
-            method: 'GET',
-            headers: {
-              ...authHeaders[j],
-              'User-Agent': 'AutoblogifyAI/1.0',
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache'
-            },
-            signal: AbortSignal.timeout(15000)
-          });
+      try {
+        const authResponse = await fetch(test.url, {
+          method: test.method,
+          headers: test.headers,
+          body: test.body,
+          signal: AbortSignal.timeout(15000)
+        });
 
-          console.log(`Auth response (endpoint ${i + 1}, method ${j + 1}):`, {
-            status: authResponse.status,
-            statusText: authResponse.statusText,
-            ok: authResponse.ok
-          });
+        const result = {
+          test: i + 1,
+          method: test.method,
+          status: authResponse.status,
+          statusText: authResponse.statusText,
+          ok: authResponse.ok
+        };
 
-          if (authResponse.ok) {
-            const responseData = await authResponse.json();
-            
-            if (i === 0) {
-              // /users/me endpoint - direct user data
-              userData = responseData;
-            } else {
-              // Posts endpoint - if we can fetch posts, we have auth
-              userData = {
-                id: 'auth_via_posts',
-                username: cleanUsername,
-                name: cleanUsername,
-                roles: ['verified_via_posts'],
-                capabilities: { publish_posts: true }
-              };
-            }
-            
-            authSuccess = true;
-            console.log('Auth successful via endpoint', i + 1, 'method', j + 1);
-            break;
-          } else {
-            const errorText = await authResponse.text();
-            lastError = {
-              endpoint: i + 1,
-              method: j + 1,
-              status: authResponse.status,
-              text: errorText
+        console.log(`Auth test ${i + 1} result:`, result);
+        testResults.push(result);
+
+        if (authResponse.ok) {
+          const responseData = await authResponse.json();
+          
+          if (i === 0 || i === 2) {
+            // /users/me endpoint - direct user data
+            userData = responseData;
+          } else if (i === 1) {
+            // Posts endpoint - if we can fetch posts, we have read auth
+            userData = {
+              id: 'auth_via_posts_read',
+              username: cleanUsername,
+              name: cleanUsername,
+              roles: ['verified_via_posts'],
+              capabilities: { read: true }
             };
-            console.log(`Auth failed (${authResponse.status}):`, errorText);
+          } else if (i === 3) {
+            // POST endpoint - we can create posts
+            userData = {
+              id: responseData.id || 'auth_via_post_creation',
+              username: cleanUsername,
+              name: cleanUsername,
+              roles: ['verified_via_creation'],
+              capabilities: { publish_posts: true, create_posts: true }
+            };
+            
+            // Clean up test post if it was created
+            if (responseData.id) {
+              try {
+                await fetch(`${normalizedUrl}/wp-json/wp/v2/posts/${responseData.id}?force=true`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Basic ${credentials}`,
+                    'User-Agent': 'AutoblogifyAI/1.0'
+                  }
+                });
+                console.log('Test post cleaned up successfully');
+              } catch (cleanupError) {
+                console.log('Could not clean up test post:', cleanupError);
+              }
+            }
           }
-        } catch (authError: any) {
+          
+          authSuccess = true;
+          console.log(`Auth successful via test ${i + 1}`);
+          break;
+        } else {
+          const errorText = await authResponse.text();
           lastError = {
-            endpoint: i + 1,
-            method: j + 1,
-            error: authError.message
+            test: i + 1,
+            status: authResponse.status,
+            text: errorText
           };
-          console.error(`Auth error (endpoint ${i + 1}, method ${j + 1}):`, authError);
+          console.log(`Auth test ${i + 1} failed (${authResponse.status}):`, errorText);
         }
+      } catch (authError: any) {
+        const errorResult = {
+          test: i + 1,
+          error: authError.message
+        };
+        testResults.push(errorResult);
+        lastError = errorResult;
+        console.error(`Auth test ${i + 1} error:`, authError);
       }
     }
     
