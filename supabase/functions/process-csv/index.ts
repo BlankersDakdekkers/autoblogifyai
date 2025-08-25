@@ -114,35 +114,42 @@ serve(async (req) => {
 
     logStep("Job created", { jobId: job.id });
 
-    // Start background processing with improved error handling and timeout
-    EdgeRuntime.waitUntil(
-      Promise.race([
-        processCSVData(csvUrl, job.id, user.id, supabase, options),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Processing timeout after 5 minutes')), 300000)
-        )
-      ]).catch(async error => {
-        logStep("ERROR: Background processing failed", { error: error.message });
-        // Update job status to failed
-        await supabase
-          .from('csv_processing_jobs')
-          .update({ 
-            status: 'failed',
-            error_message: error.message 
-          })
-          .eq('id', job.id);
-      })
-    );
-
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'CSV processing gestart',
-        jobId: job.id,
-        status: 'processing'
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Process CSV synchronously with timeout (no background task)
+    try {
+      await processCSVData(csvUrl, job.id, user.id, supabase, options);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'CSV processing voltooid',
+          jobId: job.id,
+          status: 'completed'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      logStep("ERROR: CSV processing failed", { error: error.message });
+      
+      // Update job status to failed
+      await supabase
+        .from('csv_processing_jobs')
+        .update({ 
+          status: 'failed',
+          error_message: error.message 
+        })
+        .eq('id', job.id);
+        
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'CSV processing gefaald',
+          jobId: job.id,
+          status: 'failed',
+          error: error.message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
   } catch (error) {
     logStep("ERROR: Request processing failed", { error: error.message });
     return new Response(
