@@ -43,6 +43,7 @@ const CoursePage = lazy(() => import("./pages/CoursePage"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const WordPressTestPilot = lazy(() => import("./pages/WordPressTestPilot"));
+const SocialAdsPage = lazy(() => import("./pages/SocialAdsPage"));
 const OptimizedHeader = lazy(() => import("./components/OptimizedHeader"));
 const Footer = lazy(() => import("./components/Footer"));
 
@@ -328,6 +329,16 @@ const App = () => {
                           <Suspense fallback={<LoadingFallback />}>
                             <OptimizedLayout type="dashboard">
                               <WordPressTestPilot />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="social-ads" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <SocialAdsPage />
                             </OptimizedLayout>
                           </Suspense>
                         </ProtectedRoute>
