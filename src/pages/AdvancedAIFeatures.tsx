@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Crown, Brain, Globe, Search, Sparkles, Wand2, Loader2, CheckCircle, XCircle, Lock, CreditCard } from 'lucide-react';
+import WordPressPublishModal from "@/components/WordPressPublishModal";
+import { 
+  Crown, Brain, Globe, Search, Sparkles, Wand2, Loader2, CheckCircle, XCircle, Lock, CreditCard, AlertCircle, Send, ExternalLink, ArrowRight
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -81,8 +85,95 @@ const AdvancedAIFeatures = () => {
   const [keywordResults, setKeywordResults] = useState<KeywordResult[]>([]);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
 
+  // WordPress integration state
+  const [wordpressConfig, setWordpressConfig] = useState({
+    siteUrl: '',
+    username: '',
+    appPassword: ''
+  });
+  const [isWordPressConnected, setIsWordPressConnected] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+
   // Check if user has premium access (admin role for now, can be extended)
   const hasPremiumAccess = userRole === 'admin';
+
+  // Load WordPress config on mount
+  useEffect(() => {
+    loadWordPressConfig();
+    if (hasPremiumAccess) {
+      loadBlogPosts();
+    }
+  }, [hasPremiumAccess]);
+
+  const loadWordPressConfig = () => {
+    const savedConfig = localStorage.getItem('wordpress_config');
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        setWordpressConfig(config);
+        setIsWordPressConnected(true);
+      } catch (error) {
+        console.error('Error loading WordPress config:', error);
+      }
+    }
+  };
+
+  const loadBlogPosts = async () => {
+    setIsLoadingPosts(true);
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      setBlogPosts(data || []);
+    } catch (error) {
+      console.error('Error loading blog posts:', error);
+    } finally {
+      setIsLoadingPosts(false);
+    }
+  };
+
+  const testWordPressConnection = async () => {
+    if (!wordpressConfig.siteUrl || !wordpressConfig.username || !wordpressConfig.appPassword) {
+      toast.error('Vul alle WordPress velden in');
+      return;
+    }
+
+    setIsTestingConnection(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('wordpress-connection-test', {
+        body: { wordpressConfig }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setIsWordPressConnected(true);
+        localStorage.setItem('wordpress_config', JSON.stringify(wordpressConfig));
+        toast.success('WordPress Verbinding Succesvol! ✅');
+      } else {
+        throw new Error(data?.message || 'Verbinding mislukt');
+      }
+
+    } catch (error: any) {
+      console.error('WordPress connection test error:', error);
+      setIsWordPressConnected(false);
+      toast.error(`WordPress Verbinding Mislukt: ${error.message}`);
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleWordPressPublishSuccess = () => {
+    toast.success('WordPress Publicatie Succesvol! 🚀');
+    loadBlogPosts();
+  };
 
   // Form instances
   const contentForm = useForm<z.infer<typeof contentGenerationSchema>>({
@@ -441,7 +532,7 @@ const AdvancedAIFeatures = () => {
 
       <PremiumGate>
         <Tabs defaultValue="models" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="models" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
               <Brain className="h-4 w-4" />
               AI Modellen
@@ -456,7 +547,11 @@ const AdvancedAIFeatures = () => {
             </TabsTrigger>
             <TabsTrigger value="keywords" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
               <Search className="h-4 w-4" />
-              Keyword Research
+              Keywords
+            </TabsTrigger>
+            <TabsTrigger value="wordpress" className="flex items-center gap-2" disabled={!hasPremiumAccess}>
+              <Send className="h-4 w-4" />
+              WordPress
             </TabsTrigger>
           </TabsList>
 
@@ -888,6 +983,155 @@ const AdvancedAIFeatures = () => {
                     ))}
                   </div>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* WordPress Integration Tab */}
+        <TabsContent value="wordpress" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                WordPress Integratie
+                <Badge variant="secondary" className="ml-2">Enterprise</Badge>
+              </CardTitle>
+              <CardDescription>
+                Exclusieve WordPress automatisering voor Enterprise klanten - Verbind je site en publiceer automatisch
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {!isWordPressConnected ? (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Verbind eerst je WordPress site om automatisch content te kunnen publiceren.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription className="text-green-700">
+                    WordPress verbinding actief: {wordpressConfig.siteUrl}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="wp-site-url">WordPress Site URL</Label>
+                  <Input
+                    id="wp-site-url"
+                    value={wordpressConfig.siteUrl}
+                    onChange={(e) => setWordpressConfig(prev => ({ ...prev, siteUrl: e.target.value }))}
+                    placeholder="https://jouwsite.nl"
+                    disabled={isTestingConnection}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="wp-username">WordPress Gebruikersnaam</Label>
+                  <Input
+                    id="wp-username"
+                    value={wordpressConfig.username}
+                    onChange={(e) => setWordpressConfig(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="admin"
+                    disabled={isTestingConnection}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="wp-password">WordPress App Password</Label>
+                  <Input
+                    id="wp-password"
+                    type="password"
+                    value={wordpressConfig.appPassword}
+                    onChange={(e) => setWordpressConfig(prev => ({ ...prev, appPassword: e.target.value }))}
+                    placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"
+                    disabled={isTestingConnection}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Maak een App Password aan in je WordPress dashboard onder Gebruikers → Profiel
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={testWordPressConnection}
+                    disabled={isTestingConnection || !wordpressConfig.siteUrl || !wordpressConfig.username || !wordpressConfig.appPassword}
+                    className="bg-gradient-to-r from-blue-600 to-green-600"
+                  >
+                    {isTestingConnection ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Globe className="h-4 w-4 mr-2" />
+                    )}
+                    {isTestingConnection ? 'Testen...' : 'Verbinding Testen'}
+                  </Button>
+
+                  {isWordPressConnected && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsWordPressConnected(false);
+                        localStorage.removeItem('wordpress_config');
+                        setWordpressConfig({ siteUrl: '', username: '', appPassword: '' });
+                      }}
+                    >
+                      Verbinding Verbreken
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {isWordPressConnected && (
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <div>
+                          <h4 className="font-medium text-green-900">WordPress Verbonden</h4>
+                          <p className="text-sm text-green-600">
+                            Je Enterprise account kan nu automatisch content publiceren naar WordPress
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {blogPosts.length > 0 && (
+                        <div className="space-y-3">
+                          <h5 className="font-medium text-green-900">Recente Blog Posts</h5>
+                          <div className="grid gap-2">
+                            {blogPosts.slice(0, 3).map((post) => (
+                              <div key={post.id} className="flex items-center justify-between p-3 bg-white/50 rounded-lg border border-green-200">
+                                <div>
+                                  <p className="font-medium text-green-900 text-sm">{post.title}</p>
+                                  <p className="text-xs text-green-600">
+                                    {new Date(post.created_at).toLocaleDateString('nl-NL')}
+                                  </p>
+                                </div>
+                                <WordPressPublishModal
+                                  postId={post.id}
+                                  postTitle={post.title}
+                                  onSuccess={handleWordPressPublishSuccess}
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="bg-gradient-to-r from-blue-600 to-green-600 text-white"
+                                  >
+                                    <Send className="h-3 w-3 mr-1" />
+                                    Publiceren
+                                  </Button>
+                                </WordPressPublishModal>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </CardContent>
           </Card>
