@@ -114,20 +114,24 @@ serve(async (req) => {
 
     logStep("Job created", { jobId: job.id });
 
-    // Start background processing with improved error handling
+    // Start background processing with improved error handling and timeout
     EdgeRuntime.waitUntil(
-      processCSVData(csvUrl, job.id, user.id, supabase, options)
-        .catch(error => {
-          logStep("ERROR: Background processing failed", { error: error.message });
-          // Update job status to failed
-          supabase
-            .from('csv_processing_jobs')
-            .update({ 
-              status: 'failed',
-              error_message: error.message 
-            })
-            .eq('id', job.id);
-        })
+      Promise.race([
+        processCSVData(csvUrl, job.id, user.id, supabase, options),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Processing timeout after 5 minutes')), 300000)
+        )
+      ]).catch(async error => {
+        logStep("ERROR: Background processing failed", { error: error.message });
+        // Update job status to failed
+        await supabase
+          .from('csv_processing_jobs')
+          .update({ 
+            status: 'failed',
+            error_message: error.message 
+          })
+          .eq('id', job.id);
+      })
     );
 
     return new Response(
