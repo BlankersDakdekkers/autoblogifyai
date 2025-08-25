@@ -116,12 +116,6 @@ export const useNavigationSections = (): NavigationSection[] => {
         description: "Beheer en publiceer je blogs naar WordPress"
       },
       { 
-        title: "Social Media Ads", 
-        url: "/dashboard/social-ads", 
-        icon: Megaphone,
-        description: "Instagram & Facebook advertenties voor AutoblogifyAI"
-      },
-      { 
         title: "WordPress Testpilot", 
         url: "/dashboard/wordpress-testpilot", 
         icon: TestTube,
