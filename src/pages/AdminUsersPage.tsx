@@ -33,9 +33,26 @@ const AdminUsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log('=== STARTING FETCH USERS ===');
+      
+      // Check session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Current session:', session ? 'Available' : 'Not available');
+      console.log('Session error:', sessionError);
+      
+      if (!session) {
+        toast({
+          title: "Sessie probleem",
+          description: "Geen geldige sessie gevonden - log opnieuw in",
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Use the improved edge function helper
+      console.log('Calling admin-list-users edge function...');
       const { data, error } = await callEdgeFunction('admin-list-users');
+      console.log('Edge function response:', { data, error });
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -48,10 +65,18 @@ const AdminUsersPage = () => {
       }
 
       if (data?.users) {
+        console.log('Setting users:', data.users.length, 'users found');
         setUsers(data.users);
+      } else {
+        console.log('No users in response data:', data);
+        toast({
+          title: "Geen gebruikers",
+          description: "Er werden geen gebruikers gevonden",
+          variant: "default",
+        });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Exception in fetchUsers:', error);
       toast({
         title: "Fout",
         description: "Er ging iets mis bij het ophalen van gebruikers",
