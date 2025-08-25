@@ -238,6 +238,9 @@ const WordPressTestPilot = () => {
   };
 
   const publishToWordPress = async (postId: string) => {
+    console.log('publishToWordPress called with postId:', postId);
+    console.log('wordpressConfig:', wordpressConfig);
+
     if (!wordpressConfig) {
       toast({
         title: "WordPress configuratie ontbreekt",
@@ -247,10 +250,21 @@ const WordPressTestPilot = () => {
       return;
     }
 
+    if (!postId) {
+      toast({
+        title: "Post ID ontbreekt",
+        description: "Geen geldig artikel om te publiceren",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     setProcessingStep("Publiceren naar WordPress...");
     
     try {
+      console.log('Making API call with:', { postId, wordpressConfig });
+      
       const { data, error } = await supabase.functions.invoke('wordpress-publish', {
         body: {
           postId,
@@ -258,21 +272,28 @@ const WordPressTestPilot = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('API Response:', { data, error });
 
-      if (data.success) {
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (data?.success) {
         setPublishedPosts(prev => [...prev, { postId, url: data.url }]);
         toast({
           title: "Gepubliceerd!",
           description: "Artikel is succesvol gepubliceerd naar WordPress",
         });
       } else {
-        throw new Error(data.error || 'Publicatie mislukt');
+        console.error('Publish failed:', data);
+        throw new Error(data?.error || 'Publicatie mislukt');
       }
     } catch (error: any) {
+      console.error('WordPress publish error:', error);
       toast({
         title: "Publicatie mislukt",
-        description: error.message,
+        description: error.message || 'Onbekende fout bij publicatie',
         variant: "destructive",
       });
     } finally {
