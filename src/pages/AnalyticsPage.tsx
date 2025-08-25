@@ -312,8 +312,8 @@ const AnalyticsPage = () => {
   const analyticsData = {
     overview: overview || defaultOverview,
     traffic: traffic || defaultTraffic,
-    topPosts: content || [],
-    keywords: keywords || [],
+    topPosts: Array.isArray(content) ? content : [],
+    keywords: Array.isArray(keywords) ? keywords : [],
     performance: defaultPerformance
   };
 
@@ -390,6 +390,7 @@ const AnalyticsPage = () => {
               </p>
             </div>
           </div>
+
           {/* Smart Control Panel */}
           <Card className="bg-gradient-to-r from-background/80 to-secondary/10 backdrop-blur-lg border-primary/20 shadow-2xl">
             <CardContent className="p-6">
@@ -703,40 +704,51 @@ const AnalyticsPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {analyticsData.topPosts.map((post, index) => (
-                      <div key={index} className="group flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all hover:border-primary/50">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm">
-                            #{index + 1}
-                          </div>
-                          <div className="space-y-1 flex-1">
-                            <h4 className="font-semibold group-hover:text-primary transition-colors">{post.title}</h4>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <span className="flex items-center">
-                                <Eye className="h-3 w-3 mr-1" />
-                                <AnimatedCounter value={post.views.toLocaleString()} /> views
-                              </span>
-                              <span className="flex items-center">
-                                <MousePointer className="h-3 w-3 mr-1" />
-                                {post.ctr}% CTR
-                              </span>
-                              <span className="flex items-center">
-                                <DollarSign className="h-3 w-3 mr-1" />
-                                €{post.revenue}
-                              </span>
+                    {analyticsData.topPosts.length > 0 ? (
+                      analyticsData.topPosts.map((post, index) => (
+                        <div key={index} className="group flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all hover:border-primary/50">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm">
+                              #{index + 1}
+                            </div>
+                            <div className="space-y-1 flex-1">
+                              <h4 className="font-semibold group-hover:text-primary transition-colors">{post.title}</h4>
+                              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <span className="flex items-center">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  <AnimatedCounter value={post.views.toLocaleString()} />
+                                </span>
+                                <span className="flex items-center">
+                                  <MousePointer className="h-4 w-4 mr-1" />
+                                  {post.ctr}% CTR
+                                </span>
+                                <span className="flex items-center">
+                                  <DollarSign className="h-4 w-4 mr-1" />
+                                  €{post.revenue}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Share className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <ExternalLink className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowRight className="h-4 w-4" />
                           </Button>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>Nog geen posts om te tonen</p>
+                        <Button 
+                          onClick={generateSampleData}
+                          disabled={isLoading}
+                          variant="outline" 
+                          className="mt-4"
+                        >
+                          <Lightbulb className="h-4 w-4 mr-2" />
+                          Genereer voorbeelddata
+                        </Button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -761,36 +773,52 @@ const AnalyticsPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {analyticsData.keywords.map((keyword, index) => (
-                      <div key={index} className="group flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-3">
-                            <h4 className="font-semibold text-lg">{keyword.keyword}</h4>
-                            <Badge className={`text-xs ${keyword.position <= 5 ? 'bg-green-100 text-green-700' : keyword.position <= 10 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
-                              Position #{keyword.position}
-                            </Badge>
+                    {analyticsData.keywords.length > 0 ? (
+                      analyticsData.keywords.map((keyword, index) => (
+                        <div key={index} className="group flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-3">
+                              <h4 className="font-semibold text-lg">{keyword.keyword}</h4>
+                              <Badge className={`text-xs ${keyword.position <= 5 ? 'bg-green-100 text-green-700' : keyword.position <= 10 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
+                                Position #{keyword.position}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+                              <span className="flex items-center">
+                                <MousePointer className="h-3 w-3 mr-1" />
+                                {keyword.clicks} clicks
+                              </span>
+                              <span className="flex items-center">
+                                <Eye className="h-3 w-3 mr-1" />
+                                {keyword.impressions.toLocaleString()} impressions
+                              </span>
+                              <span className="flex items-center">
+                                <Target className="h-3 w-3 mr-1" />
+                                {keyword.ctr}% CTR
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                            <span className="flex items-center">
-                              <MousePointer className="h-3 w-3 mr-1" />
-                              {keyword.clicks} clicks
-                            </span>
-                            <span className="flex items-center">
-                              <Eye className="h-3 w-3 mr-1" />
-                              {keyword.impressions.toLocaleString()} impressions
-                            </span>
-                            <span className="flex items-center">
-                              <Target className="h-3 w-3 mr-1" />
-                              {keyword.ctr}% CTR
-                            </span>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-gray-900">#{keyword.position}</div>
+                            <div className="text-xs text-muted-foreground">Google ranking</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-gray-900">#{keyword.position}</div>
-                          <div className="text-xs text-muted-foreground">Google ranking</div>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>Nog geen keywords om te tonen</p>
+                        <Button 
+                          onClick={generateSampleData}
+                          disabled={isLoading}
+                          variant="outline" 
+                          className="mt-4"
+                        >
+                          <Lightbulb className="h-4 w-4 mr-2" />
+                          Genereer voorbeelddata
+                        </Button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>
