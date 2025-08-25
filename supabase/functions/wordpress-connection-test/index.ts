@@ -12,7 +12,16 @@ serve(async (req) => {
   }
 
   try {
-    const { siteUrl, username, appPassword } = await req.json();
+    const body = await req.json();
+    console.log('Received request body:', body);
+    
+    // Handle both direct parameters and nested wordpressConfig object
+    let siteUrl, username, appPassword;
+    if (body.wordpressConfig) {
+      ({ siteUrl, username, appPassword } = body.wordpressConfig);
+    } else {
+      ({ siteUrl, username, appPassword } = body);
+    }
 
     if (!siteUrl || !username || !appPassword) {
       return new Response(
