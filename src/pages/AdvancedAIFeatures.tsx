@@ -656,7 +656,7 @@ const AdvancedAIFeatures = () => {
                 </form>
               </Form>
 
-              {generatedContent && (
+              {generatedContent && generatedContent.primary && (
                 <Card className="mt-6">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -667,16 +667,16 @@ const AdvancedAIFeatures = () => {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <Badge variant="outline">{generatedContent.primary.language.toUpperCase()}</Badge>
+                        <Badge variant="outline">{generatedContent.primary.language?.toUpperCase() || 'NL'}</Badge>
                         <div className="mt-2 p-3 bg-muted rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">{generatedContent.primary.content}</p>
+                          <p className="text-sm whitespace-pre-wrap">{generatedContent.primary.content || 'Geen content beschikbaar'}</p>
                         </div>
                       </div>
-                      {generatedContent.translations.map((translation, index) => (
+                      {generatedContent.translations && generatedContent.translations.length > 0 && generatedContent.translations.map((translation, index) => (
                         <div key={index}>
-                          <Badge variant="outline">{translation.language.toUpperCase()}</Badge>
+                          <Badge variant="outline">{translation.language?.toUpperCase() || 'UNKNOWN'}</Badge>
                           <div className="mt-2 p-3 bg-muted rounded-lg">
-                            <p className="text-sm whitespace-pre-wrap">{translation.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{translation.content || 'Geen vertaling beschikbaar'}</p>
                           </div>
                         </div>
                       ))}
