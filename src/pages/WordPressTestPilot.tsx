@@ -18,7 +18,8 @@ import {
   Loader2,
   ArrowRight,
   Play,
-  Download
+  Download,
+  RotateCcw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +74,27 @@ const WordPressTestPilot = () => {
   ];
 
   const progress = (currentPhase / phases.length) * 100;
+
+  // Reset function to start over
+  const resetTestPilot = () => {
+    // Clear localStorage
+    localStorage.removeItem('wordpress-config');
+    
+    // Reset all state
+    setCurrentPhase(1);
+    setWordpressConfig(null);
+    setCsvUrl("");
+    setIsProcessing(false);
+    setProcessingStep("");
+    setGeneratedPosts([]);
+    setPublishedPosts([]);
+    setSelectedTestPost(null);
+    
+    toast({
+      title: "TestPilot gereset",
+      description: "Je kunt nu opnieuw beginnen met de juiste gegevens",
+    });
+  };
 
   // Load saved WordPress config on mount
   useEffect(() => {
@@ -349,10 +371,22 @@ const WordPressTestPilot = () => {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-3xl font-bold flex items-center justify-center gap-3">
-          <Play className="h-8 w-8 text-primary" />
-          WordPress Testpilot
-        </h1>
+        <div className="flex items-center justify-center gap-3 relative">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Play className="h-8 w-8 text-primary" />
+            WordPress Testpilot
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetTestPilot}
+            className="absolute right-0 flex items-center gap-2"
+            disabled={isProcessing}
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
+        </div>
         <p className="text-muted-foreground text-lg">
           Test de volledige AutoblogifyAI workflow met je WordPress site
         </p>
