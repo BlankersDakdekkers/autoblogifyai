@@ -89,8 +89,34 @@ async function publishToWordPress(post: any, config: any) {
   try {
     const { siteUrl, username, appPassword } = config;
     
-    // WordPress REST API endpoint
-    const apiUrl = `${siteUrl.replace(/\/$/, '')}/wp-json/wp/v2/posts`;
+    // Normalize site URL
+    const normalizedUrl = siteUrl.replace(/\/$/, '');
+    
+    // First, check if WordPress REST API is available
+    const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2`;
+    console.log('Checking WordPress REST API availability:', apiDiscoveryUrl);
+    
+    try {
+      const discoveryResponse = await fetch(apiDiscoveryUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'AutoblogifyAI/1.0'
+        }
+      });
+      
+      if (!discoveryResponse.ok) {
+        console.error('WordPress REST API not available:', discoveryResponse.status);
+        throw new Error(`WordPress REST API is niet beschikbaar op ${normalizedUrl}. Status: ${discoveryResponse.status}. Controleer of de WordPress site correct is geconfigureerd en permalinks zijn ingeschakeld.`);
+      }
+      
+      console.log('WordPress REST API is beschikbaar');
+    } catch (discoveryError) {
+      console.error('Failed to connect to WordPress:', discoveryError);
+      throw new Error(`Kan geen verbinding maken met WordPress site ${normalizedUrl}. Controleer of de URL correct is en de site online is.`);
+    }
+    
+    // WordPress REST API endpoint for posts
+    const apiUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
     
     // Basic auth credentials
     const credentials = btoa(`${username}:${appPassword}`);
@@ -112,20 +138,61 @@ async function publishToWordPress(post: any, config: any) {
     };
 
     console.log('Publishing to WordPress:', apiUrl);
+    console.log('Post data:', JSON.stringify(wordpressPost, null, 2));
     
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'AutoblogifyAI/1.0'
       },
       body: JSON.stringify(wordpressPost),
     });
 
+    console.log('WordPress response status:', response.status);
+    console.log('WordPress response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      const error = await response.text();
-      console.error('WordPress API error:', response.status, error);
-      throw new Error(`WordPress API fout: ${response.status} - ${error}`);
+      const errorText = await response.text();
+      console.error('WordPress API error:', response.status, errorText);
+      
+      // Try to parse as JSON for better error messages
+      let errorMessage = errorText;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message) {
+          errorMessage = errorJson.message;
+        } else if (errorJson.code) {
+          errorMessage = `${errorJson.code}: ${errorJson.message || 'Onbekende fout'}`;
+        }
+      } catch (e) {
+        // Not JSON, use the raw text but truncate if too long
+        if (errorText.length > 500) {
+          errorMessage = errorText.substring(0, 500) + '...';
+        }
+      }
+      
+      // Provide specific error messages based on status code
+      let userFriendlyError = '';
+      switch (response.status) {
+        case 401:
+          userFriendlyError = 'Authenticatie gefaald. Controleer je WordPress gebruikersnaam en applicatie wachtwoord.';
+          break;
+        case 403:
+          userFriendlyError = 'Geen rechten om posts te maken. Controleer of je WordPress gebruiker de juiste rechten heeft.';
+          break;
+        case 404:
+          userFriendlyError = 'WordPress REST API niet gevonden. Controleer of permalinks zijn ingeschakeld in WordPress.';
+          break;
+        case 500:
+          userFriendlyError = 'WordPress server fout. Controleer de WordPress site logs voor meer details.';
+          break;
+        default:
+          userFriendlyError = `WordPress API fout (${response.status}): ${errorMessage}`;
+      }
+      
+      throw new Error(userFriendlyError);
     }
 
     const result = await response.json();
