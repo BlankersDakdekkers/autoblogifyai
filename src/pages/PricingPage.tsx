@@ -148,8 +148,10 @@ const PricingPage = () => {
       icon: Rocket,
       popular: false,
       savings: "50% BESPARING",
+      credits: "500 credits/maand",
       features: [
         "✨ 5 dagen gratis trial",
+        "🪙 500 credits per maand (~100 AI blogposts)",
         "📝 Tot 100 AI blogposts per maand",
         "🎨 10 premium templates",
         "🔍 Basis SEO optimalisatie", 
@@ -170,9 +172,11 @@ const PricingPage = () => {
       icon: Zap,
       popular: true,
       savings: "50% BESPARING",
+      credits: "1500 credits/maand",
       features: [
         "✨ 5 dagen gratis trial",
-        "🚀 Onbeperkte AI blogposts",
+        "🪙 1500 credits per maand (~300 AI blogposts)",
+        "🚀 Onbeperkte AI blogposts (binnen credits)",
         "🎨 25+ premium templates",
         "🎯 Geavanceerde lokale SEO",
         "⚡ Priority support (24/7)",
@@ -194,8 +198,10 @@ const PricingPage = () => {
       icon: Crown,
       popular: false,
       savings: "50% BESPARING",
+      credits: "5000 credits/maand",
       features: [
         "✨ 5 dagen gratis trial",
+        "🪙 5000 credits per maand (~1000 AI blogposts)",
         "💎 Alles van Professional",
         "🧠 GPT-4o/Claude Opus toegang - Meest geavanceerde AI modellen",
         "🎭 Custom AI personas - Train je eigen schrijfstijl en merkvoice", 
@@ -293,8 +299,19 @@ const PricingPage = () => {
                   <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
                     <IconComponent className={`h-20 w-20 mx-auto ${plan.popular ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
                   </div>
-                  <CardTitle className="text-3xl mb-2">{plan.name}</CardTitle>
-                  <CardDescription className="text-lg font-medium">{plan.description}</CardDescription>
+                   <CardTitle className="text-3xl mb-2">{plan.name}</CardTitle>
+                   <CardDescription className="text-lg font-medium">{plan.description}</CardDescription>
+                   
+                   {/* Credits Display */}
+                   <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg mt-4 border border-primary/20">
+                     <div className="flex items-center justify-center gap-2 text-primary font-bold text-lg">
+                       <CreditCard className="h-5 w-5" />
+                       {(plan as any).credits}
+                     </div>
+                     <p className="text-xs text-muted-foreground text-center mt-1">
+                       Credits worden maandelijks ververst
+                     </p>
+                   </div>
                    
                   {/* Urgency Timer */}
                   <div className="flex items-center justify-center gap-2 text-orange-600 bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl mt-6 border border-orange-200 shadow-sm animate-pulse">
