@@ -169,17 +169,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Don't wait for profile and credits - set loading to false first
-          setLoading(false);
-          
-          // Fetch profile and credits in background
+          // Fetch profile first, then set loading to false
           setTimeout(async () => {
             try {
               await fetchProfile(session.user.id);
+              setLoading(false); // Only set loading false after profile is fetched
               // Don't wait for credits - let it load in background
               refreshCredits().catch(console.error);
             } catch (error) {
               console.error('Error fetching user data:', error);
+              setLoading(false); // Set loading false even on error
             }
           }, 0);
         } else {
@@ -210,15 +209,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Set loading to false first, then fetch data in background
-          setLoading(false);
-          
+          // Fetch profile first, then set loading to false  
           setTimeout(async () => {
             try {
               await fetchProfile(session.user.id);
+              setLoading(false); // Only set loading false after profile is fetched
               refreshCredits().catch(console.error);
             } catch (error) {
               console.error('Error initializing user data:', error);
+              setLoading(false); // Set loading false even on error
             }
           }, 0);
         } else {
