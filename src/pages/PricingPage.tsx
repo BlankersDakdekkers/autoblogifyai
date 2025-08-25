@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscriptionManager } from "@/hooks/useSubscriptionManager";
 
 interface Subscription {
   subscribed: boolean;
@@ -18,6 +19,7 @@ interface Subscription {
 const PricingPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { openCustomerPortal } = useSubscriptionManager();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription>({ subscribed: false });
@@ -261,6 +263,26 @@ const PricingPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Subscription Management for existing customers */}
+        {subscription.subscribed && (
+          <div className="max-w-2xl mx-auto mb-16 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200 shadow-lg">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold mb-4 text-green-800">✅ Je hebt een actief abonnement!</h3>
+              <p className="text-green-700 mb-6">
+                <strong>{subscription.subscription_tier?.toUpperCase()}</strong> plan 
+                {subscription.subscription_end && ` • Verloopt op ${new Date(subscription.subscription_end).toLocaleDateString('nl-NL')}`}
+              </p>
+              <Button 
+                onClick={openCustomerPortal}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg font-bold"
+                disabled={isLoading}
+              >
+                🔧 Beheer je Abonnement
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">

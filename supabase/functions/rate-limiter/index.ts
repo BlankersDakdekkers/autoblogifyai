@@ -151,48 +151,58 @@ const checkRateLimit = async (
   }
 };
 
-const getRateLimitConfig = (endpoint: string, isAuthenticated: boolean): RateLimitConfig => {
-  // Different rate limits for different endpoints and user types
+const getRateLimitConfig = (endpoint: string, subscriptionTier: string, isAuthenticated: boolean): RateLimitConfig => {
+  // Subscription-based rate limits
+  const tierMultipliers = {
+    'free': 1,
+    'starter': 5,
+    'professional': 15, 
+    'enterprise': 50
+  };
+  
+  const multiplier = tierMultipliers[subscriptionTier as keyof typeof tierMultipliers] || (isAuthenticated ? 2 : 1);
+  
+  // Different rate limits for different endpoints and subscription tiers
   const configs: Record<string, RateLimitConfig> = {
     // AI Content Generation (expensive operations)
     'generate-content': {
-      maxRequests: isAuthenticated ? 50 : 5,
+      maxRequests: Math.floor(10 * multiplier),
       windowMinutes: 60,
       identifier: 'generate-content'
     },
     'generate-keywords': {
-      maxRequests: isAuthenticated ? 100 : 10,
+      maxRequests: Math.floor(20 * multiplier),
       windowMinutes: 60,
       identifier: 'generate-keywords'
     },
     'generate-blog-images': {
-      maxRequests: isAuthenticated ? 30 : 3,
+      maxRequests: Math.floor(6 * multiplier),
       windowMinutes: 60,
       identifier: 'generate-images'
     },
     
     // CSV Processing (resource intensive)
     'process-csv': {
-      maxRequests: isAuthenticated ? 20 : 2,
+      maxRequests: Math.floor(4 * multiplier),
       windowMinutes: 60,
       identifier: 'process-csv'
     },
     
     // Authentication (security sensitive)
     'create-checkout': {
-      maxRequests: isAuthenticated ? 10 : 3,
+      maxRequests: Math.floor(2 * multiplier),
       windowMinutes: 15,
       identifier: 'create-checkout'
     },
     'check-subscription': {
-      maxRequests: isAuthenticated ? 60 : 10,
+      maxRequests: Math.floor(12 * multiplier),
       windowMinutes: 60,
       identifier: 'check-subscription'
     },
     
     // Default for other endpoints
     'default': {
-      maxRequests: isAuthenticated ? 200 : 20,
+      maxRequests: Math.floor(40 * multiplier),
       windowMinutes: 60,
       identifier: 'default'
     }
@@ -230,6 +240,7 @@ serve(async (req) => {
     // Try to get user from auth header
     let userId: string | undefined;
     let isAuthenticated = false;
+    let subscriptionTier = 'free';
     
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
@@ -239,13 +250,25 @@ serve(async (req) => {
         if (data.user) {
           userId = data.user.id;
           isAuthenticated = true;
+          
+          // Get user's subscription tier
+          const { data: subscriber } = await supabase
+            .from('subscribers')
+            .select('subscription_tier, subscribed')
+            .eq('user_id', userId)
+            .maybeSingle();
+            
+          if (subscriber?.subscribed && subscriber.subscription_tier) {
+            subscriptionTier = subscriber.subscription_tier;
+            logStep("User subscription tier found", { tier: subscriptionTier });
+          }
         }
       } catch (error) {
         logStep("Failed to authenticate user", { error: error.message });
       }
     }
 
-    const config = getRateLimitConfig(endpoint, isAuthenticated);
+    const config = getRateLimitConfig(endpoint, subscriptionTier, isAuthenticated);
     const identifier = getRateLimitKey(req, userId);
     
     const result = await checkRateLimit(supabase, identifier, config);
