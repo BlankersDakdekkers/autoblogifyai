@@ -203,13 +203,7 @@ Controleer:
       throw new Error(errorMsg);
     }
     
-    // Check if user can publish posts
-    const canPublish = userData.capabilities?.publish_posts || userData.roles?.includes('administrator') || userData.roles?.includes('editor');
-    if (!canPublish) {
-      throw new Error(`Gebruiker '${cleanUsername}' heeft geen rechten om posts te publiceren. Vereiste rollen: Administrator of Editor. Huidige rollen: ${userData.roles?.join(', ') || 'geen'}`);
-    }
-    
-    console.log('User has publish permissions');
+    console.log('Skipping permission check - will let WordPress handle authorization');
     
     // Check if WordPress REST API is available for posts
     const apiDiscoveryUrl = `${normalizedUrl}/wp-json/wp/v2/posts`;
