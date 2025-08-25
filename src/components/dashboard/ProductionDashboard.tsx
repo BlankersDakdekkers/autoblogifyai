@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ResponsiveContainer, ResponsiveGrid } from '@/components/ui/responsive-components';
 import { useIsMobile, useCurrentBreakpoint } from '@/utils/responsive';
 import AnimatedCounter from '@/components/AnimatedCounter';
+import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   FileText, 
@@ -817,6 +818,47 @@ export const ProductionDashboard = memo(() => {
             </div>
           </div>
         </div>
+
+        {/* Credits and Stats Row */}
+        <ResponsiveGrid columns={{ xs: 1, md: 2, lg: 4 }} gap="md">
+          <div className="md:col-span-1">
+            <CreditsDisplay />
+          </div>
+          <div className="md:col-span-1 lg:col-span-3">
+            <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">Snelle Statistieken</h3>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Deze maand:</span>
+                        <div className="font-bold text-primary">247 posts</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Success rate:</span>
+                        <div className="font-bold text-green-600">99.2%</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Tijd bespaard:</span>
+                        <div className="font-bold text-purple-600">127 uur</div>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate('/dashboard/analytics')}
+                    className="bg-white/50"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Meer Details
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </ResponsiveGrid>
 
         {/* Key Performance Metrics */}
         <div className="space-y-4">

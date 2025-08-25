@@ -3,20 +3,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Coins, Zap, Crown } from "lucide-react";
+import { Coins, Zap, Crown, RefreshCw, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscriptionManager } from "@/hooks/useSubscriptionManager";
 
 interface CreditsData {
   credits_remaining: number;
   total_credits_used: number;
 }
 
-export const CreditsDisplay = () => {
+interface SubscriptionInfo {
+  subscription_tier?: string;
+  subscribed: boolean;
+  monthly_credit_limit?: number;
+  next_reset?: string;
+}
+
+interface CreditsDisplayProps {
+  compact?: boolean;
+  showUpgradeButton?: boolean;
+  className?: string;
+}
+
+export const CreditsDisplay = ({ compact = false, showUpgradeButton = true, className = "" }: CreditsDisplayProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { checkCreditStatus, refreshCredits, openCustomerPortal } = useSubscriptionManager();
   const [credits, setCredits] = useState<CreditsData | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({ subscribed: false });
   const [loading, setLoading] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
@@ -25,18 +41,35 @@ export const CreditsDisplay = () => {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('check-credits');
       
-      if (error) throw error;
-      
-      setCredits(data);
+      // Use the new subscription manager for comprehensive data
+      const status = await checkCreditStatus();
+      if (status) {
+        setCredits({
+          credits_remaining: status.credits.remaining,
+          total_credits_used: status.credits.used_this_period
+        });
+        setSubscription({
+          subscription_tier: status.subscription.tier,
+          subscribed: status.subscription.subscribed,
+          monthly_credit_limit: status.subscription.monthly_limit,
+          next_reset: status.subscription.next_reset
+        });
+      }
     } catch (error) {
       console.error('Error fetching credits:', error);
-      toast({
-        title: "Fout bij ophalen credits",
-        description: "Kon credits niet ophalen",
-        variant: "destructive"
-      });
+      // Fallback to old method if new one fails
+      try {
+        const { data, error } = await supabase.functions.invoke('check-credits');
+        if (error) throw error;
+        setCredits(data);
+      } catch (fallbackError) {
+        toast({
+          title: "⚠️ Fout bij ophalen credits",
+          description: "Kon credits niet ophalen",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -46,23 +79,28 @@ export const CreditsDisplay = () => {
     fetchCredits();
   }, [user]);
 
-  const handleUpgrade = async () => {
+  const handleRefreshCredits = async () => {
+    const success = await refreshCredits();
+    if (success) {
+      fetchCredits(); // Refresh the display
+    }
+  };
+
+  const handleUpgrade = async (tier: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          priceId: 'price_premium',
-          returnUrl: window.location.origin 
-        }
+        body: { tier }
       });
 
       if (error) throw error;
 
-      window.open(data.url, '_blank');
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
-        title: "Fout bij upgrade",
-        description: "Kon niet upgraden naar premium",
+        title: "❌ Fout bij upgrade",
+        description: "Kon niet upgraden. Probeer het opnieuw.",
         variant: "destructive"
       });
     }
@@ -76,13 +114,13 @@ export const CreditsDisplay = () => {
 
       if (error) throw error;
 
-      window.open(data.url, '_blank');
+      window.location.href = data.url;
       setShowUpgradeModal(false);
     } catch (error) {
       console.error('Error buying credits:', error);
       toast({
-        title: "Fout bij aankoop",
-        description: "Kon credits niet kopen",
+        title: "❌ Fout bij credit aankoop",
+        description: "Kon credits niet kopen. Probeer het opnieuw.",
         variant: "destructive"
       });
     }
@@ -92,11 +130,11 @@ export const CreditsDisplay = () => {
 
   if (loading) {
     return (
-      <Card className="w-full max-w-sm">
-        <CardContent className="p-4">
+      <Card className={`transition-all ${compact ? 'w-auto' : 'w-full max-w-sm'} ${className}`}>
+        <CardContent className={compact ? "p-2" : "p-4"}>
           <div className="flex items-center gap-2">
-            <Coins className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Laden...</span>
+            <Coins className="h-4 w-4 text-muted-foreground animate-pulse" />
+            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>Laden...</span>
           </div>
         </CardContent>
       </Card>
@@ -104,8 +142,116 @@ export const CreditsDisplay = () => {
   }
 
   const creditsRemaining = credits?.credits_remaining || 0;
-  const isLowCredits = creditsRemaining <= 1;
+  const isLowCredits = creditsRemaining <= (subscription.monthly_credit_limit ? Math.floor(subscription.monthly_credit_limit * 0.1) : 1);
   const isOutOfCredits = creditsRemaining === 0;
+
+  // Compact version for navigation/header
+  if (compact) {
+    return (
+      <>
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+          isLowCredits ? 'bg-orange-50 border border-orange-200' : 'bg-muted/50'
+        } ${className}`} onClick={() => setShowUpgradeModal(true)}>
+          <Coins className={`h-4 w-4 ${isLowCredits ? 'text-orange-600' : 'text-primary'}`} />
+          <span className={`text-sm font-medium ${isLowCredits ? 'text-orange-700' : 'text-foreground'}`}>
+            {creditsRemaining}
+          </span>
+          {subscription.subscribed && (
+            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+              {subscription.subscription_tier?.toUpperCase()}
+            </Badge>
+          )}
+          {isOutOfCredits && (
+            <Badge variant="destructive" className="text-xs px-1.5 py-0">
+              OP
+            </Badge>
+          )}
+        </div>
+
+        <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+          <DialogContent className="sm:max-w-lg">
+            {/* ... keep existing modal content */}
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-primary" />
+                Credits & Abonnement
+              </DialogTitle>
+              <DialogDescription>
+                Je hebt {creditsRemaining} van {subscription.monthly_credit_limit || 5} credits over.
+                {subscription.subscribed && subscription.subscription_tier && (
+                  <span className="block mt-1 text-sm">
+                    <Badge className="mr-2">{subscription.subscription_tier.toUpperCase()}</Badge>
+                    {subscription.next_reset && `Reset op: ${new Date(subscription.next_reset).toLocaleDateString('nl-NL')}`}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRefreshCredits}
+                  className="flex-1"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Ververs Credits
+                </Button>
+                
+                {subscription.subscribed ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={openCustomerPortal}
+                    className="flex-1"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Beheer Abonnement
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleUpgrade('professional')}
+                    className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade
+                  </Button>
+                )}
+              </div>
+              
+              {!subscription.subscribed && (
+                <div className="grid gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleUpgrade('starter')}
+                    className="justify-between"
+                  >
+                    <span>Starter (500 credits/maand)</span>
+                    <span className="font-bold">€147/maand</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleUpgrade('professional')}
+                    className="justify-between border-primary bg-primary/5"
+                  >
+                    <span>Professional (1500 credits/maand)</span>
+                    <span className="font-bold text-primary">€297/maand</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleUpgrade('enterprise')}
+                    className="justify-between border-accent bg-accent/5"
+                  >
+                    <span>Enterprise (5000 credits/maand)</span>
+                    <span className="font-bold text-accent">€597/maand</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <>
@@ -229,7 +375,7 @@ export const CreditsDisplay = () => {
                 <li>• Hero image generatie</li>
               </ul>
               <Button 
-                onClick={handleUpgrade}
+                onClick={() => handleUpgrade('professional')}
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
               >
                 <Crown className="h-4 w-4 mr-2" />

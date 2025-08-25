@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   FileSpreadsheet, Upload, Download, CheckCircle, AlertCircle, Play, Pause, 
@@ -449,60 +450,54 @@ const ProductionCSVProcessor = () => {
           </div>
         </div>
 
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Totaal Verwerkt</p>
-                  <p className="text-3xl font-bold text-blue-900">{analytics.totalProcessed}</p>
+        {/* Credits & Analytics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="lg:col-span-1">
+            <CreditsDisplay />
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-600">Totaal Verwerkt</p>
+                    <p className="text-3xl font-bold text-blue-900">{analytics.totalProcessed}</p>
+                  </div>
+                  <BarChart3 className="h-8 w-8 text-blue-600" />
                 </div>
-                <BarChart3 className="h-8 w-8 text-blue-600" />
-              </div>
-              <p className="text-xs text-blue-600 mt-2">+{analytics.postsThisMonth} deze maand</p>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-blue-600 mt-2">+{analytics.postsThisMonth} deze maand</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Succes Ratio</p>
-                  <p className="text-3xl font-bold text-green-900">{analytics.successRate}%</p>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-600">Succes Ratio</p>
+                    <p className="text-3xl font-bold text-green-900">{analytics.successRate}%</p>
+                  </div>
+                  <Target className="h-8 w-8 text-green-600" />
                 </div>
-                <Target className="h-8 w-8 text-green-600" />
-              </div>
-              <p className="text-xs text-green-600 mt-2">Gemiddeld succes percentage</p>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-green-600 mt-2">Gemiddeld succes percentage</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">Avg. Tijd</p>
-                  <p className="text-3xl font-bold text-purple-900">{analytics.avgProcessingTime}m</p>
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-purple-600">Avg. Tijd</p>
+                    <p className="text-3xl font-bold text-purple-900">{analytics.avgProcessingTime}m</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-purple-600" />
                 </div>
-                <Clock className="h-8 w-8 text-purple-600" />
-              </div>
-              <p className="text-xs text-purple-600 mt-2">Per CSV bestand</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">Deze Maand</p>
-                  <p className="text-3xl font-bold text-orange-900">{analytics.postsThisMonth}</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-orange-600" />
-              </div>
-              <p className="text-xs text-orange-600 mt-2">Nieuwe blogposts</p>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-purple-600 mt-2">Per CSV bestand</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+
+        {/* Analytics Cards - vervangen door nieuwe sectie hierboven */}
 
         {/* Processing Status */}
         {isProcessing && currentJob && (

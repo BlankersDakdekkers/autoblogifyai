@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { CreditsDisplay } from '@/components/CreditsDisplay';
 import { 
   User, Settings, LogOut, Crown, Sparkles, 
   Menu, Home, Info, Phone, HelpCircle, BookOpen 
@@ -76,6 +77,13 @@ const OptimizedHeader: React.FC<OptimizedHeaderProps> = ({ className = '' }) => 
 
           {/* User Actions */}
           <div className="flex items-center gap-3">
+            {/* Credits Display - alleen voor ingelogde gebruikers */}
+            {user && (
+              <div className="hidden sm:block">
+                <CreditsDisplay compact={true} showUpgradeButton={false} />
+              </div>
+            )}
+            
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

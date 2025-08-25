@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { supabase } from "@/integrations/supabase/client";
 import WordPressPublishModal from "@/components/WordPressPublishModal";
 import { 
@@ -520,6 +521,53 @@ const ProductionAutoBlogProducer = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Vernieuwen
             </Button>
+          </div>
+        </div>
+
+        {/* Credits & Quick Stats Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="lg:col-span-1">
+            <CreditsDisplay />
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-600">Keywords Gegenereerd</p>
+                    <p className="text-3xl font-bold text-green-900">{analytics.keywordsGenerated}</p>
+                  </div>
+                  <Target className="h-8 w-8 text-green-600" />
+                </div>
+                <p className="text-xs text-green-600 mt-2">AI-powered research</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-600">Content Ideeën</p>
+                    <p className="text-3xl font-bold text-blue-900">{analytics.contentIdeasCreated}</p>
+                  </div>
+                  <Brain className="h-8 w-8 text-blue-600" />
+                </div>
+                <p className="text-xs text-blue-600 mt-2">Unieke onderwerpen</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-purple-600">Avg. Traffic Potentieel</p>
+                    <p className="text-3xl font-bold text-purple-900">{analytics.avgTrafficPotential}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-purple-600" />
+                </div>
+                <p className="text-xs text-purple-600 mt-2">Verwachte maandelijkse bezoekers</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
