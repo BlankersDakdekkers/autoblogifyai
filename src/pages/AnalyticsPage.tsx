@@ -319,6 +319,8 @@ const AnalyticsPage = () => {
 
   const hasData = overview && overview.totalViews > 0;
 
+  console.log('Analytics data:', { overview, traffic, content, keywords });
+
   const generateReport = async () => {
     try {
       // Simulate API call
@@ -651,31 +653,31 @@ const AnalyticsPage = () => {
                   <CardContent className="space-y-4">
                     <TrafficSourceCard
                       source="Organic Search"
-                      percentage={analyticsData.traffic.organic.value}
+                      percentage={analyticsData.traffic?.organic?.value || 0}
                       color="bg-green-500"
                       icon={Search}
-                      change={analyticsData.traffic.organic.change}
+                      change={analyticsData.traffic?.organic?.change || '+0%'}
                     />
                     <TrafficSourceCard
                       source="Direct Traffic"
-                      percentage={analyticsData.traffic.direct.value}
+                      percentage={analyticsData.traffic?.direct?.value || 0}
                       color="bg-blue-500"
                       icon={Globe}
-                      change={analyticsData.traffic.direct.change}
+                      change={analyticsData.traffic?.direct?.change || '+0%'}
                     />
                     <TrafficSourceCard
                       source="Social Media"
-                      percentage={analyticsData.traffic.social.value}
+                      percentage={analyticsData.traffic?.social?.value || 0}
                       color="bg-purple-500"
                       icon={Users}
-                      change={analyticsData.traffic.social.change}
+                      change={analyticsData.traffic?.social?.change || '+0%'}
                     />
                     <TrafficSourceCard
                       source="Referral"
-                      percentage={analyticsData.traffic.referral.value}
+                      percentage={analyticsData.traffic?.referral?.value || 0}
                       color="bg-orange-500"
                       icon={MousePointer}
-                      change={analyticsData.traffic.referral.change}
+                      change={analyticsData.traffic?.referral?.change || '+0%'}
                     />
                   </CardContent>
                 </Card>
