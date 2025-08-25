@@ -20,7 +20,8 @@ import {
   Users,
   Activity,
   Crown,
-  Brain
+  Brain,
+  Megaphone
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -113,6 +114,18 @@ export const useNavigationSections = (): NavigationSection[] => {
         url: "/dashboard/blogs", 
         icon: FileText,
         description: "Beheer en publiceer je blogs naar WordPress"
+      },
+      { 
+        title: "Social Media Ads", 
+        url: "/dashboard/social-ads", 
+        icon: Megaphone,
+        description: "Instagram & Facebook advertenties voor AutoblogifyAI"
+      },
+      { 
+        title: "WordPress Testpilot", 
+        url: "/dashboard/wordpress-testpilot", 
+        icon: TestTube,
+        description: "Test de complete WordPress workflow"
       },
     ]
   },
