@@ -659,6 +659,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_analytics: {
+        Row: {
+          avg_time_on_page: number | null
+          bounce_rate: number | null
+          conversion_rate: number | null
+          created_at: string
+          date: string
+          direct_traffic: number | null
+          id: string
+          organic_traffic: number | null
+          page_views: number | null
+          referral_traffic: number | null
+          revenue: number | null
+          social_traffic: number | null
+          unique_visitors: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_time_on_page?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          date: string
+          direct_traffic?: number | null
+          id?: string
+          organic_traffic?: number | null
+          page_views?: number | null
+          referral_traffic?: number | null
+          revenue?: number | null
+          social_traffic?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_time_on_page?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          date?: string
+          direct_traffic?: number | null
+          id?: string
+          organic_traffic?: number | null
+          page_views?: number | null
+          referral_traffic?: number | null
+          revenue?: number | null
+          social_traffic?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           created_at: string
@@ -726,6 +780,10 @@ export type Database = {
       deduct_credit: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      generate_sample_analytics: {
+        Args: { target_user_id: string }
+        Returns: undefined
       }
       get_credit_limit_for_tier: {
         Args: { tier_name: string }
