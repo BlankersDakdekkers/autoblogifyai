@@ -8,14 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import WordPressPublishModal from "@/components/WordPressPublishModal";
 import { 
   Wand2, Search, Brain, Sparkles, Target, TrendingUp, Mic, Volume2,
   Globe, Users, Calendar, BarChart3, Zap, RefreshCw, Download,
   Play, Pause, Eye, Copy, Hash, Languages, Loader2, CheckCircle,
-  AlertCircle, FileText, Settings, Activity, Star, ArrowRight
+  AlertCircle, FileText, Settings, Activity, Star, ArrowRight, Send, ExternalLink
 } from "lucide-react";
 
 interface KeywordSuggestion {
@@ -80,19 +82,43 @@ const ProductionAutoBlogProducer = () => {
   const [bulkProgress, setBulkProgress] = useState(0);
   const [selectedIdeas, setSelectedIdeas] = useState<string[]>([]);
   
+  // WordPress integration state
+  const [wordpressConfig, setWordpressConfig] = useState({
+    siteUrl: '',
+    username: '',
+    appPassword: ''
+  });
+  const [isWordPressConnected, setIsWordPressConnected] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  
   // Analytics state
   const [analytics, setAnalytics] = useState({
     keywordsGenerated: 0,
     contentIdeasCreated: 0,
     postsFromKeywords: 0,
-    avgTrafficPotential: 0
+    avgTrafficPotential: 0,
+    postsPublished: 0
   });
 
   // Load data on mount
   useEffect(() => {
     loadBlogPosts();
     loadAnalytics();
+    loadWordPressConfig();
   }, [user?.id]);
+
+  const loadWordPressConfig = () => {
+    const savedConfig = localStorage.getItem('wordpress_config');
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        setWordpressConfig(config);
+        setIsWordPressConnected(true);
+      } catch (error) {
+        console.error('Error loading WordPress config:', error);
+      }
+    }
+  };
 
   const loadBlogPosts = async () => {
     if (!user?.id) return;
@@ -124,7 +150,8 @@ const ProductionAutoBlogProducer = () => {
       keywordsGenerated: 127,
       contentIdeasCreated: 43,
       postsFromKeywords: 28,
-      avgTrafficPotential: 1240
+      avgTrafficPotential: 1240,
+      postsPublished: 12
     });
   };
 
@@ -451,6 +478,70 @@ const ProductionAutoBlogProducer = () => {
     }
   };
 
+  const testWordPressConnection = async () => {
+    if (!wordpressConfig.siteUrl || !wordpressConfig.username || !wordpressConfig.appPassword) {
+      toast({
+        title: "WordPress Configuratie Incompleet",
+        description: "Vul alle WordPress velden in",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsTestingConnection(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('wordpress-connection-test', {
+        body: {
+          wordpressConfig
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setIsWordPressConnected(true);
+        // Save config to localStorage
+        localStorage.setItem('wordpress_config', JSON.stringify(wordpressConfig));
+        
+        toast({
+          title: "WordPress Verbinding Succesvol! ✅",
+          description: "Je WordPress site is succesvol verbonden"
+        });
+      } else {
+        throw new Error(data?.message || 'Verbinding mislukt');
+      }
+
+    } catch (error: any) {
+      console.error('WordPress connection test error:', error);
+      setIsWordPressConnected(false);
+      
+      toast({
+        title: "WordPress Verbinding Mislukt",
+        description: error.message || "Controleer je instellingen en probeer opnieuw",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleWordPressPublishSuccess = () => {
+    toast({
+      title: "WordPress Publicatie Succesvol! 🚀",
+      description: "Post is succesvol gepubliceerd naar WordPress"
+    });
+    
+    // Update analytics
+    setAnalytics(prev => ({
+      ...prev,
+      postsPublished: prev.postsPublished + 1
+    }));
+    
+    // Refresh posts to update status
+    loadBlogPosts();
+  };
+
   const getIntentIcon = (intent: string) => {
     switch (intent) {
       case 'commercial': return <Target className="h-3 w-3" />;
@@ -566,15 +657,36 @@ const ProductionAutoBlogProducer = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">Avg. Traffic Potentie</p>
-                  <p className="text-3xl font-bold text-green-900">{analytics.avgTrafficPotential}</p>
+                  <p className="text-sm font-medium text-green-600">WordPress Posts</p>
+                  <p className="text-3xl font-bold text-green-900">{analytics.postsPublished}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
+                <Send className="h-8 w-8 text-green-600" />
               </div>
-              <p className="text-xs text-green-600 mt-2">Maandelijkse bezoekers</p>
+              <p className="text-xs text-green-600 mt-2">Gepubliceerd</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* WordPress Connection Status */}
+        {isWordPressConnected && (
+          <Card className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <div>
+                  <h3 className="font-semibold text-green-900">WordPress Verbonden</h3>
+                  <p className="text-sm text-green-600">
+                    Verbonden met: {wordpressConfig.siteUrl}
+                  </p>
+                </div>
+                <Badge className="bg-green-600 text-white ml-auto">
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Live
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Bulk Generation Progress */}
         {isBulkGenerating && (
@@ -602,7 +714,7 @@ const ProductionAutoBlogProducer = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto">
             <TabsTrigger value="keywords" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               <span className="hidden sm:inline">Keywords</span>
@@ -618,6 +730,10 @@ const ProductionAutoBlogProducer = () => {
             <TabsTrigger value="bulk" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
               <span className="hidden sm:inline">Bulk</span>
+            </TabsTrigger>
+            <TabsTrigger value="wordpress" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">WordPress</span>
             </TabsTrigger>
             <TabsTrigger value="posts" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -1125,6 +1241,135 @@ const ProductionAutoBlogProducer = () => {
             </Card>
           </TabsContent>
 
+          {/* WordPress Integration Tab */}
+          <TabsContent value="wordpress" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  WordPress Integratie
+                </CardTitle>
+                <CardDescription>
+                  Verbind je WordPress site en publiceer gegenereerde content automatisch
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {!isWordPressConnected ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Verbind eerst je WordPress site om automatisch content te kunnen publiceren.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert>
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertDescription className="text-green-700">
+                      WordPress verbinding actief: {wordpressConfig.siteUrl}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="wp-site-url">WordPress Site URL</Label>
+                    <Input
+                      id="wp-site-url"
+                      value={wordpressConfig.siteUrl}
+                      onChange={(e) => setWordpressConfig(prev => ({ ...prev, siteUrl: e.target.value }))}
+                      placeholder="https://jouwsite.nl"
+                      disabled={isTestingConnection}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="wp-username">WordPress Gebruikersnaam</Label>
+                    <Input
+                      id="wp-username"
+                      value={wordpressConfig.username}
+                      onChange={(e) => setWordpressConfig(prev => ({ ...prev, username: e.target.value }))}
+                      placeholder="admin"
+                      disabled={isTestingConnection}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="wp-password">WordPress App Password</Label>
+                    <Input
+                      id="wp-password"
+                      type="password"
+                      value={wordpressConfig.appPassword}
+                      onChange={(e) => setWordpressConfig(prev => ({ ...prev, appPassword: e.target.value }))}
+                      placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"
+                      disabled={isTestingConnection}
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={testWordPressConnection}
+                      disabled={isTestingConnection || !wordpressConfig.siteUrl || !wordpressConfig.username || !wordpressConfig.appPassword}
+                      className="bg-gradient-to-r from-blue-600 to-green-600"
+                    >
+                      {isTestingConnection ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Globe className="h-4 w-4 mr-2" />
+                      )}
+                      {isTestingConnection ? 'Testen...' : 'Verbinding Testen'}
+                    </Button>
+
+                    {isWordPressConnected && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsWordPressConnected(false);
+                          localStorage.removeItem('wordpress_config');
+                          setWordpressConfig({ siteUrl: '', username: '', appPassword: '' });
+                        }}
+                      >
+                        Verbinding Verbreken
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {isWordPressConnected && (
+                  <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div>
+                            <h4 className="font-medium text-green-900">WordPress Verbonden</h4>
+                            <p className="text-sm text-green-600">
+                              Je kunt nu posts automatisch naar WordPress publiceren
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-4 bg-white/50 rounded-lg border border-green-200">
+                          <div>
+                            <p className="font-medium text-green-900">Gepubliceerde Posts</p>
+                            <p className="text-2xl font-bold text-green-700">{analytics.postsPublished}</p>
+                          </div>
+                          <Button
+                            onClick={() => setActiveTab("posts")}
+                            variant="outline"
+                            className="border-green-300 text-green-700 hover:bg-green-50"
+                          >
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            Naar Posts
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Posts Tab */}
           <TabsContent value="posts" className="space-y-6">
             {isLoadingPosts ? (
@@ -1262,6 +1507,21 @@ const ProductionAutoBlogProducer = () => {
                               <Copy className="h-4 w-4 mr-1" />
                               Slug
                             </Button>
+                            {isWordPressConnected && (
+                              <WordPressPublishModal
+                                postId={post.id}
+                                postTitle={post.title}
+                                onSuccess={handleWordPressPublishSuccess}
+                              >
+                                <Button
+                                  size="sm"
+                                  className="bg-gradient-to-r from-blue-600 to-green-600 text-white"
+                                >
+                                  <Send className="h-4 w-4 mr-1" />
+                                  WordPress
+                                </Button>
+                              </WordPressPublishModal>
+                            )}
                           </div>
                         </div>
                       </CardContent>
