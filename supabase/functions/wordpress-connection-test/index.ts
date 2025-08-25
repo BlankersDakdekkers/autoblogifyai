@@ -123,6 +123,8 @@ serve(async (req) => {
     console.log('\n--- STEP 3: Authentication & Permissions Test ---');
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     console.log('Basic Auth credentials prepared');
+    console.log('Testing with username:', cleanUsername);
+    console.log('Password length:', cleanAppPassword.length);
     
     // First test authentication with user info
     const authTestUrl = `${normalizedUrl}/wp-json/wp/v2/users/me`;
