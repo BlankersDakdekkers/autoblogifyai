@@ -44,6 +44,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const WordPressTestPilot = lazy(() => import("./pages/WordPressTestPilot"));
 const SocialAdsPage = lazy(() => import("./pages/SocialAdsPage"));
+const AdvancedAIFeatures = lazy(() => import("./pages/AdvancedAIFeatures"));
 const OptimizedHeader = lazy(() => import("./components/OptimizedHeader"));
 const Footer = lazy(() => import("./components/Footer"));
 
@@ -339,6 +340,16 @@ const App = () => {
                           <Suspense fallback={<LoadingFallback />}>
                             <OptimizedLayout type="dashboard">
                               <SocialAdsPage />
+                            </OptimizedLayout>
+                          </Suspense>
+                        </ProtectedRoute>
+                      } />
+                      
+                      <Route path="advanced-ai" element={
+                        <ProtectedRoute>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <OptimizedLayout type="dashboard">
+                              <AdvancedAIFeatures />
                             </OptimizedLayout>
                           </Suspense>
                         </ProtectedRoute>
