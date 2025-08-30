@@ -143,7 +143,7 @@ serve(async (req) => {
 
     // Process CSV synchronously with timeout (no background task)
     try {
-      await processCSVData(csvUrl, job.id, user.id, supabase, options);
+      await processCSVData(csvUrl, job.id, user.id, supabase, options, authHeader);
       
       return new Response(
         JSON.stringify({ 
@@ -189,7 +189,7 @@ serve(async (req) => {
   }
 });
 
-async function processCSVData(csvUrl: string, jobId: string, userId: string, supabase: any, options: any = {}) {
+async function processCSVData(csvUrl: string, jobId: string, userId: string, supabase: any, options: any = {}, authHeader?: string) {
   const startTime = Date.now();
   let processedCount = 0;
   
@@ -354,7 +354,7 @@ Tip: Test je URL eerst in de browser om te controleren of deze werkt.`);
         
         while (retryCount < MAX_RETRIES) {
           try {
-            await processRow(row, userId, supabase, rowIndex);
+            await processRow(row, userId, supabase, rowIndex, authHeader);
             successCount++;
             return { success: true, rowIndex };
           } catch (error) {
@@ -439,7 +439,7 @@ Tip: Test je URL eerst in de browser om te controleren of deze werkt.`);
   }
 }
 
-async function processRow(row: any, userId: string, supabase: any, rowIndex?: number) {
+async function processRow(row: any, userId: string, supabase: any, rowIndex?: number, authHeader?: string) {
   logStep("Processing row", { rowIndex, userId, rowKeys: Object.keys(row) });
   
   // Enhanced row validation
@@ -568,7 +568,7 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
   
   // Auto-publish to CMS if integration is active
   if (data[0]?.id) {
-    await autoPublishToCMS(data[0].id, userId, supabase, rowIndex);
+    await autoPublishToCMS(data[0].id, userId, supabase, rowIndex, authHeader);
   }
   
   return data[0];
@@ -1132,7 +1132,7 @@ function calculateWordCount(text: string): number {
 }
 
 // Auto-publish to CMS function
-async function autoPublishToCMS(blogPostId: string, userId: string, supabase: any, rowIndex?: number) {
+async function autoPublishToCMS(blogPostId: string, userId: string, supabase: any, rowIndex?: number, authHeader?: string) {
   try {
     logStep("Checking for active CMS integrations", { blogPostId, userId, rowIndex });
     
@@ -1165,37 +1165,47 @@ async function autoPublishToCMS(blogPostId: string, userId: string, supabase: an
           rowIndex 
         });
         
-        // Call wordpress-publish function
-        const publishResponse = await supabase.functions.invoke('wordpress-publish', {
-          body: {
+        // Call wordpress-publish function with authentication
+        const publishResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/wordpress-publish`, {
+          method: 'POST',
+          headers: {
+            'Authorization': authHeader || `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+            'apikey': Deno.env.get('SUPABASE_ANON_KEY') || ''
+          },
+          body: JSON.stringify({
             postId: blogPostId,
             wordpressConfig: {
               siteUrl: integration.site_url,
               username: integration.api_credentials?.username,
               appPassword: integration.api_credentials?.appPassword
             }
-          }
+          })
         });
         
-        if (publishResponse.error) {
+        if (!publishResponse.ok) {
+          const errorText = await publishResponse.text();
           logStep("Auto-publish to CMS failed", { 
-            error: publishResponse.error.message, 
-            integrationId: integration.id,
-            rowIndex 
-          });
-        } else if (publishResponse.data?.success) {
-          logStep("Auto-publish to CMS successful", { 
-            cmsPostUrl: publishResponse.data.wordpressUrl,
-            cmsPostId: publishResponse.data.wordpressPostId,
+            error: `Edge Function returned a non-2xx status code: ${publishResponse.status} - ${errorText}`, 
             integrationId: integration.id,
             rowIndex 
           });
         } else {
-          logStep("Auto-publish to CMS returned unexpected result", { 
-            result: publishResponse.data,
-            integrationId: integration.id,
-            rowIndex 
-          });
+          const publishData = await publishResponse.json();
+          if (publishData.success) {
+            logStep("Auto-publish to CMS successful", { 
+              cmsPostUrl: publishData.url,
+              cmsPostId: publishData.wordpressId,
+              integrationId: integration.id,
+              rowIndex 
+            });
+          } else {
+            logStep("Auto-publish to CMS returned unexpected result", { 
+              result: publishData,
+              integrationId: integration.id,
+              rowIndex 
+            });
+          }
         }
       } catch (publishError) {
         logStep("Auto-publish to CMS error", { 
