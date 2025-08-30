@@ -994,6 +994,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      cleanup_old_analytics: {
+        Args: { days_to_keep?: number }
+        Returns: number
+      }
       deduct_credit: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -1024,6 +1028,17 @@ export type Database = {
           avg_processing_time_minutes: number
           count: number
           status: string
+        }[]
+      }
+      get_user_processing_limits: {
+        Args: { user_uuid: string }
+        Returns: {
+          current_hour_jobs: number
+          is_premium: boolean
+          jobs_remaining: number
+          max_concurrent_jobs: number
+          max_jobs_per_hour: number
+          max_rows_per_job: number
         }[]
       }
       has_role: {
