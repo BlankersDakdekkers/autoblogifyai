@@ -237,25 +237,25 @@ export const useNavigationSections = (): NavigationSection[] => {
       items: [
         {
           title: "Gebruikersbeheer",
-          url: "/dashboard/admin/users",
+          url: "/admin/users",
           icon: Users,
           description: "Beheer alle gebruikers en rollen"
         },
         {
           title: "Klanten Portaal",
-          url: "/dashboard/admin/customers",
+          url: "/admin/customers",
           icon: Users,
           description: "Beheer alle klanten en abonnementen"
         },
         {
           title: "System Monitoring",
-          url: "/dashboard/admin/monitoring",
+          url: "/admin/monitoring",
           icon: Activity,
           description: "System health en performance monitoring"
         },
         {
           title: "Resource Manager",
-          url: "/dashboard/admin/resources",
+          url: "/admin/resources",
           icon: Book,
           description: "Beheer resources, tutorials en tools"
         }

@@ -57,7 +57,7 @@ const Footer = lazy(() => import("./components/Footer"));
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
-const AdminCustomersPage = lazy(() => import("./pages/AdminCustomersPage"));
+const AdminCustomerPortal = lazy(() => import("./pages/AdminCustomerPortal"));
 const AdminResourceManager = lazy(() => import("./pages/AdminResourceManager"));
 const SystemMonitoringPage = lazy(() => import("./pages/SystemMonitoringPage"));
 
@@ -565,7 +565,7 @@ const App = () => {
                         <ProtectedRoute requiredRole="admin">
                           <Suspense fallback={<LoadingFallback />}>
                             <OptimizedLayout type="dashboard">
-                              <AdminCustomersPage />
+                              <AdminCustomerPortal />
                             </OptimizedLayout>
                           </Suspense>
                         </ProtectedRoute>
