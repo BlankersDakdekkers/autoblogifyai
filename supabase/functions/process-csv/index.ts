@@ -565,6 +565,12 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
   }
   
   logStep("Blog post inserted successfully", { rowIndex, postId: data[0]?.id });
+  
+  // Auto-publish to CMS if integration is active
+  if (data[0]?.id) {
+    await autoPublishToCMS(data[0].id, userId, supabase, rowIndex);
+  }
+  
   return data[0];
 }
 
@@ -1123,4 +1129,83 @@ function parseTagsFromString(tagsString: string): string[] {
 function calculateWordCount(text: string): number {
   if (!text) return 0;
   return text.trim().split(/\s+/).length;
+}
+
+// Auto-publish to CMS function
+async function autoPublishToCMS(blogPostId: string, userId: string, supabase: any, rowIndex?: number) {
+  try {
+    logStep("Checking for active CMS integrations", { blogPostId, userId, rowIndex });
+    
+    // Check for active CMS integrations
+    const { data: integrations, error: integrationsError } = await supabase
+      .from('cms_integrations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true);
+    
+    if (integrationsError) {
+      logStep("Failed to fetch CMS integrations", { error: integrationsError.message, rowIndex });
+      return;
+    }
+    
+    if (!integrations || integrations.length === 0) {
+      logStep("No active CMS integrations found, skipping auto-publish", { rowIndex });
+      return;
+    }
+    
+    logStep("Found active CMS integrations", { count: integrations.length, rowIndex });
+    
+    // Auto-publish to each active CMS integration
+    for (const integration of integrations) {
+      try {
+        logStep("Auto-publishing to CMS", { 
+          cmsType: integration.cms_type, 
+          siteUrl: integration.site_url, 
+          integrationId: integration.id,
+          rowIndex 
+        });
+        
+        // Call wordpress-publish function
+        const publishResponse = await supabase.functions.invoke('wordpress-publish', {
+          body: {
+            postId: blogPostId,
+            wordpressConfig: {
+              siteUrl: integration.site_url,
+              username: integration.api_credentials?.username,
+              appPassword: integration.api_credentials?.appPassword
+            }
+          }
+        });
+        
+        if (publishResponse.error) {
+          logStep("Auto-publish to CMS failed", { 
+            error: publishResponse.error.message, 
+            integrationId: integration.id,
+            rowIndex 
+          });
+        } else if (publishResponse.data?.success) {
+          logStep("Auto-publish to CMS successful", { 
+            cmsPostUrl: publishResponse.data.wordpressUrl,
+            cmsPostId: publishResponse.data.wordpressPostId,
+            integrationId: integration.id,
+            rowIndex 
+          });
+        } else {
+          logStep("Auto-publish to CMS returned unexpected result", { 
+            result: publishResponse.data,
+            integrationId: integration.id,
+            rowIndex 
+          });
+        }
+      } catch (publishError) {
+        logStep("Auto-publish to CMS error", { 
+          error: publishError.message, 
+          integrationId: integration.id,
+          rowIndex 
+        });
+      }
+    }
+  } catch (error) {
+    logStep("Auto-publish CMS check failed", { error: error.message, rowIndex });
+  }
 }
