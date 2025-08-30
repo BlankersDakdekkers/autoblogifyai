@@ -570,6 +570,17 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
   if (data[0]?.id) {
     await autoPublishToCMS(data[0].id, userId, supabase, rowIndex, authHeader);
   }
+
+  // Update blog post status tracking
+  if (data[0]?.id) {
+    await supabase
+      .from('blog_posts')
+      .update({
+        processing_status: 'completed',
+        ai_enhanced: true
+      })
+      .eq('id', data[0].id);
+  }
   
   return data[0];
 }

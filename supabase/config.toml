@@ -6,6 +6,20 @@ client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_CLIENT_SECRET)"
 redirect_uri = "https://pmhplzqfdmgkkosapkit.supabase.co/auth/v1/callback"
 
+# CSV Processing Pro Functions
+[functions.enhanced-process-csv]
+verify_jwt = true
+
+[functions.csv-queue-manager]
+verify_jwt = false
+
+[functions.csv-health-monitor]
+verify_jwt = false
+
+[functions.csv-analytics-dashboard]
+verify_jwt = true
+
+# Existing Functions
 [functions.test-stripe-key]
 verify_jwt = false
 
