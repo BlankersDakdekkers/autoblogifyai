@@ -941,7 +941,7 @@ export const ProductionDashboard = memo(() => {
               </div>
               
               <div className="flex items-center gap-2">
-                <AdminSetupButton />
+                {userRole !== 'admin' && <AdminSetupButton />}
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/dashboard/help">
                     <Info className="h-4 w-4 mr-2" />
