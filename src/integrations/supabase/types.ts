@@ -85,19 +85,25 @@ export type Database = {
       }
       blog_posts: {
         Row: {
+          ai_enhanced: boolean | null
           author: string | null
           body_markdown: string | null
           canonical_url: string | null
           city: string | null
+          cms_published: boolean | null
           created_at: string
+          csv_job_id: string | null
+          csv_row_index: number | null
           cta_heading: string | null
           cta_subtext: string | null
+          error_message: string | null
           faq_json: Json | null
           hero_image_alt: string | null
           hero_image_url: string | null
           id: string
           meta_description: string | null
           meta_title: string | null
+          processing_status: string | null
           publish_date: string
           slug: string
           status: string
@@ -109,19 +115,25 @@ export type Database = {
           word_count: number | null
         }
         Insert: {
+          ai_enhanced?: boolean | null
           author?: string | null
           body_markdown?: string | null
           canonical_url?: string | null
           city?: string | null
+          cms_published?: boolean | null
           created_at?: string
+          csv_job_id?: string | null
+          csv_row_index?: number | null
           cta_heading?: string | null
           cta_subtext?: string | null
+          error_message?: string | null
           faq_json?: Json | null
           hero_image_alt?: string | null
           hero_image_url?: string | null
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          processing_status?: string | null
           publish_date: string
           slug: string
           status?: string
@@ -133,19 +145,25 @@ export type Database = {
           word_count?: number | null
         }
         Update: {
+          ai_enhanced?: boolean | null
           author?: string | null
           body_markdown?: string | null
           canonical_url?: string | null
           city?: string | null
+          cms_published?: boolean | null
           created_at?: string
+          csv_job_id?: string | null
+          csv_row_index?: number | null
           cta_heading?: string | null
           cta_subtext?: string | null
+          error_message?: string | null
           faq_json?: Json | null
           hero_image_alt?: string | null
           hero_image_url?: string | null
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          processing_status?: string | null
           publish_date?: string
           slug?: string
           status?: string
@@ -156,7 +174,15 @@ export type Database = {
           user_id?: string
           word_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_csv_job_id_fkey"
+            columns: ["csv_job_id"]
+            isOneToOne: false
+            referencedRelation: "csv_processing_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cms_integrations: {
         Row: {
@@ -251,14 +277,84 @@ export type Database = {
           },
         ]
       }
+      csv_processing_analytics: {
+        Row: {
+          ai_calls_made: number | null
+          cms_publications_attempted: number | null
+          cms_publications_successful: number | null
+          created_at: string
+          credits_consumed: number | null
+          error_types: Json | null
+          id: string
+          job_id: string | null
+          performance_metrics: Json | null
+          processing_completed_at: string | null
+          processing_started_at: string
+          rows_failed: number | null
+          rows_processed: number | null
+          total_processing_time_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_calls_made?: number | null
+          cms_publications_attempted?: number | null
+          cms_publications_successful?: number | null
+          created_at?: string
+          credits_consumed?: number | null
+          error_types?: Json | null
+          id?: string
+          job_id?: string | null
+          performance_metrics?: Json | null
+          processing_completed_at?: string | null
+          processing_started_at?: string
+          rows_failed?: number | null
+          rows_processed?: number | null
+          total_processing_time_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_calls_made?: number | null
+          cms_publications_attempted?: number | null
+          cms_publications_successful?: number | null
+          created_at?: string
+          credits_consumed?: number | null
+          error_types?: Json | null
+          id?: string
+          job_id?: string | null
+          performance_metrics?: Json | null
+          processing_completed_at?: string | null
+          processing_started_at?: string
+          rows_failed?: number | null
+          rows_processed?: number | null
+          total_processing_time_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csv_processing_analytics_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "csv_processing_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       csv_processing_jobs: {
         Row: {
           created_at: string
           csv_url: string
+          error_count: number | null
           error_message: string | null
           id: string
+          max_retries: number | null
+          options: Json | null
+          priority: number | null
           processed_rows: number | null
+          processing_time_seconds: number | null
+          retry_count: number | null
+          scheduled_at: string | null
           status: string
+          success_count: number | null
           total_rows: number | null
           updated_at: string
           user_id: string
@@ -266,10 +362,18 @@ export type Database = {
         Insert: {
           created_at?: string
           csv_url: string
+          error_count?: number | null
           error_message?: string | null
           id?: string
+          max_retries?: number | null
+          options?: Json | null
+          priority?: number | null
           processed_rows?: number | null
+          processing_time_seconds?: number | null
+          retry_count?: number | null
+          scheduled_at?: string | null
           status?: string
+          success_count?: number | null
           total_rows?: number | null
           updated_at?: string
           user_id: string
@@ -277,15 +381,124 @@ export type Database = {
         Update: {
           created_at?: string
           csv_url?: string
+          error_count?: number | null
           error_message?: string | null
           id?: string
+          max_retries?: number | null
+          options?: Json | null
+          priority?: number | null
           processed_rows?: number | null
+          processing_time_seconds?: number | null
+          retry_count?: number | null
+          scheduled_at?: string | null
           status?: string
+          success_count?: number | null
           total_rows?: number | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      csv_processing_limits: {
+        Row: {
+          created_at: string
+          current_hour_jobs: number | null
+          current_hour_start: string | null
+          id: string
+          is_premium: boolean | null
+          max_concurrent_jobs: number
+          max_jobs_per_hour: number
+          max_rows_per_job: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_hour_jobs?: number | null
+          current_hour_start?: string | null
+          id?: string
+          is_premium?: boolean | null
+          max_concurrent_jobs?: number
+          max_jobs_per_hour?: number
+          max_rows_per_job?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_hour_jobs?: number | null
+          current_hour_start?: string | null
+          id?: string
+          is_premium?: boolean | null
+          max_concurrent_jobs?: number
+          max_jobs_per_hour?: number
+          max_rows_per_job?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      csv_processing_queue: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          job_id: string | null
+          max_retries: number | null
+          priority: number
+          processing_options: Json | null
+          retry_count: number | null
+          scheduled_for: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          worker_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          max_retries?: number | null
+          priority?: number
+          processing_options?: Json | null
+          retry_count?: number | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          worker_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          max_retries?: number | null
+          priority?: number
+          processing_options?: Json | null
+          retry_count?: number | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csv_processing_queue_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "csv_processing_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       google_integrations: {
         Row: {
@@ -777,6 +990,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      check_processing_rate_limit: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       deduct_credit: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -788,6 +1005,18 @@ export type Database = {
       get_credit_limit_for_tier: {
         Args: { tier_name: string }
         Returns: number
+      }
+      get_processing_stats: {
+        Args: { days_back?: number; user_uuid: string }
+        Returns: {
+          avg_processing_time: number
+          credits_used: number
+          failed_jobs: number
+          success_rate: number
+          successful_jobs: number
+          total_jobs: number
+          total_rows_processed: number
+        }[]
       }
       get_queue_stats: {
         Args: { time_range_hours?: number }
@@ -803,6 +1032,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_processing_counter: {
+        Args: { user_uuid: string }
+        Returns: undefined
       }
       make_self_admin: {
         Args: Record<PropertyKey, never>
