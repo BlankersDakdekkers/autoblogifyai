@@ -361,6 +361,43 @@ export const NewUserDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* Admin Setup Knop */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold text-yellow-800">Admin Setup</h4>
+              <p className="text-sm text-yellow-700">Maak jezelf admin voor volledige toegang</p>
+            </div>
+            <Button 
+              onClick={async () => {
+                try {
+                  const { error } = await supabase.rpc('make_self_admin');
+                  if (error) throw error;
+                  
+                  toast({
+                    title: "Admin rechten toegekend",
+                    description: "Je hebt nu admin rechten. Pagina wordt herladen...",
+                  });
+                  
+                  setTimeout(() => window.location.reload(), 1500);
+                } catch (error: any) {
+                  toast({
+                    title: "Fout",
+                    description: error.message,
+                    variant: "destructive",
+                  });
+                }
+              }}
+              variant="outline"
+              className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
+            >
+              Maak mij admin
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* WordPress Setup Dialog */}
       <Dialog open={showWordPressSetup} onOpenChange={setShowWordPressSetup}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
