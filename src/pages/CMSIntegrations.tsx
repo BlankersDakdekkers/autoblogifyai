@@ -11,6 +11,7 @@ const CMSIntegrations = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleConfigureCMS = (cmsType: 'wordpress' | 'strapi' | 'drupal') => {
+    console.log('Button clicked for CMS:', cmsType);
     setSelectedCMS(cmsType);
     setModalOpen(true);
   };
