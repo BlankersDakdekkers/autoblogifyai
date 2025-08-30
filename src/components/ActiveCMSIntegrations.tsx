@@ -75,7 +75,7 @@ const ActiveCMSIntegrations: React.FC<ActiveCMSIntegrationsProps> = ({ refreshTr
           action: 'test',
           cms_type: integration.cms_type,
           site_url: integration.site_url,
-          // We can't get actual credentials, so we'll test with the stored ones
+          integration_id: integration.id
         }
       });
 

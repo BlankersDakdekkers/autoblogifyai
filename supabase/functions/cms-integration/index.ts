@@ -164,11 +164,52 @@ async function createIntegration(supabaseClient: any, userId: string, body: any)
 }
 
 async function testIntegration(supabaseClient: any, userId: string, body: any) {
-  const { cms_type, site_url, api_credentials } = body;
+  const { cms_type, site_url, api_credentials, integration_id } = body;
   
   logStep("Testing CMS connection", { cms_type, site_url });
 
-  const result = await testCMSConnection(cms_type, site_url, api_credentials);
+  let credentialsToUse = api_credentials;
+  
+  // If no credentials provided, try to fetch from existing integration
+  if (!credentialsToUse && integration_id) {
+    const { data: integration, error } = await supabaseClient
+      .from('cms_integrations')
+      .select('api_credentials')
+      .eq('id', integration_id)
+      .eq('user_id', userId)
+      .single();
+    
+    if (!error && integration) {
+      credentialsToUse = integration.api_credentials;
+    }
+  }
+  
+  // If still no credentials, try to find by cms_type and site_url
+  if (!credentialsToUse) {
+    const { data: integration, error } = await supabaseClient
+      .from('cms_integrations')
+      .select('api_credentials')
+      .eq('cms_type', cms_type)
+      .eq('site_url', site_url)
+      .eq('user_id', userId)
+      .single();
+    
+    if (!error && integration) {
+      credentialsToUse = integration.api_credentials;
+    }
+  }
+  
+  if (!credentialsToUse) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Geen credentials gevonden voor deze integratie'
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  }
+
+  const result = await testCMSConnection(cms_type, site_url, credentialsToUse);
 
   return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
