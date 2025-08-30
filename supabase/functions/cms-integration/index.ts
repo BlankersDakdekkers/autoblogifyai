@@ -38,14 +38,15 @@ serve(async (req) => {
 
     const { method, url } = req;
     const urlObj = new URL(url);
-    const action = urlObj.searchParams.get('action');
+    const queryAction = urlObj.searchParams.get('action');
 
     switch (method) {
       case 'GET':
-        return await handleGetIntegrations(supabaseClient, user.id, action);
+        return await handleGetIntegrations(supabaseClient, user.id, queryAction);
       case 'POST':
         const body = await req.json();
-        return await handleCMSAction(supabaseClient, user.id, action, body);
+        const effectiveAction = queryAction || body.action;
+        return await handleCMSAction(supabaseClient, user.id, effectiveAction, body);
       case 'PUT':
         const updateBody = await req.json();
         return await handleUpdateIntegration(supabaseClient, user.id, updateBody);
