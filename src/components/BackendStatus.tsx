@@ -112,7 +112,7 @@ const BackendStatus = () => {
     checkBackendHealth();
   }, []);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | undefined) => {
     switch (status) {
       case 'healthy': return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'degraded': return <AlertCircle className="h-5 w-5 text-yellow-500" />;
@@ -121,7 +121,7 @@ const BackendStatus = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'healthy': return 'bg-green-500/10 text-green-600 border-green-200';
       case 'degraded': return 'bg-yellow-500/10 text-yellow-600 border-yellow-200';
@@ -155,7 +155,7 @@ const BackendStatus = () => {
               </div>
             </div>
             <Badge className={getStatusColor(healthStatus.status)}>
-              {healthStatus.status.toUpperCase()}
+              {healthStatus.status?.toUpperCase() || 'UNKNOWN'}
             </Badge>
           </div>
         )}
