@@ -277,6 +277,117 @@ export type Database = {
           },
         ]
       }
+      content_plan_templates: {
+        Row: {
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          template_data: Json
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          template_data?: Json
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          template_data?: Json
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_plans: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          category: string | null
+          content_type: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          planned_date: string
+          platform: string | null
+          priority: number
+          related_blog_post_id: string | null
+          related_csv_job_id: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          category?: string | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          planned_date: string
+          platform?: string | null
+          priority?: number
+          related_blog_post_id?: string | null
+          related_csv_job_id?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          category?: string | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          planned_date?: string
+          platform?: string | null
+          priority?: number
+          related_blog_post_id?: string | null
+          related_csv_job_id?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       csv_processing_analytics: {
         Row: {
           ai_calls_made: number | null
