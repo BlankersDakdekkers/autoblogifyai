@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import BackendStatus from "@/components/BackendStatus";
+import ContentPlanner from "@/components/ContentPlanner";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   FileSpreadsheet, Upload, Download, CheckCircle, AlertCircle, Play, Pause, 
@@ -532,7 +533,7 @@ const ProductionCSVProcessor = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
             <TabsTrigger value="processor" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
               <span className="hidden sm:inline">Processor</span>
@@ -548,6 +549,10 @@ const ProductionCSVProcessor = () => {
             <TabsTrigger value="schema" className="flex items-center gap-2">
               <List className="h-4 w-4" />
               <span className="hidden sm:inline">Schema</span>
+            </TabsTrigger>
+            <TabsTrigger value="planner" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Planner</span>
             </TabsTrigger>
             <TabsTrigger value="status" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
@@ -955,6 +960,24 @@ const ProductionCSVProcessor = () => {
                   <Download className="h-4 w-4 mr-2" />
                   Download Voorbeeld
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Planner Tab */}
+          <TabsContent value="planner" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Content Planning & Scheduling
+                </CardTitle>
+                <CardDescription>
+                  Plan en organiseer al je content strategisch vanuit je CSV verwerking
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ContentPlanner />
               </CardContent>
             </Card>
           </TabsContent>
