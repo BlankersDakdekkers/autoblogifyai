@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 // Footer is now handled by OptimizedLayout
 import OptimizedHomeSections from "@/components/OptimizedHomeSections";
 import ContentPlanner from "@/components/ContentPlanner";
+import BackendStatus from "@/components/BackendStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
@@ -1286,6 +1287,19 @@ const Index = () => {
 
       {/* Content Planner Section */}
       <ContentPlanner />
+
+      {/* Backend Status Section */}
+      <section className="py-20 bg-background">
+        <div className="container px-4">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Backend Status Check</h2>
+            <p className="text-muted-foreground">
+              Controleer of alle backend services correct functioneren
+            </p>
+          </div>
+          <BackendStatus />
+        </div>
+      </section>
       
     </div>
   );
