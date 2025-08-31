@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
+import BackendStatus from "@/components/BackendStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   FileSpreadsheet, Upload, Download, CheckCircle, AlertCircle, Play, Pause, 
@@ -531,7 +532,7 @@ const ProductionCSVProcessor = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="processor" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
               <span className="hidden sm:inline">Processor</span>
@@ -547,6 +548,10 @@ const ProductionCSVProcessor = () => {
             <TabsTrigger value="schema" className="flex items-center gap-2">
               <List className="h-4 w-4" />
               <span className="hidden sm:inline">Schema</span>
+            </TabsTrigger>
+            <TabsTrigger value="status" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Status</span>
             </TabsTrigger>
           </TabsList>
 
@@ -950,6 +955,24 @@ const ProductionCSVProcessor = () => {
                   <Download className="h-4 w-4 mr-2" />
                   Download Voorbeeld
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Backend Status Tab */}
+          <TabsContent value="status" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Backend System Status
+                </CardTitle>
+                <CardDescription>
+                  Real-time monitoring van alle backend services en functionaliteit
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BackendStatus />
               </CardContent>
             </Card>
           </TabsContent>
