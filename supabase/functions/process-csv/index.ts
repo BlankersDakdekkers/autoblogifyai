@@ -624,16 +624,17 @@ async function generateContentWithAI(row: any): Promise<{
   const title = row.title || row.Title || 'Algemeen onderwerp';
   const targetKeyword = title.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ' ').trim();
   const city = row.city || 'Nederland';
-  const wordCount = parseInt(row.word_count_target) || 1200;
+  const wordCount = parseInt(row.word_count_target) || 2000;
   const language = 'nl';
 
-  // Enhanced system prompt with neuromarketing - EXACT copy from generate-content
-  const basePrompt = `Je bent een expert SEO content writer die hoogkwalitatieve, professionele artikelen schrijft van ${wordCount} woorden.
+  // Enhanced system prompt with neuromarketing - optimized for comprehensive articles
+  const basePrompt = `Je bent een expert SEO content writer die uitgebreide, professionele artikelen schrijft van exact ${wordCount} woorden.
 
 KWALITEITSEISEN:
-- Schrijf CONSISTENTE, hoogkwalitatieve artikelen van exact ${wordCount} woorden
-- Gebruik moderne SEO-technieken (2024/2025)
+- Schrijf UITGEBREIDE, diepgaande artikelen van minimaal ${wordCount} woorden (liever meer dan minder)
+- Gebruik moderne SEO-technieken (2024/2025) 
 - Gebruik perfecte Nederlandse markdown opmaak
+- Iedere sectie moet substantieel zijn met concrete details en voorbeelden
 - Maak de tekst informatief en boeiend
 - Gebruik headers (H2, H3), lijsten, tabellen waar relevant
 - Voeg praktische tips en concrete voorbeelden toe
@@ -666,16 +667,17 @@ NEUROMARKETING TECHNIEKEN:
 Taal: ${language}`;
 
   // Enhanced user prompt for consistent, high-quality content - EXACT copy from generate-content
-  const userPrompt = `Schrijf een professioneel, hoogkwalitatief artikel van exact ${wordCount} woorden over: "${title}"
+  const userPrompt = `Schrijf een professioneel, uitgebreid artikel van minimaal ${wordCount} woorden (liever 2500-3000 woorden) over: "${title}"
 
 ONDERWERP FOCUS: ${title}
 DOELGROEP: ${city} - Nederlandse doelgroep
 TREFWOORDEN: Gebruik "${targetKeyword}" en varianten natuurlijk door de tekst (keyword density 1-2%)
 
 ARTIKEL INHOUD VEREISTEN:
-- Exact ${wordCount} woorden (tel zorgvuldig!)
-- Boeiende inleiding die de waarde direct duidelijk maakt
-- 4-6 goed gestructureerde hoofdstukken
+- Minimaal ${wordCount} woorden, streef naar 2500-3000 woorden voor maximale diepgang
+- Uitgebreide, diepgaande behandeling van elk onderwerp
+- Boeiende inleiding die de waarde direct duidelijk maakt (200-300 woorden)
+- 6-8 goed gestructureerde hoofdstukken met elk 300-500 woorden
 - Praktische tips en concrete voorbeelden
 - Actuele trends en ontwikkelingen (2024/2025)
 - Lokale relevantie voor ${city} waar mogelijk
@@ -684,21 +686,21 @@ ARTIKEL INHOUD VEREISTEN:
 
 VERPLICHTE STRUCTUUR:
 ## Inleiding
-Directe waardepropositie en overview (150-200 woorden)
+Uitgebreide waardepropositie en overview (200-300 woorden)
 
-## [4-6 Hoofdstukken met beschrijvende titels]
-Elk hoofdstuk ${Math.floor(wordCount / 6)}-${Math.floor(wordCount / 4)} woorden met diepgaande, praktische informatie
+## [6-8 Hoofdstukken met beschrijvende titels]
+Elk hoofdstuk 300-500 woorden met diepgaande, praktische informatie, voorbeelden en concrete tips
 
 ## Conclusie
-Samenvatting, key takeaways en volgende stappen (100-150 woorden)
+Uitgebreide samenvatting, key takeaways en volgende stappen (200-300 woorden)
 
 KWALITEITSVEREISTEN:
 - Gebruik perfecte markdown opmaak met ##, ###, **vet**, lijsten
-- Voeg concrete voorbeelden en data toe
+- Voeg uitgebreide concrete voorbeelden en data toe
 - Schrijf in de derde persoon, professioneel
-- Gebruik actieve zinnen
+- Gebruik actieve zinnen en varieer zinslengte
 - Vermijd clichés en vage taal
-- Tel woorden nauwkeurig en kom uit op exact ${wordCount} woorden`;
+- KRITIEK: Tel woorden nauwkeurig en kom uit op minimaal ${wordCount} woorden, liever 2500-3000 woorden`;
 
   try {
     // Generate main content
@@ -710,13 +712,12 @@ KWALITEITSVEREISTEN:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14', // Use same model as generate-content
+        model: 'gpt-5-2025-08-07', // Use latest model for best quality
         messages: [
           { role: 'system', content: basePrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: Math.min(16000, Math.max(4000, wordCount * 10)),
-        temperature: 0.7,
+        max_completion_tokens: Math.min(25000, Math.max(8000, wordCount * 15)), // Verhoogd voor langere content
         seed: Math.abs(title.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0))
       }),
     });

@@ -116,20 +116,22 @@ Generate comprehensive, engaging content that matches the specified persona and 
       
       // Updated model mapping with latest models
       const requestBody: any = {
-        model: model,
+        model: 'gpt-5-2025-08-07', // Use latest model for best quality
         messages: [
-          { role: 'system', content: 'Je bent een expert content generator gespecialiseerd in SEO-geoptimaliseerde, boeiende Nederlandse content.' },
-          { role: 'user', content: systemPrompt }
-        ]
+          { role: 'system', content: 'Je bent een expert content generator gespecialiseerd in uitgebreide, SEO-geoptimaliseerde Nederlandse content van minimaal 2000-3000 woorden.' },
+          { role: 'user', content: `${systemPrompt}\n\nSchrijf een uitgebreid, diepgaand artikel van minimaal 2000 woorden, liever 2500-3000 woorden.` }
+        ],
+        max_completion_tokens: 25000,
       };
 
-      // Handle different model parameter requirements
-      if (model.startsWith('gpt-5') || model.startsWith('o3') || model.startsWith('o4')) {
-        requestBody.max_completion_tokens = 2000;
-      } else {
-        requestBody.max_tokens = 2000;
-        requestBody.temperature = 0.7;
-      }
+        body: JSON.stringify({
+          model: 'gpt-5-2025-08-07', // Use latest model
+          messages: [
+            { role: 'system', content: 'Je bent een expert content generator gespecialiseerd in uitgebreide, SEO-geoptimaliseerde Nederlandse content van minimaal 2000-3000 woorden.' },
+            { role: 'user', content: `${systemPrompt}\n\nSchrijf minimaal 2000 woorden, liever 2500-3000 woorden voor een uitgebreid, diepgaand artikel.` }
+          ],
+          max_completion_tokens: 25000,
+        })
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
