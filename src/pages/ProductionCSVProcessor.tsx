@@ -225,25 +225,45 @@ const ProductionCSVProcessor = () => {
   };
 
   const validateCsvUrl = useCallback(async (url: string) => {
-    if (!url.trim()) {
+    const raw = url.trim();
+    if (!raw) {
       setUrlValidationStatus('idle');
       return;
     }
 
     setUrlValidationStatus('validating');
-    
+
     try {
-      new URL(url);
-      
-      if (url.includes('docs.google.com/spreadsheets')) {
-        const hasValidFormat = /\/d\/([a-zA-Z0-9-_]+)\//.test(url) || /export\?format=csv/.test(url);
-        if (!hasValidFormat) {
-          setUrlValidationStatus('invalid');
+      // Support relative paths like "/test-blog-data.csv"
+      const parsed = new URL(raw, window.location.origin);
+      const normalized = parsed.toString();
+
+      // Accept any direct CSV link
+      if (normalized.toLowerCase().endsWith('.csv')) {
+        setUrlValidationStatus('valid');
+        return;
+      }
+
+      // Google Sheets: accept export and published CSV formats
+      if (normalized.includes('docs.google.com/spreadsheets')) {
+        const isExport = /\/export\?([^#]*?)format=csv/i.test(normalized);
+        const isPublished = /\/pub\?([^#]*?)output=csv/i.test(normalized);
+        const hasDocId = /\/d\/([a-zA-Z0-9-_]+)\//.test(normalized);
+        if (isExport || isPublished || hasDocId) {
+          setUrlValidationStatus('valid');
           return;
         }
+        setUrlValidationStatus('invalid');
+        return;
       }
-      
-      setUrlValidationStatus('valid');
+
+      // Fallback: accept any http(s) URL
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        setUrlValidationStatus('valid');
+        return;
+      }
+
+      setUrlValidationStatus('invalid');
     } catch {
       setUrlValidationStatus('invalid');
     }
