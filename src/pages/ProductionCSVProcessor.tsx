@@ -280,9 +280,12 @@ const ProductionCSVProcessor = () => {
     }
 
     try {
+      // Normaliseer naar absolute http(s) URL (ondersteunt ook relatieve paden)
+      const normalizedCsvUrl = new URL(csvUrl.trim(), window.location.origin).toString();
+
       const { data, error } = await supabase.functions.invoke('process-csv', {
         body: { 
-          csvUrl, 
+          csvUrl: normalizedCsvUrl, 
           batchSize, 
           aiModel,
           userId: user?.id 
@@ -297,9 +300,13 @@ const ProductionCSVProcessor = () => {
         description: "CSV wordt verwerkt, je ontvangt updates in real-time"
       });
 
-      // Clear the URL after successful start
+      // Direct verversen (niet alleen vertrouwen op Realtime)
+      await Promise.all([loadProcessingJobs(), loadBlogPosts()]);
+
+      // Clear de URL en ga naar de Posts tab om output te tonen
       setCsvUrl("");
       setUrlValidationStatus('idle');
+      setActiveTab('posts');
 
     } catch (error) {
       console.error("Processing error:", error);

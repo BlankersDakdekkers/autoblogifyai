@@ -144,7 +144,8 @@ export const EnhancedCSVUploader: React.FC<EnhancedCSVUploaderProps> = ({
 
   // Handle URL processing
   const handleUrlProcessing = useCallback(async () => {
-    if (!csvUrl.trim()) {
+    const raw = csvUrl.trim();
+    if (!raw) {
       toast({
         title: 'CSV URL Vereist',
         description: 'Voer een geldige CSV URL in',
@@ -154,10 +155,14 @@ export const EnhancedCSVUploader: React.FC<EnhancedCSVUploaderProps> = ({
     }
 
     try {
-      const job = await processCSV({ csvUrl });
+      // Normaliseer naar absolute http(s) URL (ondersteunt relatieve paden)
+      const normalized = new URL(raw, window.location.origin).toString();
+      const job = await processCSV({ csvUrl: normalized });
       if (job && onProcessingComplete) {
         onProcessingComplete(job.id);
       }
+      // Reset input
+      setCsvUrl('');
     } catch (error) {
       console.error('URL processing error:', error);
     }
