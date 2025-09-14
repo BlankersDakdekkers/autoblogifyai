@@ -125,6 +125,47 @@ const ProductionCSVProcessor = () => {
     };
   }, [user?.id, toast]);
 
+  // Fallback polling while processing (in case Realtime events are delayed)
+  useEffect(() => {
+    if (!isProcessing || !currentJob?.id) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('csv_processing_jobs')
+          .select('*')
+          .eq('id', currentJob.id)
+          .maybeSingle();
+        if (error || !data || cancelled) return;
+        const job = data as any;
+        setCurrentJob(prev => ({
+          ...(prev || job),
+          ...job,
+          progress: job.processed_rows && job.total_rows ? (job.processed_rows / job.total_rows) * 100 : 0,
+          csv_url: job.csv_url || ''
+        }));
+        setJobs(prev => {
+          const exists = prev.some(j => j.id === job.id);
+          const mapped = {
+            ...(exists ? prev.find(j => j.id === job.id)! : {}),
+            ...job,
+            progress: job.processed_rows && job.total_rows ? (job.processed_rows / job.total_rows) * 100 : 0,
+            csv_url: job.csv_url || ''
+          } as ProcessingJob;
+          return exists ? prev.map(j => j.id === job.id ? mapped : j) : [mapped, ...prev];
+        });
+        if (job.status === 'completed' || job.status === 'failed') {
+          clearInterval(interval);
+          setIsProcessing(false);
+          if (job.status === 'completed') {
+            loadBlogPosts();
+          }
+        }
+      } catch {}
+    }, 2000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [isProcessing, currentJob?.id]);
+
   const loadBlogPosts = async () => {
     if (!user?.id) return;
     
@@ -538,7 +579,9 @@ const ProductionCSVProcessor = () => {
                   <div>
                     <h3 className="font-semibold text-blue-900">Verwerking Actief</h3>
                     <p className="text-sm text-blue-600">
-                      {currentJob.processed_rows || 0} van {currentJob.total_rows || 0} rijen verwerkt
+                      {currentJob.total_rows && currentJob.total_rows > 0
+                        ? `${currentJob.processed_rows || 0} van ${currentJob.total_rows} rijen verwerkt`
+                        : 'Initialiseren... CSV analyseren'}
                     </p>
                   </div>
                 </div>
