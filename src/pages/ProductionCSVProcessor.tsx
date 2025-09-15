@@ -349,13 +349,41 @@ const ProductionCSVProcessor = () => {
       setUrlValidationStatus('idle');
       setActiveTab('posts');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Processing error:", error);
-      toast({
-        title: "Fout bij verwerking",
-        description: "Er is een fout opgetreden bij het starten van de verwerking",
-        variant: "destructive"
-      });
+
+      // Probeer de laatste job-fout op te halen voor detailfeedback
+      try {
+        if (user?.id) {
+          const { data: lastJob } = await supabase
+            .from('csv_processing_jobs')
+            .select('id,status,error_message,created_at')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const detailedMsg = lastJob?.error_message || (error?.context?.body ? (() => { try { const b = JSON.parse(error.context.body); return b.error || b.message; } catch { return null; } })() : null);
+
+          toast({
+            title: "Fout bij verwerking",
+            description: detailedMsg || "Er is een fout opgetreden bij het starten van de verwerking",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Fout bij verwerking",
+            description: "Er is een fout opgetreden bij het starten van de verwerking",
+            variant: "destructive"
+          });
+        }
+      } catch (e) {
+        toast({
+          title: "Fout bij verwerking",
+          description: "Er is een fout opgetreden bij het starten van de verwerking",
+          variant: "destructive"
+        });
+      }
     }
   };
 
