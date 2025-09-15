@@ -16,6 +16,69 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CSV-PROCESSOR] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
+// Enhanced CSV validation function
+function validateCSVData(rows: any[], headers: string[]) {
+  const errors: string[] = [];
+  const requiredFields = ['title', 'slug', 'status', 'publish_date'];
+  
+  // Check for duplicate headers
+  const duplicateHeaders = headers.filter((header, index) => headers.indexOf(header) !== index);
+  if (duplicateHeaders.length > 0) {
+    errors.push(`Duplicate headers found: ${duplicateHeaders.join(', ')}`);
+  }
+  
+  // Validate each row
+  rows.forEach((row, index) => {
+    const rowNumber = index + 2; // +2 omdat index 0-based is en header = rij 1
+    
+    // Check required fields
+    requiredFields.forEach(field => {
+      if (!row[field] || String(row[field]).trim() === '') {
+        errors.push(`Rij ${rowNumber}: Verplicht veld '${field}' ontbreekt of is leeg`);
+      }
+    });
+    
+    // Validate slug format
+    if (row.slug) {
+      const slugRegex = /^[a-z0-9-]+$/;
+      if (!slugRegex.test(row.slug)) {
+        errors.push(`Rij ${rowNumber}: Slug '${row.slug}' bevat ongeldige tekens. Alleen a-z, 0-9 en - zijn toegestaan`);
+      }
+    }
+    
+    // Validate date format
+    if (row.publish_date) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(row.publish_date)) {
+        errors.push(`Rij ${rowNumber}: Datum '${row.publish_date}' heeft verkeerde format. Gebruik YYYY-MM-DD`);
+      }
+    }
+    
+    // Validate JSON fields
+    if (row.faq_json && row.faq_json.trim() !== '') {
+      try {
+        const parsed = JSON.parse(row.faq_json);
+        if (!Array.isArray(parsed)) {
+          errors.push(`Rij ${rowNumber}: faq_json moet een array zijn`);
+        }
+      } catch (e) {
+        errors.push(`Rij ${rowNumber}: Ongeldige JSON in faq_json - ${e.message}`);
+      }
+    }
+    
+    // Check for suspicious field misplacement (common CSV parsing issue)
+    if (row.layout && (row.layout.startsWith('http') || row.layout.includes('.'))) {
+      errors.push(`Rij ${rowNumber}: Layout veld lijkt een URL te bevatten. Check CSV kolomvolgorde.`);
+    }
+    
+    if (row.body_markdown && /^\d+$/.test(String(row.body_markdown).trim())) {
+      errors.push(`Rij ${rowNumber}: body_markdown bevat alleen cijfers. Check CSV kolomvolgorde.`);
+    }
+  });
+  
+  return errors;
+}
+
 // Rate limiting configuration
 const BATCH_SIZE = 5; // Process 5 rows at a time
 const DELAY_BETWEEN_BATCHES = 1000; // 1 second delay
@@ -472,14 +535,30 @@ async function processRow(row: any, userId: string, supabase: any, rowIndex?: nu
   try {
     aiContent = await generateContentWithAI(row);
   } catch (error) {
-    logStep("Enhanced AI generation failed, using fallback", { rowIndex, error: error.message });
-    const mockContent = generateMockContent(row);
-    aiContent = {
-      content: mockContent,
-      metaDescription: `${row.title} - Complete gids met praktische tips en strategieën.`,
-      faq: [],
-      cta: { heading: 'Neem Contact Op', subtext: 'Start vandaag nog' }
-    };
+    logStep("Enhanced AI generation failed, trying Anthropic fallback", { rowIndex, error: error.message });
+    
+    // Try Anthropic as fallback for quota issues
+    try {
+      aiContent = await generateContentWithAnthropic(row);
+      logStep("Anthropic fallback successful", { rowIndex });
+    } catch (anthropicError) {
+      logStep("All AI generation failed, using enhanced fallback", { rowIndex, 
+        openaiError: error.message, 
+        anthropicError: anthropicError.message 
+      });
+      
+      // Enhanced fallback with structured content
+      const enhancedContent = generateEnhancedFallbackContent(row);
+      aiContent = {
+        content: enhancedContent,
+        metaDescription: `${row.title} - Complete gids met praktische tips en strategieën voor ${row.city || 'Nederland'}.`,
+        faq: generateFallbackFAQ(row),
+        cta: { 
+          heading: row.cta_heading || 'Neem Contact Op', 
+          subtext: row.cta_subtext || 'Start vandaag nog met professioneel advies' 
+        }
+      };
+    }
   }
   
   // Validate and normalize status
@@ -986,6 +1065,16 @@ function parseCSV(csvText: string) {
   
   console.log('Successfully parsed rows:', rows.length);
   console.log('Sample rows:', JSON.stringify(rows.slice(0, 2), null, 2));
+  
+  // Enhanced CSV validation
+  logStep("Validating CSV data structure");
+  const validationErrors = validateCSVData(rows, headers);
+  if (validationErrors.length > 0) {
+    logStep("CSV validation failed", { errors: validationErrors });
+    throw new Error(`CSV validatiefouten:\n${validationErrors.join('\n')}`);
+  }
+  logStep("CSV validation passed");
+  
   return rows;
 }
 
@@ -1230,4 +1319,151 @@ async function autoPublishToCMS(blogPostId: string, userId: string, supabase: an
   } catch (error) {
     logStep("Auto-publish CMS check failed", { error: error.message, rowIndex });
   }
+}
+
+// Anthropic fallback function for AI generation
+async function generateContentWithAnthropic(row: any): Promise<any> {
+  const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!anthropicApiKey) {
+    throw new Error('Anthropic API key not configured');
+  }
+
+  const title = row.title || row.Title || 'Untitled';
+  const city = row.city || row.City || 'Nederland';
+  const category = row.category || row.Category || 'algemeen';
+  const tags = row.tags || row.Tags || '';
+  const wordCount = parseInt(row.word_count_target) || 2000;
+
+  const prompt = `Schrijf een uitgebreid, professioneel artikel over "${title}" voor ${city}. 
+Categorie: ${category}
+Tags: ${tags}
+Minimaal ${wordCount} woorden, liever 2500-3000 woorden.
+
+Structuur:
+- Inleiding (150+ woorden)
+- 4-6 hoofdsecties met subsecties (elk 300-500 woorden)
+- Praktische tips en voorbeelden
+- Kosten/prijzen waar relevant
+- Conclusie met call-to-action (100+ woorden)
+
+Gebruik professionele toon, actieve zinnen, en SEO-geoptimaliseerde content.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicApiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-1-20250805',
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Anthropic API error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const content = data.content?.[0]?.text || '';
+
+  return {
+    content,
+    metaDescription: `${title} - Complete gids met praktische tips voor ${city}. Professioneel advies en transparante prijzen.`,
+    faq: generateFallbackFAQ(row),
+    cta: {
+      heading: row.cta_heading || 'Professioneel Advies Nodig?',
+      subtext: row.cta_subtext || `Neem contact op voor persoonlijk advies over ${title.toLowerCase()}`
+    }
+  };
+}
+
+// Enhanced fallback content generator
+function generateEnhancedFallbackContent(row: any): string {
+  const title = row.title || 'Untitled';
+  const city = row.city || 'Nederland';
+  const category = row.category || 'algemeen';
+  const summary = row.summary || '';
+  
+  return `# ${title}
+
+## Inleiding
+
+${summary ? summary : `In deze uitgebreide gids behandelen we alles wat u moet weten over ${title.toLowerCase()}. Of u nu een particulier bent of een bedrijf in ${city}, deze informatie helpt u de juiste keuzes te maken.`}
+
+Dit artikel biedt praktische inzichten, tips van experts, en transparante informatie over kosten en procedures. We behandelen de meest gestelde vragen en geven u handvatten om zelf aan de slag te gaan.
+
+## Waarom is ${title} Belangrijk?
+
+Het onderwerp ${title.toLowerCase()} speelt een belangrijke rol in ${category}. Veel mensen in ${city} zoeken naar betrouwbare informatie hierover, en terecht. De juiste aanpak kan veel tijd, geld en frustratie besparen.
+
+### Belangrijkste Voordelen:
+- Professionele aanpak zorgt voor beste resultaten
+- Voorkoming van kostbare fouten
+- Tijdsbesparing door expertise
+- Langdurige oplossing
+
+## Praktische Tips en Aanbevelingen
+
+### Stap 1: Voorbereiding
+Een goede voorbereiding is essentieel. Neem de tijd om alle aspecten door te nemen en stel de juiste vragen.
+
+### Stap 2: Selectie van Professionals
+Kies altijd voor gecertificeerde en ervaren professionals. Vraag om referenties en vergelijk verschillende aanbieders.
+
+### Stap 3: Planning en Uitvoering
+Een goede planning voorkomt problemen. Zorg voor duidelijke afspraken over tijdlijnen en kosten.
+
+## Kosten en Budgettering
+
+De kosten voor ${title.toLowerCase()} variëren afhankelijk van verschillende factoren:
+- Omvang van het project
+- Locatie (${city})
+- Kwaliteit van materialen
+- Complexiteit van de werkzaamheden
+
+### Indicatieve Prijzen:
+Vraag altijd meerdere offertes aan en vergelijk deze zorgvuldig. Een goedkope optie is niet altijd de beste keuze op de lange termijn.
+
+## Veelgestelde Vragen
+
+Veel klanten in ${city} hebben soortgelijke vragen. De meest voorkomende vragen en antwoorden vindt u hieronder.
+
+## Conclusie
+
+${title} is een belangrijk onderwerp dat de juiste aandacht verdient. Met de informatie in deze gids heeft u een solide basis om de juiste keuzes te maken. Voor specifieke vragen over uw situatie raden we aan om contact op te nemen met een professional.
+
+*Heeft u vragen over ${title.toLowerCase()} in ${city}? Neem contact met ons op voor persoonlijk advies.*`;
+}
+
+// Generate fallback FAQ based on row data
+function generateFallbackFAQ(row: any): any[] {
+  const title = row.title || 'service';
+  const city = row.city || 'Nederland';
+  
+  // Try parsing existing FAQ first
+  if (row.faq_json) {
+    try {
+      return JSON.parse(row.faq_json);
+    } catch (e) {
+      // Continue with fallback FAQ
+    }
+  }
+  
+  return [
+    {
+      q: `Wat kost ${title.toLowerCase()}?`,
+      a: `De kosten variëren afhankelijk van verschillende factoren. Neem contact op voor een persoonlijke offerte voor uw situatie in ${city}.`
+    },
+    {
+      q: `Hoe lang duurt ${title.toLowerCase()}?`,
+      a: `De duur hangt af van de complexiteit van het project. Wij informeren u vooraf over de verwachte doorlooptijd.`
+    },
+    {
+      q: `Waarom kiezen voor professionele hulp?`,
+      a: `Professionele expertise zorgt voor het beste resultaat, voorkomt kostbare fouten en bespaart u tijd.`
+    }
+  ];
 }

@@ -139,9 +139,15 @@ async function publishToWordPress(post: any, config: any) {
     // Normalize site URL
     const normalizedUrl = siteUrl.replace(/\/$/, '');
     
-    // Clean and normalize credentials
-    const cleanUsername = username.trim();
-    const cleanAppPassword = appPassword.trim();
+    // Clean and normalize credentials - safe null/undefined handling
+    const cleanUsername = (username || '').trim();
+    const cleanAppPassword = (appPassword || '').trim();
+    
+    // Validate required credentials
+    if (!cleanUsername || !cleanAppPassword) {
+      throw new Error('WordPress username and app password zijn verplicht');
+    }
+    
     const credentials = btoa(`${cleanUsername}:${cleanAppPassword}`);
     
     console.log('WordPress connection attempt:', {
