@@ -1,5 +1,3 @@
-"use client";
-
 import { ReactNode, useEffect, useRef } from "react";
 import { setPostHogClient } from "@/components/analytics/analytics";
 
@@ -15,6 +13,7 @@ const CONSENT_STORAGE_KEYS = [
   "cookieconsent_status",
   "consent_preferences",
 ] as const;
+const CONSENT_STORAGE_KEY_SET = new Set<string>(CONSENT_STORAGE_KEYS);
 
 const CONSENT_ACCEPTED_VALUES = ["true", "accepted", "allow", "granted", "yes", "all"];
 
@@ -45,6 +44,14 @@ const parseConsentValue = (rawValue: string | null | undefined): boolean => {
   return false;
 };
 
+const decodeCookieValue = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const hasAnalyticsConsent = (): boolean => {
   if (typeof window === "undefined") return false;
 
@@ -56,12 +63,24 @@ const hasAnalyticsConsent = (): boolean => {
     if (parseConsentValue(sessionValue)) return true;
   }
 
-  const cookieValues = document.cookie.split(";").map((cookie) => cookie.split("=")[1]);
-  return cookieValues.some((value) => parseConsentValue(value ? decodeURIComponent(value) : value));
+  const consentCookies = document.cookie
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .map((cookie) => {
+      const [rawKey, ...rawValueParts] = cookie.split("=");
+      return {
+        key: rawKey,
+        value: rawValueParts.join("="),
+      };
+    })
+    .filter((cookie) => CONSENT_STORAGE_KEY_SET.has(cookie.key));
+
+  return consentCookies.some((cookie) => parseConsentValue(cookie.value ? decodeCookieValue(cookie.value) : null));
 };
 
 export const PostHogProvider = ({ children }: PostHogProviderProps) => {
   const hasInitializedRef = useRef(false);
+  const isInitializingRef = useRef(false);
 
   useEffect(() => {
     const posthogKey = import.meta.env.NEXT_PUBLIC_POSTHOG_KEY as string | undefined;
@@ -70,28 +89,33 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
     if (!posthogKey || !posthogHost) return;
 
     const initializePostHog = async () => {
-      if (hasInitializedRef.current || !hasAnalyticsConsent()) return;
+      if (hasInitializedRef.current || isInitializingRef.current || !hasAnalyticsConsent()) return;
 
-      hasInitializedRef.current = true;
+      isInitializingRef.current = true;
 
       if (shouldDebugLog) {
         console.info("[analytics] consent accepted");
       }
 
-      const posthogModule = await import("posthog-js");
-      const posthog = posthogModule.default;
+      try {
+        const posthogModule = await import("posthog-js");
+        const posthog = posthogModule.default;
 
-      posthog.init(posthogKey, {
-        api_host: posthogHost,
-        capture_pageview: true,
-        capture_pageleave: true,
-        persistence: "localStorage+cookie",
-      });
+        posthog.init(posthogKey, {
+          api_host: posthogHost,
+          capture_pageview: true,
+          capture_pageleave: true,
+          persistence: "localStorage+cookie",
+        });
 
-      setPostHogClient(posthog);
+        setPostHogClient(posthog);
+        hasInitializedRef.current = true;
 
-      if (shouldDebugLog) {
-        console.info("[analytics] posthog initialized");
+        if (shouldDebugLog) {
+          console.info("[analytics] posthog initialized");
+        }
+      } finally {
+        isInitializingRef.current = false;
       }
     };
 
@@ -118,4 +142,3 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
 
   return <>{children}</>;
 };
-

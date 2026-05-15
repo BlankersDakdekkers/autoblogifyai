@@ -66,8 +66,8 @@ const ContactPage = () => {
     },
     {
       icon: MessageCircle,
-      title: "WhatsApp Sales",
-      description: "Voor snelle vragen en demo's via WhatsApp",
+      title: "Sales & Demos (WhatsApp)",
+      description: "Voor snelle vragen en demos via WhatsApp",
       contact: "+31 (0)20 123 4567",
       responseTime: "< 30 min",
       href: "https://wa.me/31201234567",
