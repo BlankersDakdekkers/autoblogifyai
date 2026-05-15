@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { OptimizedLayout } from "@/components/OptimizedLayout";
+import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 // Lazy load pages for better performance
 import { lazy, Suspense } from "react";
@@ -65,12 +66,13 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <LanguageProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
-            <AuthProvider>
-              <Routes>
+    <PostHogProvider>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <BrowserRouter>
+              <AuthProvider>
+                <Routes>
                 {/* Homepage - With header/footer */}
                 <Route path="/" element={
                   <div>
@@ -595,14 +597,15 @@ const App = () => {
 
                 {/* 404 Route */}
                 <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-        <Toaster />
-        <Sonner />
-      </QueryClientProvider>
-    </LanguageProvider>
+                </Routes>
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+          <Toaster />
+          <Sonner />
+        </QueryClientProvider>
+      </LanguageProvider>
+    </PostHogProvider>
   );
 };
 

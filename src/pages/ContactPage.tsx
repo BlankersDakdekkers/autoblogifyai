@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useSEO } from "@/hooks/useSEO";
 import { useToast } from "@/hooks/use-toast";
+import { trackAnalyticsEvent, TrackedAnalyticsEvent } from "@/components/analytics/analytics";
 import { 
   Mail, 
   Phone, 
@@ -17,6 +18,16 @@ import {
   Book,
   Zap
 } from "lucide-react";
+
+interface ContactMethod {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  contact: string;
+  responseTime: string;
+  href?: string;
+  eventName?: TrackedAnalyticsEvent;
+}
 
 const ContactPage = () => {
   const { toast } = useToast();
@@ -35,34 +46,40 @@ const ContactPage = () => {
     keywords: "contact, support, verkoop, help, AutoblogifyAI"
   });
 
-  const contactMethods = [
+  const contactMethods: ContactMethod[] = [
     {
       icon: Mail,
       title: "E-mail Support",
       description: "Voor technische vragen en support",
       contact: "support@autoblogifyai.com",
-      responseTime: "< 4 uur"
+      responseTime: "< 4 uur",
+      href: "mailto:support@autoblogifyai.com",
     },
     {
       icon: Phone,
       title: "Telefonische Support",
       description: "Voor directe hulp en urgente zaken",
       contact: "+31 (0)20 123 4567",
-      responseTime: "Direct"
+      responseTime: "Direct",
+      href: "tel:+31201234567",
+      eventName: "phone_click",
     },
     {
       icon: MessageCircle,
-      title: "Sales & Demo's",
-      description: "Voor verkoop en productdemo's",
-      contact: "sales@autoblogifyai.com",
-      responseTime: "< 2 uur"
+      title: "WhatsApp Sales",
+      description: "Voor snelle vragen en demo's via WhatsApp",
+      contact: "+31 (0)20 123 4567",
+      responseTime: "< 30 min",
+      href: "https://wa.me/31201234567",
+      eventName: "whatsapp_click",
     },
     {
       icon: Headphones,
       title: "Partnerships",
       description: "Voor zakelijke partnerships",
       contact: "partners@autoblogifyai.com",
-      responseTime: "1 werkdag"
+      responseTime: "1 werkdag",
+      href: "mailto:partners@autoblogifyai.com",
     }
   ];
 
@@ -83,6 +100,14 @@ const ContactPage = () => {
       toast({
         title: "Bericht verzonden!",
         description: "Wij nemen binnen 24 uur contact met u op.",
+      });
+
+      trackAnalyticsEvent("contact_form_submit", {
+        page: "contact",
+        subject: formData.subject || "unknown",
+      });
+      trackAnalyticsEvent("generate_lead", {
+        source: "contact_form",
       });
       
       setFormData({
@@ -243,7 +268,26 @@ const ContactPage = () => {
                         <div className="flex-1">
                           <h4 className="font-semibold text-sm">{method.title}</h4>
                           <p className="text-xs text-muted-foreground mb-2">{method.description}</p>
-                          <p className="text-sm font-medium">{method.contact}</p>
+                          {method.href ? (
+                            <a
+                              href={method.href}
+                              onClick={() => {
+                                if (method.eventName) {
+                                  trackAnalyticsEvent(method.eventName, {
+                                    page: "contact",
+                                    method: method.title.toLowerCase(),
+                                  });
+                                }
+                              }}
+                              target={method.href.startsWith("http") ? "_blank" : undefined}
+                              rel={method.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                              className="text-sm font-medium hover:underline"
+                            >
+                              {method.contact}
+                            </a>
+                          ) : (
+                            <p className="text-sm font-medium">{method.contact}</p>
+                          )}
                           <p className="text-xs text-primary">Reactie: {method.responseTime}</p>
                         </div>
                       </div>

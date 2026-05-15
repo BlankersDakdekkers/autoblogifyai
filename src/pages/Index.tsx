@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { trackAnalyticsEvent } from "@/components/analytics/analytics";
 
 interface Subscription {
   subscribed: boolean;
@@ -195,6 +196,15 @@ const Index = () => {
   };
 
   const handleSubscribe = async (tier: string) => {
+    trackAnalyticsEvent("generate_lead", {
+      source: "pricing_cta",
+      tier,
+    });
+    trackAnalyticsEvent("offerte_aanvraag", {
+      source: "pricing_cta",
+      tier,
+    });
+
     if (!user) {
       // Redirect to signup page instead of showing error
       window.location.href = "/auth?tab=signup";
